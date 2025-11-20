@@ -5,7 +5,6 @@ A Vue 3 + Vite static web app for music festival schedule planning, with PWA, of
 ## Features
 - Festival list, detail, and timeline views
 - My Plan (offline, notifications, Google Calendar export)
-- Dynamic theme from festival logo
 - JSON editor for community submissions
 - PWA: offline, service worker, manifest
 - GitHub Action for festival data pipeline

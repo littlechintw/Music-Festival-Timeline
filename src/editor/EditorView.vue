@@ -45,11 +45,7 @@
           <input v-model="festival.endTime" type="datetime-local" class="border rounded px-2 py-1 w-full" required />
         </div>
       </div>
-      <div>
-        <label class="block font-bold mb-1">LOGO 圖片（Base64 或網址）</label>
-        <input v-model="festival.logo" class="border rounded px-2 py-1 w-full mb-2" placeholder="可貼上網址或 base64" />
-        <input type="file" accept="image/*" @change="onLogoUpload" class="mb-2" />
-      </div>
+
       <div>
         <label class="block font-bold mb-1">主題色</label>
         <input v-model="festival.theme.primary" class="border rounded px-2 py-1 mr-2" placeholder="#主色" />
@@ -133,16 +129,7 @@ import { saveFestivalDraft, loadFestivalDraft, clearFestivalDraft } from './draf
 import { festivalSchema } from '../pwa/schema';
 // 欄位驗證錯誤
 const validationError = ref('');
-// 上傳 LOGO 圖片
-function onLogoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    festival.logo = evt.target.result;
-  };
-  reader.readAsDataURL(file);
-}
+
 // 上傳地圖圖片
 function onMapUpload(e) {
   const file = e.target.files[0];
@@ -188,7 +175,6 @@ const emptyFestival = () => ({
   name: '',
   startTime: '',
   endTime: '',
-  logo: '',
   theme: { primary: '', secondary: '', generated: false },
   location: { name: '', address: '', latitude: 0, longitude: 0 },
   stages: [],

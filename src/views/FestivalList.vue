@@ -9,14 +9,9 @@
     <div v-if="loading">載入中...</div>
     <div v-else>
       <div v-for="festival in filteredFestivals" :key="festival.festivalId" class="border rounded p-4 mb-4 hover:bg-gray-50 cursor-pointer" @click="goDetail(festival.festivalId)">
-        <div class="flex items-center gap-4">
-          <img v-if="festival.logo" :src="festival.logo" alt="logo" class="w-16 h-16 object-contain rounded" />
-          <div>
-            <div class="font-bold text-lg">{{ festival.name }}</div>
-            <div class="text-sm text-gray-500">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}</div>
-            <div class="text-sm">{{ festival.location.name }}｜{{ festival.location.address }}</div>
-          </div>
-        </div>
+        <div class="font-bold text-lg">{{ festival.name }}</div>
+        <div class="text-sm text-gray-500">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}</div>
+        <div class="text-sm">{{ festival.location.name }}｜{{ festival.location.address }}</div>
       </div>
       <div v-if="filteredFestivals.length === 0" class="text-gray-400">查無資料</div>
     </div>

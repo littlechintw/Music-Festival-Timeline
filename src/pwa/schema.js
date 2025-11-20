@@ -6,7 +6,6 @@ export const festivalSchema = z.object({
   name: z.string(),
   startTime: z.string(),
   endTime: z.string(),
-  logo: z.string(),
   theme: z.object({
     primary: z.string(),
     secondary: z.string(),
