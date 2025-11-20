@@ -1,0 +1,43 @@
+{
+  "festivalId": "kaohsiung-rock-2025",
+  "name": "Kaohsiung Rock Carnival 2025",
+  "startTime": "2025-12-10T14:00:00+08:00",
+  "endTime": "2025-12-12T23:00:00+08:00",
+  "logo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAPFBMVEVHcEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACHr/7WAAAAFHRSTlMAD4peF7f/Quz4BeEvqr141lOXbrXE46kAAACxSURBVHgBfNJVAoMwEEXRib0oENn/WiuZ4qT390CctoRUNEwbjNU6eDuwIAHEASYHYDBwmPDNPM+InruBsIJmxolumYUyY7lZyp4R883C4hFqt6T3RMcUgZQ8gDwfsvwjMBlacK7q9WisVyTPFqjXIK1HIZXdVt0Wa2zx8FKQ5s6nkz4ILCrHby4dMVDq2Dx6ic7Ff9hWzDnHK5JjdCSEuJ+vZxw9IcaBWsZB7/HTSRIAtFgKMMLUbB8AAAAASUVORK5CYII=",
+  "theme": {
+    "primary": "#1a535c",
+    "secondary": "#ff6f00",
+    "generated": true
+  },
+  "location": {
+    "name": "Kaohsiung Dome",
+    "address": "高雄市左營區博愛二路777號",
+    "latitude": 22.665,
+    "longitude": 120.306
+  },
+  "stages": [
+    {
+      "id": "main-stage",
+      "name": "Main Stage",
+      "performances": [
+        { "artist": "Rock Bros", "start": "2025-12-10T18:00:00+08:00", "end": "2025-12-10T19:00:00+08:00", "description": "Opening" },
+        { "artist": "Thunder Cats", "start": "2025-12-10T19:30:00+08:00", "end": "2025-12-10T20:30:00+08:00" },
+        { "artist": "Night Owls", "start": "2025-12-10T21:00:00+08:00", "end": "2025-12-10T22:00:00+08:00" }
+      ]
+    },
+    {
+      "id": "indie-stage",
+      "name": "Indie Stage",
+      "performances": [
+        { "artist": "Indie Star", "start": "2025-12-10T18:30:00+08:00", "end": "2025-12-10T19:30:00+08:00" },
+        { "artist": "Dreamers", "start": "2025-12-10T20:00:00+08:00", "end": "2025-12-10T21:00:00+08:00" },
+        { "artist": "Late Night", "start": "2025-12-10T21:30:00+08:00", "end": "2025-12-10T22:30:00+08:00" }
+      ]
+    }
+  ],
+  "map": {
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUBX96bySkSxapCVw10DLiaysIWcIp_GM4wFPkd9ucY5U5W5OSr8GX8TZCrEcg7u8-lqB-XA&s",
+    "notes": []
+  },
+  "contributors": ["littlechintw"]
+}

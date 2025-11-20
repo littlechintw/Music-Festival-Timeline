@@ -1,0 +1,20 @@
+name: Validate Festival JSON
+
+on:
+  pull_request:
+    paths:
+      - 'festivals/*.json'
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate festival JSON files
+        run: node .github/workflows/validate-festivals.js

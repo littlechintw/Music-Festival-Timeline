@@ -1,0 +1,29 @@
+name: Publish Festival Data
+
+on:
+  push:
+    paths:
+      - 'festivals/*.json'
+  workflow_dispatch:
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate and filter festivals
+        run: node .github/workflows/validate-festivals.js
+      - name: Commit and push to data-live
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout -B data-live
+          git add filtered-festivals.json
+          git commit -m "Update live festival data"
+          git push --force origin data-live
