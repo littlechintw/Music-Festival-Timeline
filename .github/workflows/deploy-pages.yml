@@ -6,6 +6,15 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -47,15 +56,17 @@ jobs:
             exit 1
           fi
 
-      # Step 7: Add CNAME
-      - name: Add CNAME
-        run: echo "mf.littlechin.tw" > dist/CNAME
+      # Step 7: Add CNAME and handle SPA routing
+      - name: Add CNAME and setup SPA routing
+        run: |
+          echo "mf.littlechin.tw" > dist/CNAME
+          # 複製 index.html 為 404.html 來處理 SPA 路由
+          cp dist/index.html dist/404.html
 
       # Step 8: Deploy
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./dist
-          force_orphan: true
+          branch: gh-pages
+          folder: dist
+          clean: true

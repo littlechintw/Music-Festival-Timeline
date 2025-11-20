@@ -5,33 +5,35 @@
     <div v-else>
       <div class="mb-4 rounded-lg p-4" :style="headerStyle">
         <h1 class="text-2xl font-bold">{{ festival.name }}</h1>
-        <div class="text-gray-500 text-sm">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}</div>
+        <div class="text-gray-500 text-sm">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}
+        </div>
         <div class="text-sm">{{ festival.location.name }}｜{{ festival.location.address }}</div>
       </div>
       <div class="flex gap-2 mb-4">
         <button @click="goTimeline" class="px-4 py-2 rounded bg-blue-600 text-white">查看全日時間軸</button>
-        <button v-if="festival.map && festival.map.image" @click="goMap" class="px-4 py-2 rounded bg-green-600 text-white">查看場地地圖</button>
+        <button v-if="festival.map && festival.map.image" @click="goMap"
+          class="px-4 py-2 rounded bg-green-600 text-white">查看場地地圖</button>
       </div>
       <div class="mb-4">
         <h2 class="font-bold mb-2">舞台與演出</h2>
         <div v-for="stage in festival.stages" :key="stage.id" class="mb-6">
           <h3 class="font-semibold text-lg mb-3">{{ stage.name }}</h3>
-          <div v-for="(dayPerformances, dayKey) in groupPerformancesByDay(stage.performances)" :key="dayKey" class="mb-4">
+          <div v-for="(dayPerformances, dayKey) in groupPerformancesByDay(stage.performances)" :key="dayKey"
+            class="mb-4">
             <div class="bg-gray-100 px-3 py-2 rounded-t font-medium text-sm text-gray-700">
               {{ formatDayHeader(dayKey) }}
             </div>
             <div class="border border-t-0 rounded-b p-3">
-              <div v-for="perf in dayPerformances" :key="perf.artist + perf.start" class="flex flex-row items-center gap-2 mb-2 last:mb-0">
+              <div v-for="perf in dayPerformances" :key="perf.artist + perf.start"
+                class="flex flex-row items-center gap-2 mb-2 last:mb-0">
                 <div class="flex-1 min-w-0">
                   <span class="font-mono text-sm text-gray-600">{{ formatTimeRange(perf.start, perf.end) }}</span>
                   <span class="ml-3 font-bold">{{ perf.artist }}</span>
                   <span v-if="perf.description" class="ml-2 text-gray-400 text-xs">({{ perf.description }})</span>
                 </div>
-                <button
-                  @click="togglePlan(stage, perf)"
+                <button @click="togglePlan(stage, perf)"
                   class="ml-2 px-3 py-1 rounded text-xs shrink-0 transition-colors"
-                  :class="isInPlan(stage, perf) ? 'bg-gray-500 hover:bg-gray-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'"
-                >
+                  :class="isInPlan(stage, perf) ? 'bg-gray-500 hover:bg-gray-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'">
                   {{ isInPlan(stage, perf) ? '已加入（點擊移除）' : '加入我的行程' }}
                 </button>
               </div>
@@ -95,12 +97,12 @@ function groupPerformancesByDay(performances) {
     }
     grouped[dateKey].push(perf);
   });
-  
+
   // 按時間排序每天的表演
   Object.keys(grouped).forEach(dateKey => {
     grouped[dateKey].sort((a, b) => new Date(a.start) - new Date(b.start));
   });
-  
+
   return grouped;
 }
 
@@ -165,7 +167,7 @@ onMounted(async () => {
       try {
         const mod = await files[path]();
         loaded.push(mod.default);
-      } catch (e) {}
+      } catch (e) { }
     }
     store.$patch({ festivals: loaded });
     loading.value = false;
@@ -175,5 +177,4 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
