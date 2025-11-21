@@ -1,7 +1,7 @@
 {
   "festivalId": "fireball-festival-2025",
   "name": "火球祭 Fireball Festival 2025",
-  "startTime": "2025-11-22T10:30:00+08:00",
+  "startTime": "2025-11-22T09:00:00+08:00",
   "endTime": "2025-11-23T22:00:00+08:00",
   "theme": {
     "primary": "#FF4500",
@@ -11,9 +11,9 @@
   "location": {
     "name": "桃園樂天棒球場",
     "address": "桃園市中壢區領航北路一段1號",
-    "latitude": 25.0163,
-    "longitude": 121.3010
-  },
+    "latitude": 25.0017974,
+    "longitude": 121.2011881
+ },
   "stages": [{
       "id": "fire-stage",
       "name": "火舞台",
