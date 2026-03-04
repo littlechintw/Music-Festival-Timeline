@@ -25,6 +25,8 @@ jobs:
 
     - name: Build
       run: npm run build
+      env:
+        VITE_GAS_URL: ${{ secrets.VITE_GAS_URL }}
     
     - name: Copy 404.html
       run: cp dist/index.html dist/404.html
