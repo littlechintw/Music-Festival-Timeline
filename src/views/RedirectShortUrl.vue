@@ -38,6 +38,35 @@
         </div>
       </div>
     </div>
+
+    <!-- 失效通知 Modal -->
+    <div v-if="displayInvalidMessage" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click="displayInvalidMessage = ''">
+      <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full text-center" @click.stop>
+        <div class="text-4xl mb-4">⚠️</div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">部分行程失效</h3>
+        <p class="text-gray-600 mb-6 text-left leading-relaxed">{{ displayInvalidMessage }}</p>
+        <button @click="displayInvalidMessage = ''" class="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+          我知道了
+        </button>
+      </div>
+    </div>
+
+    <!-- 成功通知 Modal -->
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click="finishImport">
+      <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full text-center" @click.stop>
+        <div class="text-4xl mb-4 text-green-500">
+          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">匯入成功！</h3>
+        <p class="text-gray-600 mb-6">您的行程已成功更新</p>
+        <button @click="finishImport" class="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+          查看行程
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -55,6 +84,8 @@ const error = ref('');
 const isAsking = ref(false);
 const festivalName = ref('');
 const parsedPlan = ref([]);
+const displayInvalidMessage = ref('');
+const showSuccessModal = ref(false);
 
 const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
@@ -72,6 +103,7 @@ function formatTime(dateStr) {
 async function parsePlanSharedData(rawText) {
   try {
     let newPlan = [];
+    let invalidCount = 0;
     const parts = rawText.split(';');
     const festId = parts[0];
     
@@ -121,9 +153,17 @@ async function parsePlanSharedData(rawText) {
               festivalName: fest.name,
               id: fest.festivalId + '_' + stage.name + '_' + perf.artist + '_' + perf.start,
             });
+          } else {
+            invalidCount++;
           }
         });
+      } else {
+        invalidCount += times.length;
       }
+    }
+
+    if (invalidCount > 0) {
+      displayInvalidMessage.value = `有 ${invalidCount} 個行程已經失效，僅會匯入部分有效行程`;
     }
 
     if (!newPlan.length) {
@@ -143,7 +183,11 @@ async function parsePlanSharedData(rawText) {
 function handleImport() {
   planStore.myPlan = parsedPlan.value;
   planStore.savePlan();
-  alert('匯入成功！');
+  showSuccessModal.value = true;
+}
+
+function finishImport() {
+  showSuccessModal.value = false;
   router.replace({ path: '/plan' });
 }
 

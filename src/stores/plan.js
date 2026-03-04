@@ -12,6 +12,7 @@ export const usePlanStore = defineStore('plan', {
     lastOpenedFestival: null,
     schemaVersion: SCHEMA_VERSION,
     themeOverride: localStorage.getItem('theme-override') || null,
+    invalidShows: [],
   }),
   actions: {
     addPerformance(perf) {
@@ -85,6 +86,55 @@ export const usePlanStore = defineStore('plan', {
         // Example: migrate old data here
         this.schemaVersion = SCHEMA_VERSION;
         this.saveMeta();
+      }
+    },
+    validatePlan(festivals) {
+      if (!festivals || festivals.length === 0) return;
+      
+      let changed = false;
+      const invalidShows = [];
+      const validPlan = [];
+
+      for (const perf of this.myPlan) {
+        const fest = festivals.find(f => f.festivalId === perf.festivalId);
+        if (!fest) {
+          validPlan.push(perf);
+          continue;
+        }
+
+        const stage = fest.stages.find(s => s.name === perf.stage);
+        if (!stage) {
+          invalidShows.push(perf);
+          changed = true;
+          continue;
+        }
+
+        const originalStart = new Date(perf.start).getTime();
+        const originalEnd = new Date(perf.end).getTime();
+        const match = stage.performances.find(p => p.artist === perf.artist);
+
+        if (!match) {
+          invalidShows.push(perf);
+          changed = true;
+          continue;
+        }
+
+        const matchStart = new Date(match.start).getTime();
+        const matchEnd = new Date(match.end).getTime();
+
+        if (matchStart !== originalStart || (matchEnd && matchEnd !== originalEnd)) {
+          invalidShows.push(perf);
+          changed = true;
+          continue;
+        }
+
+        validPlan.push(perf);
+      }
+
+      if (changed) {
+        this.myPlan = validPlan;
+        this.savePlan();
+        this.invalidShows = invalidShows;
       }
     },
   },
