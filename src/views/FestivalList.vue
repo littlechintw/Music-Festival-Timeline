@@ -25,16 +25,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useFestivalStore } from '../stores/festival';
+import { useSettingsStore } from '../stores/settings';
 import { useRouter } from 'vue-router';
 
 const store = useFestivalStore();
+const settingsStore = useSettingsStore();
 const router = useRouter();
 const search = ref('');
 const sortBy = ref('date');
 const loading = ref(false);
 
 function formatDate(str) {
-  return new Date(str).toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short' });
+  return new Date(str).toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
 }
 
 function btnClass(type) {

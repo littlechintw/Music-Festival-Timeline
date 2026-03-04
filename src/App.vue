@@ -11,7 +11,29 @@
 </template>
 
 <script setup>
-// App root
+import { onMounted } from 'vue';
+import { useFestivalStore } from './stores/festival';
+import { startReminderService } from './utils/reminders';
+
+const festivalStore = useFestivalStore();
+
+onMounted(async () => {
+  // 自動載入基本的音樂祭資料，這樣首頁外的地方也能通知
+  if (!Array.isArray(festivalStore.getFestivals) || festivalStore.getFestivals.length === 0) {
+    const files = import.meta.glob('../festivals/*.json');
+    const loaded = [];
+    for (const path in files) {
+      try {
+        const mod = await files[path]();
+        loaded.push(mod.default);
+      } catch (err) {}
+    }
+    festivalStore.festivals = loaded;
+  }
+  
+  // 啟動提醒服務
+  startReminderService();
+});
 </script>
 
 <style>

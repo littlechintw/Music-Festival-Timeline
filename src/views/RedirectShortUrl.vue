@@ -46,6 +46,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
+import { useSettingsStore } from '../stores/settings';
 
 const route = useRoute();
 const router = useRouter();
@@ -57,6 +58,7 @@ const parsedPlan = ref([]);
 
 const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
+const settingsStore = useSettingsStore();
 
 const previewList = computed(() => {
   return parsedPlan.value.slice(0, 5);
@@ -64,7 +66,7 @@ const previewList = computed(() => {
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
-  return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
 }
 
 async function parsePlanSharedData(rawText) {

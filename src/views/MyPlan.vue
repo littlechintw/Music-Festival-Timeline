@@ -155,9 +155,11 @@ import { generateICS } from '../utils/ics';
 import { googleCalendarLinks } from '../utils/calendar';
 import { compressToUrl, decompressFromUrl } from '../utils/url';
 import { useFestivalStore } from '../stores/festival';
+import { useSettingsStore } from '../stores/settings';
 
 const planStore = usePlanStore();
 const festivalStore = useFestivalStore();
+const settingsStore = useSettingsStore();
 const plan = ref([]);
 const currentTime = ref(new Date()); // 響應式的當前時間
 let timeUpdateInterval = null;
@@ -253,7 +255,7 @@ const planDays = computed(() => {
       while (current <= endTime) {
         timeSlots.push({
           timestamp: current.getTime(),
-          time: current.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+          time: current.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })
         });
         current.setMinutes(current.getMinutes() + 10);
       }
@@ -291,19 +293,19 @@ const planDays = computed(() => {
 
 function formatDate(str, timeOnly = false) {
   const d = new Date(str);
-  if (timeOnly) return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short' });
+  if (timeOnly) return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
+  return d.toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
 }
 
 function formatTime(dateStr) {
   const date = new Date(dateStr);
-  return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
 }
 
 function formatTimeRange(startStr, endStr) {
   const start = new Date(startStr);
   const end = new Date(endStr || startStr);
-  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })}`;
 }
 
 function getTimelineStyle(day) {
@@ -350,7 +352,7 @@ function getPerformanceGridStyle(perf, stageIndex, day) {
 }
 
 function getCurrentTimeString() {
-  return currentTime.value.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+  return currentTime.value.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
 }
 
 function getPerformanceCardClass(perf) {

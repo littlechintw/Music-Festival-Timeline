@@ -54,12 +54,15 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
+import { useSettingsStore } from '../stores/settings';
 
 
 const route = useRoute();
 const router = useRouter();
 const store = useFestivalStore();
 const planStore = usePlanStore();
+const settingsStore = useSettingsStore();
+
 const loading = ref(false);
 const headerStyle = ref({});
 
@@ -70,14 +73,14 @@ const festival = computed(() => {
 
 function formatDate(str, timeOnly = false) {
   const d = new Date(str);
-  if (timeOnly) return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short' });
+  if (timeOnly) return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
+  return d.toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
 }
 
 function formatTimeRange(startStr, endStr) {
   const start = new Date(startStr);
   const end = new Date(endStr);
-  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })}`;
 }
 
 function formatDayHeader(dateStr) {

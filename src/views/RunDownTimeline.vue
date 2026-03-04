@@ -63,10 +63,12 @@ import { computed, ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
+import { useSettingsStore } from '../stores/settings';
 
 const route = useRoute();
 const store = useFestivalStore();
 const planStore = usePlanStore();
+const settingsStore = useSettingsStore();
 const selectedDay = ref('');
 const loading = ref(false);
 
@@ -140,7 +142,7 @@ const currentDayTimeSlots = computed(() => {
   while (current <= endTime) {
     timeSlots.push({
       timestamp: current.getTime(),
-      time: current.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+      time: current.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })
     });
     current.setMinutes(current.getMinutes() + 10);
   }
@@ -171,7 +173,7 @@ const timelineStyle = computed(() => {
 function formatTimeRange(startStr, endStr) {
   const start = new Date(startStr);
   const end = new Date(endStr);
-  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })}`;
 }
 
 function getPerformancesForDay(stage, selectedDayStr) {
