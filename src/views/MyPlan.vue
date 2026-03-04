@@ -1,41 +1,49 @@
 <template>
   <div class="p-4 max-w-3xl mx-auto relative">
     <h1 class="text-2xl font-bold mb-4">我的行程</h1>
-    <div class="mb-4 flex gap-2" v-if="plan.length">
-      <button @click="openShareModal" :disabled="isSharing" class="px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
-        <span v-if="isSharing" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-        {{ isSharing ? '產生網址中...' : '分享行程網址' }}
-      </button>
-    </div>
+    <!-- ...existing code... -->
     <div v-if="plan.length === 0" class="text-gray-400">尚未加入任何演出</div>
     <div v-else>
       <!-- 統計資訊 -->
-      <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 mb-6 text-white">
+  <div class="bg-white rounded-xl p-6 mb-6 shadow-lg text-gray-800 relative" style="box-shadow: 0 4px 24px 0 rgba(30,64,175,0.10), 0 0px 8px 0 rgba(30,64,175,0.10);">
+        <!-- 桌面版：右上角浮動按鈕 -->
+  <button v-if="plan.length" @click="openShareModal" :disabled="isSharing" class="absolute top-2 right-6 px-3 py-1 rounded border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 shadow-sm hidden md:inline-flex">
+          <span v-if="isSharing" class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
+          {{ isSharing ? '產生網址中...' : '分享行程網址' }}
+        </button>
+        <!-- 手機版：區塊底部寬度 100% 按鈕 -->
+  <button v-if="plan.length" @click="openShareModal" :disabled="isSharing" class="block w-full mt-2 mb-4 px-3 py-2 rounded border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm md:hidden">
+          <span v-if="isSharing" class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
+          {{ isSharing ? '產生網址中...' : '分享行程網址' }}
+        </button>
         <!-- <h2 class="text-2xl font-bold mb-2">我的音樂祭行程</h2> -->
-        <div class="flex gap-6 text-sm">
+  <div class="flex flex-wrap gap-6 text-sm mt-2">
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
                 clip-rule="evenodd"></path>
             </svg>
-            <span>總共 {{ plan.length }} 場演出</span>
+            <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">{{ plan.length }}</span>
+            <span>場演出</span>
           </div>
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd"
                 d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zM4 7h12v9a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"
                 clip-rule="evenodd"></path>
             </svg>
-            <span>{{ planDays.length }} 天行程</span>
+            <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">{{ planDays.length }}</span>
+            <span>天行程</span>
           </div>
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd"
                 d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
                 clip-rule="evenodd"></path>
             </svg>
-            <span>{{ uniqueFestivals.length }} 個音樂祭</span>
+            <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">{{ uniqueFestivals.length }}</span>
+            <span>個音樂祭</span>
           </div>
         </div>
       </div>
@@ -55,8 +63,8 @@
 
       <!-- 單日時間軸 -->
       <div v-for="day in planDays" :key="day.dateKey" v-show="selectedPlanDay === day.dateKey"
-        class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-6">
+  class="bg-white rounded-xl shadow-lg overflow-hidden">
+  <div class="bg-blue-600 text-white px-6 py-6">
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-2xl font-bold">{{ day.label }}</h3>
