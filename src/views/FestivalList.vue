@@ -9,7 +9,9 @@
     <div v-if="loading">載入中...</div>
     <div v-else>
       <div v-for="festival in filteredFestivals" :key="festival.festivalId"
-        class="border rounded p-4 mb-4 hover:bg-gray-50 cursor-pointer" @click="goDetail(festival.festivalId)">
+        class="border rounded p-4 mb-4 cursor-pointer transition-colors"
+        :class="festival.isFar ? 'opacity-50 bg-gray-100 grayscale hover:bg-gray-200' : 'hover:bg-gray-50'"
+        @click="goDetail(festival.festivalId)">
         <div class="font-bold text-lg">{{ festival.name }}</div>
         <div class="text-sm text-gray-500">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}
         </div>
@@ -48,6 +50,17 @@ function goDetail(id) {
 
 const filteredFestivals = computed(() => {
   let arr = store.getFestivals || [];
+  const now = new Date();
+  const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+  arr = arr.map(f => {
+    const startTime = new Date(f.startTime);
+    const endTime = f.endTime ? new Date(f.endTime) : startTime;
+    // 判斷是否「已經結束」或是「距離現在還有超過30天」
+    const isFar = endTime < now || (startTime - now) > thirtyDays;
+    return { ...f, isFar };
+  });
+
   if (search.value) {
     const s = search.value.toLowerCase();
     arr = arr.filter(f =>
@@ -55,11 +68,23 @@ const filteredFestivals = computed(() => {
       f.location.address.toLowerCase().includes(s)
     );
   }
-  if (sortBy.value === 'date') {
-    arr = arr.slice().sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
-  } else if (sortBy.value === 'name') {
-    arr = arr.slice().sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
-  }
+
+  arr = arr.slice().sort((a, b) => {
+    // 優先把已經結束或是超過30天的放下面
+    if (a.isFar !== b.isFar) {
+      return a.isFar ? 1 : -1;
+    }
+    const aStart = new Date(a.startTime);
+    const bStart = new Date(b.startTime);
+    if (sortBy.value === 'date') {
+      // 兩者都是剛過或兩者都在30天內，距離現在越近的放越上面
+      return Math.abs(aStart - now) - Math.abs(bStart - now);
+    } else if (sortBy.value === 'name') {
+      return a.name.localeCompare(b.name, 'zh-Hant');
+    }
+    return 0;
+  });
+
   return arr;
 });
 

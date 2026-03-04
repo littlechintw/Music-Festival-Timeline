@@ -28,26 +28,30 @@
       <div class="timeline-scroll-container">
         <div class="timeline-container" :style="timelineStyle">
           <!-- 表頭 - 舞台名稱 -->
-          <div class="timeline-header">
-            <div class="time-column-header">時間</div>
-            <div v-for="stage in festival.stages" :key="stage.id" class="stage-column-header">
-              {{ stage.name }}
-            </div>
+          <div class="time-column-header" style="grid-column: 1; grid-row: 1;">時間</div>
+          <div v-for="(stage, index) in festival.stages" :key="stage.id" class="stage-column-header" :style="{ gridColumn: index + 2, gridRow: 1 }">
+            {{ stage.name }}
           </div>
 
-          <!-- 時間行 -->
-          <div v-for="timeSlot in currentDayTimeSlots" :key="timeSlot.time" class="timeline-row">
-            <div class="time-cell">{{ timeSlot.time }}</div>
-            <div v-for="stage in festival.stages" :key="stage.id" class="performance-cell">
-              <div v-for="perf in getPerformanceAt(stage, timeSlot.timestamp)" :key="perf.artist + perf.start"
-                class="performance-block" :style="getPerformanceStyle(perf, timeSlot.timestamp)"
-                @click="togglePlan(stage, perf)"
-                :class="isInPlan(stage, perf) ? 'performance-selected' : 'performance-available'">
-                <div class="performance-artist">{{ perf.artist }}</div>
-                <div class="performance-time">{{ formatTimeRange(perf.start, perf.end) }}</div>
-              </div>
+          <!-- 時間行背景與標籤 -->
+          <template v-for="(timeSlot, i) in currentDayTimeSlots" :key="timeSlot.time">
+            <div class="time-cell" :style="{ gridColumn: 1, gridRow: i + 2 }">
+              <span v-if="i > 0">{{ timeSlot.time }}</span>
             </div>
-          </div>
+            <div v-for="(_, index) in festival.stages" :key="'bg-'+index+'-'+i" class="grid-bg-cell" :style="{ gridColumn: index + 2, gridRow: i + 2 }"></div>
+          </template>
+
+          <!-- 演出區塊 (跨越 Grid 區域) -->
+          <template v-for="(stage, stageIndex) in festival.stages" :key="'perf-col-'+stage.id">
+            <div v-for="perf in getPerformancesForDay(stage, selectedDay)" :key="perf.artist + perf.start"
+              class="performance-block relative m-1 rounded p-2 text-sm shadow cursor-pointer transition-transform hover:scale-[1.02]"
+              :style="getPerformanceGridStyle(perf, stageIndex)"
+              @click="togglePlan(stage, perf)"
+              :class="isInPlan(stage, perf) ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-800 border-l-4 border-blue-600 hover:bg-blue-100'">
+              <div class="font-bold">{{ perf.artist }}</div>
+              <div class="text-xs opacity-80">{{ formatTimeRange(perf.start, perf.end) }}</div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -100,51 +104,67 @@ watch(festivalDays, (newDays) => {
   }
 }, { immediate: true });
 
-// 生成當前選中日期的時間槽
+// 生成當前選中日期的時間槽 (10分鐘區隔)
 const currentDayTimeSlots = computed(() => {
   if (!festival.value || !selectedDay.value) return [];
 
   const selectedDate = new Date(selectedDay.value);
-  const timeSlots = [];
+  let minTime = null;
+  let maxTime = null;
 
-  // 找出當天所有表演的開始和結束時間
-  const allTimes = new Set();
+  // 找出當天最早和最晚的表演時間
   festival.value.stages.forEach(stage => {
     stage.performances.forEach(perf => {
       const perfDate = new Date(perf.start);
       if (perfDate.toDateString() === selectedDate.toDateString()) {
-        const start = new Date(perf.start);
-        const end = new Date(perf.end);
-
-        // 以15分鐘為單位生成時間點
-        const current = new Date(start);
-        current.setMinutes(Math.floor(current.getMinutes() / 15) * 15, 0, 0);
-
-        while (current <= end) {
-          allTimes.add(current.getTime());
-          current.setMinutes(current.getMinutes() + 15);
-        }
+        const start = new Date(perf.start).getTime();
+        const end = new Date(perf.end).getTime();
+        if (!minTime || start < minTime) minTime = start;
+        if (!maxTime || end > maxTime) maxTime = end;
       }
     });
   });
 
-  // 轉換為排序的時間槽陣列
-  return Array.from(allTimes)
-    .sort((a, b) => a - b)
-    .map(timestamp => ({
-      timestamp,
-      time: new Date(timestamp).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
-    }));
+  if (!minTime || !maxTime) return [];
+
+  const timeSlots = [];
+  // 基準化最早時間到整點或最近的 10 分鐘，並刻意提早 20 分鐘作為頂部緩衝
+  const startTime = new Date(minTime);
+  startTime.setMinutes(Math.floor(startTime.getMinutes() / 10) * 10 - 20, 0, 0);
+
+  // 加上一些緩衝，刻意延後 20 分鐘作為底部緩衝
+  const endTime = new Date(maxTime);
+  endTime.setMinutes(Math.ceil(endTime.getMinutes() / 10) * 10 + 20, 0, 0);
+
+  let current = new Date(startTime);
+  while (current <= endTime) {
+    timeSlots.push({
+      timestamp: current.getTime(),
+      time: current.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+    });
+    current.setMinutes(current.getMinutes() + 10);
+  }
+
+  return timeSlots;
 });
 
 // 計算時間軸樣式
 const timelineStyle = computed(() => {
   const stageCount = festival.value?.stages.length || 0;
+  const slotsCount = currentDayTimeSlots.value.length || 0;
+  
+  // 第一列為 Header，第二列為第一個時間網格，其他為剩餘時間網格
+  // 我們讓第一個時間網格高度變矮 (例如 20px) 或甚至隱藏不佔空間，其餘每格 40px
+  const gridRows = slotsCount > 0 
+    ? `auto 20px repeat(${Math.max(0, slotsCount - 1)}, 40px)`
+    : 'auto';
+
   return {
     display: 'grid',
-    gridTemplateColumns: `120px repeat(${stageCount}, 1fr)`,
-    gap: '1px',
-    backgroundColor: '#e5e7eb'
+    gridTemplateColumns: `var(--time-col-width, 80px) repeat(${stageCount}, minmax(var(--stage-col-width, 0), 1fr))`,
+    gridTemplateRows: gridRows,
+    backgroundColor: '#e5e7eb',
+    gap: '1px'
   };
 });
 
@@ -154,27 +174,34 @@ function formatTimeRange(startStr, endStr) {
   return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
-function getPerformanceAt(stage, timestamp) {
-  const time = new Date(timestamp);
+function getPerformancesForDay(stage, selectedDayStr) {
+  const selectedDateStr = new Date(selectedDayStr).toDateString();
   return stage.performances.filter(perf => {
-    const start = new Date(perf.start);
-    const end = new Date(perf.end);
-    return time >= start && time < end;
+    return new Date(perf.start).toDateString() === selectedDateStr;
   });
 }
 
-function getPerformanceStyle(perf, currentTimestamp) {
-  const start = new Date(perf.start);
-  const end = new Date(perf.end);
-  const current = new Date(currentTimestamp);
+function getPerformanceGridStyle(perf, stageIndex) {
+  const start = new Date(perf.start).getTime();
+  const end = new Date(perf.end).getTime();
+  
+  const slots = currentDayTimeSlots.value;
+  if (!slots.length) return {};
 
-  // 計算在當前時間槽中的位置和高度
-  const durationMinutes = (end - start) / (1000 * 60);
-  const slotsCount = Math.ceil(durationMinutes / 15);
+  const baseTime = slots[0].timestamp;
+  // 每個 row 是 10 分鐘，從 gridRow 2 開始
+  const msPerSlot = 10 * 60 * 1000;
+  
+  // 計算開始落在第幾個 row (相對 baseTime)
+  const offsetRows = (start - baseTime) / msPerSlot;
+  const startRow = Math.round(offsetRows) + 2;
+  
+  const spanRows = Math.round((end - start) / msPerSlot);
 
   return {
-    minHeight: `${Math.max(slotsCount * 20, 60)}px`,
-    position: 'relative'
+    gridColumn: stageIndex + 2,
+    gridRow: `${startRow} / span ${Math.max(1, spanRows)}`,
+    zIndex: 10
   };
 }
 
@@ -232,17 +259,21 @@ onMounted(async () => {
 <style scoped>
 .timeline-scroll-container {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
   -webkit-overflow-scrolling: touch;
   /* iOS 滑動優化 */
   scrollbar-width: thin;
   /* Firefox 滾動條樣式 */
   scrollbar-color: #d1d5db #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
 }
 
 /* Webkit 滾動條樣式 (Chrome, Safari) */
 .timeline-scroll-container::-webkit-scrollbar {
   height: 8px;
+  width: 8px;
 }
 
 .timeline-scroll-container::-webkit-scrollbar-track {
@@ -260,12 +291,8 @@ onMounted(async () => {
 }
 
 .timeline-container {
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  overflow: hidden;
   background: white;
-  min-width: 800px;
-  /* 確保在小螢幕上有最小寬度 */
+  min-width: 100%;
 }
 
 .timeline-header {
@@ -281,7 +308,8 @@ onMounted(async () => {
   text-align: center;
   position: sticky;
   top: 0;
-  z-index: 10;
+  left: 0;
+  z-index: 30; /* 必須高於 time-cell 與 stage-column-header */
 }
 
 .stage-column-header {
@@ -293,123 +321,59 @@ onMounted(async () => {
   text-align: center;
   position: sticky;
   top: 0;
-  z-index: 10;
-}
-
-.timeline-row {
-  display: contents;
+  z-index: 20;
 }
 
 .time-cell {
-  background: #f9fafb;
-  padding: 0.5rem;
+  background: white;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  text-align: center;
-  border-right: 1px solid #d1d5db;
-  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
   position: sticky;
   left: 0;
-  z-index: 5;
+  z-index: 15;
 }
 
-.performance-cell {
+.time-cell span {
+  transform: translateY(-50%);
   background: white;
-  padding: 0.25rem;
-  border-right: 1px solid #d1d5db;
-  border-bottom: 1px solid #e5e7eb;
-  min-height: 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  padding: 0 4px;
 }
 
-.performance-block {
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 2px solid transparent;
-  flex: 1;
-  min-height: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* 網格背景小撇步 */
+.grid-bg-cell {
+  background: white;
+  border-right: 1px solid #f3f4f6;
+  border-top: 1px dashed #e5e7eb;
 }
 
-.performance-available {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  border-color: #3b82f6;
-}
-
-.performance-available:hover {
-  background: linear-gradient(135deg, #bfdbfe, #93c5fd);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.performance-selected {
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  border-color: #10b981;
-}
-
-.performance-selected:hover {
-  background: linear-gradient(135deg, #bbf7d0, #86efac);
-}
-
-.performance-artist {
-  font-weight: 600;
-  font-size: 0.875rem;
-  line-height: 1.2;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-}
-
-.performance-time {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-family: 'Courier New', monospace;
+.grid-bg-cell:nth-child(even) {
+  background: #fafafa;
 }
 
 /* 響應式設計 */
 @media (max-width: 768px) {
   .timeline-container {
+    --stage-col-width: 70px;
+    --time-col-width: 55px;
     font-size: 0.75rem;
-    min-width: 1000px;
-    /* 手機版增加最小寬度確保滑動空間 */
+    min-width: 100%;
   }
 
   .stage-column-header,
   .time-column-header {
-    min-width: 100px;
     padding: 0.5rem 0.25rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .time-cell {
-    min-width: 80px;
     padding: 0.375rem 0.25rem;
-    font-size: 0.75rem;
-  }
-
-  .performance-cell {
-    min-width: 100px;
-    padding: 0.125rem;
-  }
-
-  .performance-block {
-    padding: 0.375rem;
-    min-height: 45px;
-  }
-
-  .performance-artist {
-    font-size: 0.75rem;
-    line-height: 1.1;
-  }
-
-  .performance-time {
-    font-size: 0.625rem;
+    font-size: 0.7rem;
   }
 
   /* 手機版滑動提示動畫 */
@@ -432,21 +396,9 @@ onMounted(async () => {
 
 @media (max-width: 480px) {
   .timeline-container {
-    min-width: 1200px;
-    /* 超小螢幕增加更多滑動空間 */
-  }
-
-  .stage-column-header,
-  .time-column-header {
-    min-width: 120px;
-  }
-
-  .time-cell {
-    min-width: 100px;
-  }
-
-  .performance-cell {
-    min-width: 120px;
+    --stage-col-width: 80px;
+    --time-col-width: 55px;
+    min-width: 100%;
   }
 }
 </style>

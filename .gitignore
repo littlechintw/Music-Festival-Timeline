@@ -65,3 +65,6 @@ Temporary Items
 # PWA related
 workbox-*.js
 sw.js
+
+# Mac Trash
+.DS_Store

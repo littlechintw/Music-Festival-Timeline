@@ -6,6 +6,7 @@ import Settings from '../views/Settings.vue';
 import Editor from '../editor/EditorView.vue';
 import RunDownTimeline from '../views/RunDownTimeline.vue';
 import MapView from '../views/MapView.vue';
+import RedirectShortUrl from '../views/RedirectShortUrl.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: FestivalList },
@@ -15,6 +16,7 @@ const routes = [
   { path: '/settings', name: 'Settings', component: Settings },
   { path: '/editor', name: 'Editor', component: Editor },
   { path: '/festival/:id/map', name: 'MapView', component: MapView },
+  { path: '/:shortId([a-zA-Z0-9]{3})', name: 'RedirectShortUrl', component: RedirectShortUrl }
 ];
 
 const router = createRouter({
