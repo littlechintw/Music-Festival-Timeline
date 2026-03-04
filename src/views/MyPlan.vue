@@ -88,6 +88,18 @@
               <div v-for="(_, index) in day.stages" :key="'bg-'+index+'-'+i" class="grid-bg-cell" :style="{ gridColumn: index + 2, gridRow: i + 2 }"></div>
             </template>
 
+            <!-- 現在時間指示線 -->
+            <div v-if="day.isToday && getCurrentTimeOffset(day) !== null"
+                 class="flex flex-row items-start z-30 pointer-events-none w-full"
+                 :style="getCurrentTimeLineStyle(day)">
+              <div class="text-red-500 bg-red-50 px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1">
+                {{ formatTimeOnly(currentTime) }}
+              </div>
+              <div class="flex-1 border-t-[3px] border-red-500 relative transform -translate-y-1/2">
+                  <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-red-500 absolute top-1/2 -left-1 transform -translate-y-1/2"></div>
+              </div>
+            </div>
+
             <!-- 演出區塊 (跨越 Grid 區域) -->
             <template v-for="(stage, stageIndex) in day.stages" :key="'perf-col-'+stage">
               <div v-for="perf in getPerformancesForStage(day, stage)" :key="perf.id"
@@ -297,6 +309,11 @@ function formatDate(str, timeOnly = false) {
   return d.toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
 }
 
+function formatTimeOnly(dateObj) {
+  if (!dateObj) return '';
+  return dateObj.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
+}
+
 function formatTime(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
@@ -353,6 +370,41 @@ function getPerformanceGridStyle(perf, stageIndex, day) {
 
 function getCurrentTimeString() {
   return currentTime.value.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
+}
+
+function getCurrentTimeOffset(day) {
+  if (!day || !day.isToday) return null;
+  const slots = day.timeSlots || [];
+  if (!slots.length) return null;
+  
+  const nowMs = currentTime.value.getTime();
+  const baseTime = slots[0].timestamp;
+  const lastTime = slots[slots.length - 1].timestamp;
+
+  // 加上一些寬限，不要超過最後一個時間槽太多
+  if (nowMs < baseTime || nowMs > lastTime + 10 * 60 * 1000) return null;
+
+  const msPerSlot = 10 * 60 * 1000;
+  return (nowMs - baseTime) / msPerSlot;
+}
+
+function getCurrentTimeLineStyle(day) {
+  const offsetRows = getCurrentTimeOffset(day);
+  if (offsetRows === null) return { display: 'none' };
+  
+  const startRow = Math.floor(offsetRows) + 2;
+  const fraction = offsetRows - Math.floor(offsetRows);
+  
+  // 第一列 (Header) 自適應，第二列 (第一個時間槽) 為 20px，之後均為 40px
+  const rowHeight = startRow === 2 ? 20 : 40;
+  const topOffset = fraction * rowHeight;
+  
+  return {
+    gridColumn: '1 / -1',
+    gridRow: startRow,
+    position: 'relative',
+    top: `${topOffset}px`
+  };
 }
 
 function getPerformanceCardClass(perf) {

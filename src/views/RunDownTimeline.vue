@@ -41,6 +41,18 @@
             <div v-for="(_, index) in festival.stages" :key="'bg-'+index+'-'+i" class="grid-bg-cell" :style="{ gridColumn: index + 2, gridRow: i + 2 }"></div>
           </template>
 
+          <!-- 現在時間指示線 -->
+          <div v-if="isToday && getCurrentTimeOffset() !== null"
+               class="flex flex-row items-start z-30 pointer-events-none w-full"
+               :style="getCurrentTimeLineStyle()">
+            <div class="text-red-500 bg-red-50 px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1">
+              {{ formatTimeOnly(currentTime) }}
+            </div>
+            <div class="flex-1 border-t-[3px] border-red-500 relative transform -translate-y-1/2">
+                <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-red-500 absolute top-1/2 -left-1 transform -translate-y-1/2"></div>
+            </div>
+          </div>
+
           <!-- 演出區塊 (跨越 Grid 區域) -->
           <template v-for="(stage, stageIndex) in festival.stages" :key="'perf-col-'+stage.id">
             <div v-for="perf in getPerformancesForDay(stage, selectedDay)" :key="perf.artist + perf.start"
@@ -59,7 +71,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
@@ -176,6 +188,11 @@ function formatTimeRange(startStr, endStr) {
   return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })}`;
 }
 
+function formatTimeOnly(dateObj) {
+  if (!dateObj) return '';
+  return dateObj.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
+}
+
 function getPerformancesForDay(stage, selectedDayStr) {
   const selectedDateStr = new Date(selectedDayStr).toDateString();
   return stage.performances.filter(perf => {
@@ -204,6 +221,56 @@ function getPerformanceGridStyle(perf, stageIndex) {
     gridColumn: stageIndex + 2,
     gridRow: `${startRow} / span ${Math.max(1, spanRows)}`,
     zIndex: 10
+  };
+}
+
+const isToday = computed(() => {
+  if (!selectedDay.value) return false;
+  return new Date(selectedDay.value).toDateString() === new Date().toDateString();
+});
+
+const currentTime = ref(new Date());
+let timeInterval = null;
+
+onMounted(() => {
+  timeInterval = setInterval(() => {
+    currentTime.value = new Date();
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (timeInterval) clearInterval(timeInterval);
+});
+
+function getCurrentTimeOffset() {
+  const slots = currentDayTimeSlots.value || [];
+  if (!slots.length) return null;
+  
+  const nowMs = currentTime.value.getTime();
+  const baseTime = slots[0].timestamp;
+  const lastTime = slots[slots.length - 1].timestamp;
+
+  if (nowMs < baseTime || nowMs > lastTime + 10 * 60 * 1000) return null;
+
+  const msPerSlot = 10 * 60 * 1000;
+  return (nowMs - baseTime) / msPerSlot;
+}
+
+function getCurrentTimeLineStyle() {
+  const offsetRows = getCurrentTimeOffset();
+  if (offsetRows === null) return { display: 'none' };
+  
+  const startRow = Math.floor(offsetRows) + 2;
+  const fraction = offsetRows - Math.floor(offsetRows);
+  
+  const rowHeight = startRow === 2 ? 20 : 40;
+  const topOffset = fraction * rowHeight;
+  
+  return {
+    gridColumn: '1 / -1',
+    gridRow: startRow,
+    position: 'relative',
+    top: `${topOffset}px`
   };
 }
 
