@@ -128,8 +128,8 @@
         <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" @click="showGuide = false">✕</button>
         <h2 class="text-lg font-bold mb-2">如何送出音樂祭 PR？</h2>
         <ol class="list-decimal pl-5 space-y-2 text-sm">
-          <li>前往 <a href="https://github.com/doggy8088/music_time" target="_blank"
-              class="text-blue-600 underline">doggy8088/music_time</a> 並點選右上角 <b>Fork</b>，將專案複製到自己的 GitHub 帳號。</li>
+          <li>前往 <a href="https://github.com/littlechintw/Music-Festival-Timeline" target="_blank"
+              class="text-blue-600 underline">littlechintw/Music-Festival-Timeline</a> 並點選右上角 <b>Fork</b>，將專案複製到自己的 GitHub 帳號。</li>
           <li>在自己的 Fork 倉庫中，將剛剛匯出的 JSON 檔案放到 <code>/public/festivals/</code> 目錄下，並 <b>Commit</b>（請填寫上方的提交說明）。</li>
           <li>回到 GitHub，點選 <b>Pull requests</b> → <b>New pull request</b>，選擇你的分支，送出 PR。</li>
           <li>等待專案管理員審核通過，即可在主站看到你的音樂祭！</li>
