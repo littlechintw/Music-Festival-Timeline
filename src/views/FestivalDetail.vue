@@ -55,6 +55,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
 import { useSettingsStore } from '../stores/settings';
+import { trackEvent } from '../utils/analytics.js';
 
 
 const route = useRoute();
@@ -136,16 +137,26 @@ function isInPlan(stage, perf) {
 
 function togglePlan(stage, perf) {
   if (isInPlan(stage, perf)) {
-    // 移除
     planStore.removePerformance(perfKey(stage, perf));
+    trackEvent('remove_from_plan', {
+      festival_id: festival.value?.festivalId,
+      festival_name: festival.value?.name,
+      artist: perf.artist,
+      stage: stage.name,
+    });
   } else {
-    // 加入
     planStore.addPerformance({
       ...perf,
       stage: stage.name,
       festivalId: festival.value.festivalId,
       festivalName: festival.value.name,
       id: perfKey(stage, perf),
+    });
+    trackEvent('add_to_plan', {
+      festival_id: festival.value?.festivalId,
+      festival_name: festival.value?.name,
+      artist: perf.artist,
+      stage: stage.name,
     });
   }
 }
@@ -157,8 +168,14 @@ async function applyTheme() {
   headerStyle.value = {};
 }
 
-watch(festival, () => {
+watch(festival, (val) => {
   applyTheme();
+  if (val) {
+    trackEvent('view_festival', {
+      festival_id: val.festivalId,
+      festival_name: val.name,
+    });
+  }
 });
 
 onMounted(async () => {
