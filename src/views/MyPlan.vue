@@ -176,6 +176,7 @@ import { googleCalendarLinks } from '../utils/calendar';
 import { compressToUrl, decompressFromUrl } from '../utils/url';
 import { useFestivalStore } from '../stores/festival';
 import { useSettingsStore } from '../stores/settings';
+import { trackEvent } from '../utils/analytics.js';
 
 const planStore = usePlanStore();
 const festivalStore = useFestivalStore();
@@ -586,6 +587,7 @@ async function executeShare(festivalId) {
     }
 
     generatedLink.value = finalUrl;
+    trackEvent('generate_share_link', { festival_id: festivalId });
   } catch (error) {
     console.error('生成分享網址失敗:', error);
     alert('生成分享網址失敗，請稍後再試');
@@ -606,6 +608,7 @@ function copyGeneratedLink() {
   } else {
     prompt('複製以下網址分享：', generatedLink.value);
   }
+  trackEvent('copy_share_link');
 }
 
 function exportICS(perfs) {
@@ -617,6 +620,7 @@ function exportICS(perfs) {
   a.download = 'my-festival-plan.ics';
   a.click();
   URL.revokeObjectURL(url);
+  trackEvent('export_ics', { performance_count: perfs.length });
 }
 
 function exportGoogle(perfs) {
@@ -625,6 +629,7 @@ function exportGoogle(perfs) {
   for (const link of links) {
     window.open(link, '_blank');
   }
+  trackEvent('export_google_calendar', { performance_count: perfs.length });
 }
 </script>
 

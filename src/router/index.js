@@ -7,6 +7,7 @@ import Editor from '../editor/EditorView.vue';
 import RunDownTimeline from '../views/RunDownTimeline.vue';
 import MapView from '../views/MapView.vue';
 import RedirectShortUrl from '../views/RedirectShortUrl.vue';
+import { trackPageView } from '../utils/analytics.js';
 
 const routes = [
   { path: '/', name: 'Home', component: FestivalList },
@@ -22,6 +23,10 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.afterEach((to) => {
+  trackPageView(to.fullPath, String(to.name || to.fullPath));
 });
 
 export default router;
