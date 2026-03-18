@@ -12,8 +12,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: '音樂祭行程規劃',
-        short_name: '音樂祭',
+        name: '音樂祭行程安排',
+        short_name: '音樂祭行程安排',
         start_url: '.',
         display: 'standalone',
         background_color: '#ffffff',
@@ -22,19 +22,14 @@ export default defineConfig({
         lang: 'zh-TW',
         icons: [
           {
-            src: '/mf_32.ico',
-            sizes: '32x32',
-            type: 'image/x-icon',
-          },
-          {
-            src: '/mf_192.ico',
+            src: '/icon-192.png',
             sizes: '192x192',
-            type: 'image/x-icon',
+            type: 'image/png',
           },
           {
-            src: '/mf_512.ico',
+            src: '/icon-512.png',
             sizes: '512x512',
-            type: 'image/x-icon',
+            type: 'image/png',
           },
         ],
       },

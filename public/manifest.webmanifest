@@ -1,6 +1,6 @@
 {
-  "name": "音樂祭行程規劃",
-  "short_name": "音樂祭",
+  "name": "音樂祭行程安排",
+  "short_name": "音樂祭行程安排",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",

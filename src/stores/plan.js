@@ -39,8 +39,20 @@ export const usePlanStore = defineStore('plan', {
       if (!('Notification' in window)) return;
       if (Notification.permission !== 'granted') return;
       try {
-        new Notification(title, { body, tag });
-      } catch {}
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification(title, { body, tag });
+        } else {
+          new Notification(title, { body, tag });
+        }
+      } catch (err) {
+        if (import.meta.env.DEV) console.warn('[sendNotification] SW showNotification failed, falling back:', err);
+        try {
+          new Notification(title, { body, tag });
+        } catch (fallbackErr) {
+          if (import.meta.env.DEV) console.warn('[sendNotification] Fallback Notification also failed:', fallbackErr);
+        }
+      }
     },
     setLastOpenedFestival(festivalId) {
       this.lastOpenedFestival = festivalId;
