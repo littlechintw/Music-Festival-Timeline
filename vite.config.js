@@ -22,19 +22,24 @@ export default defineConfig({
         lang: 'zh-TW',
         icons: [
           {
-            src: '/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
+            src: '/mf_32.ico',
+            sizes: '32x32',
+            type: 'image/x-icon',
           },
           {
-            src: '/icon-512.png',
+            src: '/mf_192.ico',
+            sizes: '192x192',
+            type: 'image/x-icon',
+          },
+          {
+            src: '/mf_512.ico',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/x-icon',
           },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,json,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,webmanifest}'],
         runtimeCaching: [
           {
             urlPattern: /\/festivals\/.*\.json$/,
