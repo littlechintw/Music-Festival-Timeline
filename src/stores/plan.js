@@ -38,17 +38,25 @@ export const usePlanStore = defineStore('plan', {
     async sendNotification({ title, body, tag }) {
       if (!('Notification' in window)) return;
       if (Notification.permission !== 'granted') return;
+      const options = {
+        body,
+        tag,
+        renotify: true,
+        vibrate: [200, 100, 200],
+        badge: '/icon-32.png',
+        data: { priority: 'high' },
+      };
       try {
         if ('serviceWorker' in navigator) {
           const registration = await navigator.serviceWorker.ready;
-          await registration.showNotification(title, { body, tag });
+          await registration.showNotification(title, options);
         } else {
-          new Notification(title, { body, tag });
+          new Notification(title, options);
         }
       } catch (err) {
         if (import.meta.env.DEV) console.warn('[sendNotification] SW showNotification failed, falling back:', err);
         try {
-          new Notification(title, { body, tag });
+          new Notification(title, options);
         } catch (fallbackErr) {
           if (import.meta.env.DEV) console.warn('[sendNotification] Fallback Notification also failed:', fallbackErr);
         }
