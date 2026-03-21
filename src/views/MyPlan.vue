@@ -72,15 +72,27 @@
                 {{ day.count }} 場演出 • {{ day.festivalNames.join('、') }}
               </p>
             </div>
-            <div v-if="day.isToday" class="text-right">
-              <div class="text-yellow-300 text-sm font-medium">今天</div>
-              <div class="text-yellow-100 text-xs">{{ getCurrentTimeString() }}</div>
+            <div class="flex flex-col items-end gap-2">
+              <div v-if="day.isToday" class="text-right">
+                <div class="text-yellow-300 text-sm font-medium">今天</div>
+                <div class="text-yellow-100 text-xs">{{ getCurrentTimeString() }}</div>
+              </div>
+              <div v-if="day.festivalEntries && getDayFestivalsWithMap(day).length > 0" class="flex flex-wrap gap-1 justify-end">
+                <button v-for="fest in getDayFestivalsWithMap(day)" :key="fest.id"
+                  @click="goToMap(fest.id)"
+                  class="text-xs bg-white bg-opacity-20 hover:bg-opacity-30 rounded px-2 py-1 transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                  </svg>
+                  {{ getDayFestivalsWithMap(day).length > 1 ? fest.name + ' ' : '' }}場地地圖
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 甘特圖式時間軸 - 網格版本 -->
-        <div class="timeline-scroll-container">
+        <div class="timeline-scroll-container" :ref="el => { if (day.isToday && el) todayScrollContainerEl = el }">
           <div class="timeline-container" :style="getTimelineStyle(day)">
             <!-- 表頭 - 舞台名稱 -->
             <div class="time-column-header" style="grid-column: 1; grid-row: 1;">時間</div>
@@ -98,6 +110,7 @@
 
             <!-- 現在時間指示線 -->
             <div v-if="day.isToday && getCurrentTimeOffset(day) !== null"
+                 :ref="el => { if (el) todayCurrentTimeEl = el }"
                  class="flex flex-row items-start z-30 pointer-events-none w-full"
                  :style="getCurrentTimeLineStyle(day)">
               <div class="text-red-500 bg-red-50 px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1">
@@ -169,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { usePlanStore } from '../stores/plan';
 import { generateICS } from '../utils/ics';
 import { googleCalendarLinks } from '../utils/calendar';
@@ -177,15 +190,19 @@ import { compressToUrl, decompressFromUrl } from '../utils/url';
 import { useFestivalStore } from '../stores/festival';
 import { useSettingsStore } from '../stores/settings';
 import { trackEvent } from '../utils/analytics.js';
+import { useRouter } from 'vue-router';
 
 const planStore = usePlanStore();
 const festivalStore = useFestivalStore();
 const settingsStore = useSettingsStore();
+const router = useRouter();
 const plan = ref([]);
 const currentTime = ref(new Date()); // 響應式的當前時間
 let timeUpdateInterval = null;
+const todayScrollContainerEl = ref(null);
+const todayCurrentTimeEl = ref(null);
 
-onMounted(() => {
+onMounted(async () => {
   planStore.loadPlan();
   plan.value = planStore.myPlan || [];
   setInterval(() => plan.value = planStore.myPlan || [], 30 * 1000); // 自動刷新
@@ -194,6 +211,25 @@ onMounted(() => {
   timeUpdateInterval = setInterval(() => {
     currentTime.value = new Date();
   }, 1000);
+
+  // 如果節慶資料尚未載入，則載入
+  if (!Array.isArray(festivalStore.getFestivals) || festivalStore.getFestivals.length === 0) {
+    const files = import.meta.glob('../../festivals/*.json');
+    const loaded = [];
+    await Promise.all(Object.keys(files).map(async path => {
+      try {
+        const mod = await files[path]();
+        loaded.push(mod.default);
+      } catch (e) {
+        console.error('Failed to load festival file:', path, e);
+      }
+    }));
+    festivalStore.$patch({ festivals: loaded });
+  }
+
+  // 等待 DOM 更新後滾動到今天的現在時間
+  await nextTick();
+  scrollToCurrentTime();
 
   // 檢查 URL 參數是否有分享的行程，此處已棄用改移至 RedirectShortUrl.vue 處理
   // checkSharedPlanInUrl();
@@ -289,11 +325,19 @@ const planDays = computed(() => {
     const mm = String(day.date.getMonth() + 1).padStart(2, '0');
     const dd = String(day.date.getDate()).padStart(2, '0');
     
+    // 收集當天各音樂祭的 ID 與名稱
+    const festivalIdSet = [...new Set(day.performances.map(p => p.festivalId).filter(Boolean))];
+    const festivalEntries = festivalIdSet.map(id => ({
+      id,
+      name: day.performances.find(p => p.festivalId === id)?.festivalName || id
+    }));
+
     return {
       ...day,
       label: `${yyyy}.${mm}.${dd} (${weekdays[day.date.getDay()]})`,
       count: day.performances.length,
       festivalNames: Array.from(day.festivalNames),
+      festivalEntries,
       stages,
       timeSlots
     };
@@ -379,6 +423,39 @@ function getPerformanceGridStyle(perf, stageIndex, day) {
 
 function getCurrentTimeString() {
   return currentTime.value.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
+}
+
+function scrollToCurrentTime() {
+  nextTick(() => {
+    const container = todayScrollContainerEl.value;
+    if (!container) return;
+    const indicator = todayCurrentTimeEl.value || container.querySelector('.border-red-500');
+    if (!indicator) return;
+    const containerRect = container.getBoundingClientRect();
+    const indicatorRect = indicator.getBoundingClientRect();
+    const scrollTop = container.scrollTop + indicatorRect.top - containerRect.top - container.clientHeight / 3;
+    container.scrollTop = Math.max(0, scrollTop);
+  });
+}
+
+watch([planDays, selectedPlanDay], ([days, selected]) => {
+  const todayDay = days.find(d => d.isToday);
+  if (todayDay && selected === todayDay.dateKey) {
+    scrollToCurrentTime();
+  }
+});
+
+function hasFestivalMap(festivalId) {
+  const festival = (festivalStore.getFestivals || []).find(f => f.festivalId === festivalId);
+  return !!(festival?.map?.image);
+}
+
+function getDayFestivalsWithMap(day) {
+  return (day.festivalEntries || []).filter(f => hasFestivalMap(f.id));
+}
+
+function goToMap(festivalId) {
+  router.push({ name: 'MapView', params: { id: festivalId } });
 }
 
 function getCurrentTimeOffset(day) {
