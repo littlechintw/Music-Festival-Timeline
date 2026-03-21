@@ -249,6 +249,11 @@ const uniqueFestivals = computed(() => {
   return festivalNames;
 });
 
+// 音樂祭 Map，用於快速查詢（只在 getFestivals 更新時重建）
+const festivalMap = computed(() =>
+  new Map((festivalStore.getFestivals || []).map(f => [f.festivalId, f]))
+);
+
 // 按日期分組行程
 const planDays = computed(() => {
   if (!plan.value.length) return [];
@@ -285,8 +290,22 @@ const planDays = computed(() => {
     // 按時間排序當天演出
     day.performances.sort((a, b) => new Date(a.start) - new Date(b.start));
 
-    // 取得當天所有用到的舞台 (自動列為表頭)
-    const stages = [...new Set(day.performances.map(p => p.stage))].filter(Boolean);
+    // 取得當天所有用到的舞台，按照音樂祭原本的舞台順序排列
+    const festivalIds = [...new Set(day.performances.map(p => p.festivalId).filter(Boolean))];
+    const stageOrderSet = new Set();
+    festivalIds.forEach(festId => {
+      const fest = festivalMap.value.get(festId);
+      if (fest && fest.stages) {
+        fest.stages.forEach(s => stageOrderSet.add(s.name));
+      }
+    });
+    const stageIndexMap = new Map([...stageOrderSet].map((name, i) => [name, i]));
+    const stages = [...new Set(day.performances.map(p => p.stage))].filter(Boolean)
+      .sort((a, b) => {
+        const aIdx = stageIndexMap.has(a) ? stageIndexMap.get(a) : Infinity;
+        const bIdx = stageIndexMap.has(b) ? stageIndexMap.get(b) : Infinity;
+        return aIdx - bIdx;
+      });
 
     // 計算時間槽 (以 10 分鐘為一區間)
     let minTime = null;
@@ -438,12 +457,7 @@ function scrollToCurrentTime() {
   });
 }
 
-watch([planDays, selectedPlanDay], ([days, selected]) => {
-  const todayDay = days.find(d => d.isToday);
-  if (todayDay && selected === todayDay.dateKey) {
-    scrollToCurrentTime();
-  }
-});
+
 
 function hasFestivalMap(festivalId) {
   const festival = (festivalStore.getFestivals || []).find(f => f.festivalId === festivalId);
