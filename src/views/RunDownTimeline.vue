@@ -25,7 +25,7 @@
       </div>
 
       <!-- 時間軸容器 - 加強移動端滑動 -->
-      <div class="timeline-scroll-container">
+      <div class="timeline-scroll-container" ref="timelineScrollContainer">
         <div class="timeline-container" :style="timelineStyle">
           <!-- 表頭 - 舞台名稱 -->
           <div class="time-column-header" style="grid-column: 1; grid-row: 1;">時間</div>
@@ -43,6 +43,7 @@
 
           <!-- 現在時間指示線 -->
           <div v-if="isToday && getCurrentTimeOffset() !== null"
+               ref="currentTimeIndicatorEl"
                class="flex flex-row items-start z-30 pointer-events-none w-full"
                :style="getCurrentTimeLineStyle()">
             <div class="text-red-500 bg-red-50 px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1">
@@ -71,7 +72,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
@@ -83,6 +84,8 @@ const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
 const selectedDay = ref('');
 const loading = ref(false);
+const timelineScrollContainer = ref(null);
+const currentTimeIndicatorEl = ref(null);
 
 const festival = computed(() => {
   const id = route.params.id;
@@ -274,6 +277,24 @@ function getCurrentTimeLineStyle() {
   };
 }
 
+function scrollToCurrentTime() {
+  if (!isToday.value) return;
+  nextTick(() => {
+    const container = timelineScrollContainer.value;
+    if (!container) return;
+    const indicator = currentTimeIndicatorEl.value || container.querySelector('.border-red-500');
+    if (!indicator) return;
+    const containerRect = container.getBoundingClientRect();
+    const indicatorRect = indicator.getBoundingClientRect();
+    const scrollTop = container.scrollTop + indicatorRect.top - containerRect.top - container.clientHeight / 3;
+    container.scrollTop = Math.max(0, scrollTop);
+  });
+}
+
+watch([isToday, currentDayTimeSlots], ([today, slots]) => {
+  if (today && slots.length > 0) scrollToCurrentTime();
+});
+
 // 行程管理功能
 function perfKey(stage, perf) {
   return (
@@ -322,6 +343,9 @@ onMounted(async () => {
     loading.value = false;
   }
   planStore.loadPlan();
+  // 如果今天就是活動日，等資料載入後滾動到現在時間
+  await nextTick();
+  scrollToCurrentTime();
 });
 </script>
 
