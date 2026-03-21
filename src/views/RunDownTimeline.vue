@@ -291,9 +291,7 @@ function scrollToCurrentTime() {
   });
 }
 
-watch([isToday, currentDayTimeSlots], ([today, slots]) => {
-  if (today && slots.length > 0) scrollToCurrentTime();
-});
+
 
 // 行程管理功能
 function perfKey(stage, perf) {
