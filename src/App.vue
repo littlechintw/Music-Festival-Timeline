@@ -47,21 +47,15 @@ const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
 
 onMounted(async () => {
-  // 自動載入基本的音樂祭資料，這樣首頁外的地方也能通知
-  if (!Array.isArray(festivalStore.getFestivals) || festivalStore.getFestivals.length === 0) {
-    const files = import.meta.glob('../festivals/*.json');
-    const loaded = [];
-    for (const path in files) {
-      try {
-        const mod = await files[path]();
-        loaded.push(mod.default);
-      } catch (err) {}
-    }
-    festivalStore.festivals = loaded;
-  }
-  
+  await festivalStore.initializeFestivals();
   planStore.loadPlan();
-  planStore.validatePlan(festivalStore.festivals);
+
+  // Preload full festival data for any festival the user has in their plan
+  // (needed for plan validation and the reminder service)
+  const plannedFestivalIds = [...new Set((planStore.myPlan || []).map(p => p.festivalId))];
+  await Promise.all(plannedFestivalIds.map(id => festivalStore.loadFestivalDetail(id)));
+
+  planStore.validatePlan(festivalStore.getFestivals);
 
   // 啟動提醒服務
   startReminderService();

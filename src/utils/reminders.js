@@ -57,8 +57,12 @@ export function startReminderService() {
     }
 
     // 2. Check Festivals (7 days and 1 day) - ONLY for festivals in the planner
-    if (settingsStore.enableFestivalReminders && festivalStore.getFestivals && festivalStore.getFestivals.length > 0) {
-      festivalStore.getFestivals.forEach(fest => {
+    // Use festivalIndex for basic info (always available), fall back to loaded festivals
+    const allFestBasicInfo = festivalStore.festivalIndex.length > 0
+      ? festivalStore.festivalIndex.map(e => ({ festivalId: e.eventid, name: e.name, startTime: e.startTime }))
+      : festivalStore.getFestivals;
+    if (settingsStore.enableFestivalReminders && allFestBasicInfo && allFestBasicInfo.length > 0) {
+      allFestBasicInfo.forEach(fest => {
         if (!plannedFestivals.has(fest.festivalId)) return; // Skip if no performances added
 
         const startMs = new Date(fest.startTime).getTime();

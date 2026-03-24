@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 
@@ -24,10 +24,15 @@ const route = useRoute();
 const store = useFestivalStore();
 const festival = computed(() => {
   const id = route.params.id;
-  return (store.getFestivals || []).find(f => f.festivalId === id);
+  return store.festivals[id] || null;
 });
 
-async function cacheImage(e) {
+onMounted(async () => {
+  const id = route.params.id;
+  await store.loadFestivalDetail(id);
+});
+
+async function cacheImage() {
   // 觸發 Service Worker 快取
   if ('serviceWorker' in navigator && festival.value?.map?.image) {
     try {
