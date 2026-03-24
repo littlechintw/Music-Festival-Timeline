@@ -212,20 +212,9 @@ onMounted(async () => {
     currentTime.value = new Date();
   }, 1000);
 
-  // 如果節慶資料尚未載入，則載入
-  if (!Array.isArray(festivalStore.getFestivals) || festivalStore.getFestivals.length === 0) {
-    const files = import.meta.glob('../../festivals/*.json');
-    const loaded = [];
-    await Promise.all(Object.keys(files).map(async path => {
-      try {
-        const mod = await files[path]();
-        loaded.push(mod.default);
-      } catch (e) {
-        console.error('Failed to load festival file:', path, e);
-      }
-    }));
-    festivalStore.$patch({ festivals: loaded });
-  }
+  // 如果節慶資料尚未載入，則嘗試載入行程中使用的節慶資料
+  const plannedIds = [...new Set((planStore.myPlan || []).map(p => p.festivalId).filter(Boolean))];
+  await Promise.all(plannedIds.map(id => festivalStore.loadFestivalDetail(id)));
 
   // 等待 DOM 更新後滾動到今天的現在時間
   await nextTick();
@@ -249,9 +238,9 @@ const uniqueFestivals = computed(() => {
   return festivalNames;
 });
 
-// 音樂祭 Map，用於快速查詢（只在 getFestivals 更新時重建）
+// 音樂祭 Map，用於快速查詢（只在 festivals 更新時重建）
 const festivalMap = computed(() =>
-  new Map((festivalStore.getFestivals || []).map(f => [f.festivalId, f]))
+  new Map(Object.entries(festivalStore.festivals))
 );
 
 // 按日期分組行程
@@ -460,7 +449,7 @@ function scrollToCurrentTime() {
 
 
 function hasFestivalMap(festivalId) {
-  const festival = (festivalStore.getFestivals || []).find(f => f.festivalId === festivalId);
+  const festival = festivalStore.festivals[festivalId];
   return !!(festival?.map?.image);
 }
 

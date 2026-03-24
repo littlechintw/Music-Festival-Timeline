@@ -4,6 +4,12 @@
         <!-- 音樂祭即將到來提醒 -->
         <label class="flex items-center justify-between cursor-pointer group">
         </label> <h1 class="text-2xl font-bold mb-4">設定</h1>
+
+    <!-- 資料來源狀態橫幅 -->
+    <div :class="['flex items-center gap-2 mb-6 px-4 py-3 rounded-lg text-sm font-medium', festivalStore.usingOfflineData ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-green-50 text-green-700 border border-green-200']">
+      <span v-if="festivalStore.usingOfflineData">📴 目前使用離線資料</span>
+      <span v-else>🌐 目前使用即時資料</span>
+    </div>
     
     <div class="mb-6 border-b pb-6">
       <h2 class="font-bold text-lg mb-3">顯示設定</h2>
@@ -81,6 +87,43 @@
         </button>
       </div>
     </div>
+
+    <!-- 離線資料管理 -->
+    <div class="mb-6 border-b pb-6">
+      <h2 class="font-bold text-lg mb-3">離線資料管理</h2>
+      <p class="text-sm text-gray-500 mb-4">下載音樂祭資料以便在無網路環境下使用。</p>
+      <div v-if="festivalStore.festivalIndex.length === 0" class="text-gray-400 text-sm">目前沒有可用的音樂祭資料</div>
+      <div v-else class="flex flex-col gap-3">
+        <div v-for="entry in festivalStore.festivalIndex" :key="entry.eventid"
+          class="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+          <div class="flex-1 min-w-0 mr-3">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-medium text-gray-800 text-sm">{{ entry.name }}</span>
+              <span v-if="festivalStore.isAvailableOffline(entry.eventid)"
+                class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full shrink-0">✓ 離線可用</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-0.5">{{ formatDate(entry.startTime) }} ~ {{ formatDate(entry.endTime) }}</div>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button
+              v-if="!festivalStore.isAvailableOffline(entry.eventid)"
+              @click="downloadFestival(entry.eventid)"
+              :disabled="downloading[entry.eventid]"
+              class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ downloading[entry.eventid] ? '下載中...' : '下載' }}
+            </button>
+            <button
+              v-else
+              @click="deleteFestival(entry.eventid)"
+              class="px-3 py-1.5 rounded-lg bg-red-100 text-red-600 text-xs hover:bg-red-200 transition"
+            >
+              刪除
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <div class="mb-6 border-b pb-6">
       <h2 class="font-bold text-lg mb-3">資料管理</h2>
@@ -145,15 +188,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { usePlanStore } from '../stores/plan';
 import { useSettingsStore } from '../stores/settings';
+import { useFestivalStore } from '../stores/festival';
 import { notificationHistory, clearNotificationHistory } from '../utils/notificationHistory';
 
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
+const festivalStore = useFestivalStore();
 
 const showHistoryModal = ref(false);
+const downloading = reactive({});
 
 const notifStatus = ref(Notification?.permission || 'default');
 const notifStatusText = computed(() => {
@@ -195,6 +241,10 @@ function handleReminderTimeChange(e) {
   settingsStore.setPerformanceReminderTimes(currentTimes);
 }
 
+function formatDate(str) {
+  return new Date(str).toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
+}
+
 function formatTimestamp(ts) {
   const d = new Date(ts);
   return d.toLocaleString('zh-TW', {
@@ -207,6 +257,23 @@ function formatTimestamp(ts) {
 function handleClearHistory() {
   if (confirm('確定要清除所有通知歷史紀錄嗎？這會讓之前已推播過的通知在條件達到時重新推播。')) {
     clearNotificationHistory();
+  }
+}
+
+async function downloadFestival(id) {
+  downloading[id] = true;
+  try {
+    await festivalStore.downloadFestivalOffline(id);
+  } catch {
+    alert('下載失敗，請檢查網路連線後再試');
+  } finally {
+    downloading[id] = false;
+  }
+}
+
+function deleteFestival(id) {
+  if (confirm('確定要刪除此音樂祭的離線資料嗎？')) {
+    festivalStore.deleteFestivalOffline(id);
   }
 }
 
@@ -233,3 +300,4 @@ async function clearCache() {
 
 <style scoped>
 </style>
+

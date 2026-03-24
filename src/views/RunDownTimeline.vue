@@ -89,7 +89,7 @@ const currentTimeIndicatorEl = ref(null);
 
 const festival = computed(() => {
   const id = route.params.id;
-  return (store.getFestivals || []).find(f => f.festivalId === id);
+  return store.festivals[id] || null;
 });
 
 // 獲取音樂祭的所有日期
@@ -325,21 +325,10 @@ function togglePlan(stage, perf) {
 }
 
 onMounted(async () => {
-  if (!Array.isArray(store.getFestivals) || store.getFestivals.length === 0) {
-    loading.value = true;
-    const files = import.meta.glob('../../festivals/*.json');
-    const loaded = [];
-    for (const path in files) {
-      try {
-        const mod = await files[path]();
-        loaded.push(mod.default);
-      } catch (e) {
-        console.error('Failed to load festival file:', path, e);
-      }
-    }
-    store.$patch({ festivals: loaded });
-    loading.value = false;
-  }
+  loading.value = true;
+  const id = route.params.id;
+  await store.loadFestivalDetail(id);
+  loading.value = false;
   planStore.loadPlan();
   // 如果今天就是活動日，等資料載入後滾動到現在時間
   await nextTick();

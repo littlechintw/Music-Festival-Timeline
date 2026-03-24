@@ -69,7 +69,7 @@ const headerStyle = ref({});
 
 const festival = computed(() => {
   const id = route.params.id;
-  return (store.getFestivals || []).find(f => f.festivalId === id);
+  return store.festivals[id] || null;
 });
 
 function formatDate(str, timeOnly = false) {
@@ -179,19 +179,10 @@ watch(festival, (val) => {
 });
 
 onMounted(async () => {
-  if (!Array.isArray(store.getFestivals) || store.getFestivals.length === 0) {
-    loading.value = true;
-    const files = import.meta.glob('../../festivals/*.json');
-    const loaded = [];
-    for (const path in files) {
-      try {
-        const mod = await files[path]();
-        loaded.push(mod.default);
-      } catch (e) { }
-    }
-    store.$patch({ festivals: loaded });
-    loading.value = false;
-  }
+  loading.value = true;
+  const id = route.params.id;
+  await store.loadFestivalDetail(id);
+  loading.value = false;
   planStore.loadPlan();
   applyTheme();
 });

@@ -108,25 +108,13 @@ async function parsePlanSharedData(rawText) {
     const festId = parts[0];
     
     // 確保有先載入音樂祭資料
-    if (!Array.isArray(festivalStore.getFestivals) || festivalStore.getFestivals.length === 0) {
-      const files = import.meta.glob('../../festivals/*.json');
-      const loaded = [];
-      for (const path in files) {
-        try {
-          const mod = await files[path]();
-          loaded.push(mod.default);
-        } catch (err) {
-          console.error('載入音樂祭檔案失敗:', path, err);
-        }
-      }
-      festivalStore.festivals = loaded;
+    let fest = festivalStore.festivals[festId];
+    if (!fest) {
+      // Try loading the specific festival
+      fest = await festivalStore.loadFestivalDetail(festId);
     }
 
-    const allFestivals = festivalStore.getFestivals || [];
-    const fest = allFestivals.find(f => f.festivalId === festId);
-    
     if (!fest) {
-      console.error('Festivals loaded:', allFestivals.map(f => f.festivalId), 'Looking for:', festId);
       error.value = `找不到該音樂祭的資料 (${festId})，解析失敗`;
       return false;
     }

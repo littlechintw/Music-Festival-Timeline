@@ -17,6 +17,10 @@ dist
 dist-ssr
 *.local
 
+# Generated at build time (do not commit)
+public/festivals/
+public/festival-index.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
