@@ -216,6 +216,24 @@
           <h3 class="text-xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">
             選擇要分享的音樂祭
           </h3>
+          <div
+            v-if="shareError"
+            class="mb-4 rounded-lg border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm text-red-700 dark:text-red-200 flex items-start gap-2"
+            role="alert"
+          >
+            <span aria-hidden="true">⚠️</span>
+            <div class="flex-1">
+              <p class="font-medium">產生分享網址失敗</p>
+              <p class="mt-0.5 text-xs opacity-90">{{ shareError }}</p>
+              <button
+                type="button"
+                class="mt-1 text-xs underline opacity-80 hover:opacity-100"
+                @click="resetShareModal"
+              >
+                清除
+              </button>
+            </div>
+          </div>
           <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
             <button
               v-for="fest in shareableFestivals"
@@ -414,6 +432,7 @@ function goToMap(festivalId) {
 
 // ---- 分享 ----
 const showShareModal = ref(false);
+const shareError = ref('');
 const showExportImageModal = ref(false);
 const isSharing = ref(false);
 const generatedLink = ref('');
@@ -444,44 +463,64 @@ function openShareModal() {
     return;
   }
   generatedLink.value = '';
+  shareError.value = '';
   showShareModal.value = true;
 }
 
 async function executeShare(festivalId) {
   isSharing.value = true;
   generatedLink.value = '';
+  shareError.value = '';
   const subset = plan.value.filter((p) => p.festivalId === festivalId);
 
   try {
+    if (!subset.length) throw new Error('這個音樂祭沒有可分享的行程');
+
     const compressedData = encodePlanToText(subset);
-    const originUrl = `${location.origin}${location.pathname}?plan=${encodeURIComponent(compressedData)}`;
-    let finalUrl = originUrl;
     const gasUrl = import.meta.env.VITE_GAS_URL;
-    if (gasUrl) {
-      try {
-        const res = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          mode: 'cors',
-          body: JSON.stringify({ action: 'create', content: compressedData }),
-        });
-        const data = await res.json();
-        if (data.err === false && typeof data.s === 'string') {
-          finalUrl = `${window.location.origin}/${data.s}`;
-        }
-      } catch (err) {
-        console.warn('短網址服務發生錯誤，改回原始長網址', err);
-      }
+    if (!gasUrl) {
+      // 之前這裡會 silent 回退到 `${origin}/plan?plan=...` 但 router 沒有 ?plan handler，
+      // 等於分享一個壞網址。改成直接擋下，告訴使用者短網址服務沒設定。
+      throw new Error('短網址服務尚未設定，請聯絡管理員（VITE_GAS_URL 未配置）');
     }
-    generatedLink.value = finalUrl;
+
+    // 跟另一個 short-url 專案的合約一致：
+    //   POST text/plain (避免 CORS preflight) + JSON.stringify({action,content})
+    //   GAS 回 { err: false, s: <shortId>, t: <content> } 或 { err: true, message }
+    const res = await fetch(gasUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      mode: 'cors',
+      body: JSON.stringify({ action: 'create', content: compressedData }),
+    });
+    if (!res.ok) {
+      throw new Error(`短網址服務回應 HTTP ${res.status}`);
+    }
+    /** @type {{ err: boolean, s?: string, message?: string }} */
+    const data = await res.json().catch(() => {
+      throw new Error('短網址服務回傳格式錯誤（非 JSON）');
+    });
+    if (data.err !== false || typeof data.s !== 'string' || !data.s) {
+      throw new Error(data.message || '短網址服務未正確回傳短碼');
+    }
+
+    generatedLink.value = `${window.location.origin}/${data.s}`;
     trackEvent('generate_share_link', { festival_id: festivalId });
   } catch (err) {
-    console.error('生成分享網址失敗:', err);
-    alert('生成分享網址失敗，請稍後再試');
-    showShareModal.value = false;
+    console.error('[share] generate failed:', err);
+    shareError.value = err instanceof Error ? err.message : '生成分享網址失敗，請稍後再試';
+    trackEvent('generate_share_link_error', {
+      festival_id: festivalId,
+      reason: shareError.value.slice(0, 80),
+    });
   } finally {
     isSharing.value = false;
   }
+}
+
+function resetShareModal() {
+  shareError.value = '';
+  generatedLink.value = '';
 }
 
 function copyGeneratedLink() {
