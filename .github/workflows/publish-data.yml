@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'festivals/*.json'
+      - 'src/pwa/schema.js'
+      - 'scripts/validate-festivals.mjs'
   workflow_dispatch:
 
 jobs:
@@ -18,12 +20,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Validate and filter festivals
-        run: node .github/workflows/validate-festivals.js
+        run: npm run validate:festivals
       - name: Commit and push to data-live
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git checkout -B data-live
-          git add filtered-festivals.json
-          git commit -m "Update live festival data"
+          git add filtered-festivals.json public/festivals/index.json
+          git commit -m "Update live festival data" || echo "Nothing to commit"
           git push --force origin data-live

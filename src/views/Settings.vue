@@ -1,143 +1,342 @@
-
 <template>
   <div class="p-4 max-w-2xl mx-auto">
-        <!-- 音樂祭即將到來提醒 -->
-        <label class="flex items-center justify-between cursor-pointer group">
-        </label> <h1 class="text-2xl font-bold mb-4">設定</h1>
-    
-    <div class="mb-6 border-b pb-6">
-      <h2 class="font-bold text-lg mb-3">顯示設定</h2>
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="font-medium text-gray-800">時間格式</h3>
-          <p class="text-sm text-gray-500">切換 12 小時制與 24 小時制</p>
-        </div>
-        <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-          <button 
-            @click="settingsStore.set24Hour(true)"
-            :class="['px-3 py-1.5 rounded-md text-sm font-medium transition-colors', settingsStore.is24Hour ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900']"
-          >
-            24 小時 (14:30)
-          </button>
-          <button 
-            @click="settingsStore.set24Hour(false)"
-            :class="['px-3 py-1.5 rounded-md text-sm font-medium transition-colors', !settingsStore.is24Hour ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900']"
-          >
-            12 小時 (下午 2:30)
-          </button>
-        </div>
-      </div>
-    </div>
+    <h1 class="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">設定</h1>
 
-    <div class="mb-6 border-b pb-6">
-      <h2 class="font-bold text-lg mb-3">通知設定</h2>
+    <AccordionSection title="顯示設定" icon="🎨" default-open>
       <div class="flex items-center justify-between mb-4">
         <div>
-          <span class="block text-gray-800 font-medium">推播權限狀態：<span :class="notifStatusClass">{{ notifStatusText }}</span></span>
+          <h3 class="font-medium text-gray-800 dark:text-gray-200">時間格式</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">切換 12 小時制與 24 小時制</p>
         </div>
-        <button v-if="notifStatus !== 'granted'" @click="requestNotif" class="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition">請求權限</button>
-        <button v-else @click="testNotification" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">測試推播</button>
+        <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+          <button
+            :class="timeBtn(settingsStore.is24Hour)"
+            @click="settingsStore.set24Hour(true)"
+          >
+            24 小時
+          </button>
+          <button
+            :class="timeBtn(!settingsStore.is24Hour)"
+            @click="settingsStore.set24Hour(false)"
+          >
+            12 小時
+          </button>
+        </div>
       </div>
-      
-      <!-- 提醒進階設定 -->
+
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-medium text-gray-800 dark:text-gray-200">深色模式</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">跟隨系統、或手動切換</p>
+        </div>
+        <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+          <button
+            v-for="opt in themeOptions"
+            :key="opt.value"
+            :class="themeBtn(pref === opt.value)"
+            :aria-pressed="pref === opt.value"
+            @click="setPref(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+    </AccordionSection>
+
+    <AccordionSection title="通知設定" icon="🔔">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <span class="block text-gray-800 dark:text-gray-200 font-medium">
+            推播權限狀態：<span :class="notifStatusClass">{{ notifStatusText }}</span>
+          </span>
+        </div>
+        <button
+          v-if="notifStatus !== 'granted'"
+          class="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+          @click="requestNotif"
+        >
+          請求權限
+        </button>
+        <button
+          v-else
+          class="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+          @click="testNotification"
+        >
+          測試推播
+        </button>
+      </div>
+
       <div class="flex flex-col gap-5 mt-4">
-        <!-- 音樂祭即將到來提醒 -->
         <label class="flex items-center justify-between cursor-pointer group">
           <div class="pr-4">
-            <h3 class="font-medium text-gray-800 group-hover:text-blue-600 transition">音樂祭即將到來提醒</h3>
-            <p class="text-sm text-gray-500">在有加入行程的音樂祭開始前 7 天與 1 天發送通知</p>
+            <h3 class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition">
+              音樂祭即將到來提醒
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              在有加入行程的音樂祭開始前 7 天與 1 天發送通知
+            </p>
           </div>
           <div class="relative shrink-0">
-            <input type="checkbox" class="peer sr-only" :checked="settingsStore.enableFestivalReminders" @change="e => settingsStore.setEnableFestivalReminders(e.target.checked)" />
-            <div class="block bg-gray-200 w-12 h-7 rounded-full transition-colors duration-300 peer-checked:bg-blue-500"></div>
-            <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 shadow-sm peer-checked:translate-x-5"></div>
+            <input
+              type="checkbox"
+              class="peer sr-only"
+              role="switch"
+              :checked="settingsStore.enableFestivalReminders"
+              :aria-checked="settingsStore.enableFestivalReminders"
+              @change="(e) => settingsStore.setEnableFestivalReminders(e.target.checked)"
+            />
+            <div class="block bg-gray-200 dark:bg-gray-600 w-12 h-7 rounded-full transition-colors duration-300 peer-checked:bg-blue-500" />
+            <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 shadow-sm peer-checked:translate-x-5" />
           </div>
         </label>
-        
-        <!-- 舞台演出提前通知設定 (多選) -->
+
         <div>
           <div class="mb-2">
-            <h3 class="font-medium text-gray-800">舞台演出提前通知時間 (可多選)</h3>
-            <p class="text-sm text-gray-500">自訂您需要準備前往舞台的提醒觸發時間。（3分鐘為最終防線）</p>
+            <h3 class="font-medium text-gray-800 dark:text-gray-200">
+              舞台演出提前通知時間（可多選）
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              自訂您需要準備前往舞台的提醒觸發時間。（3 分鐘為最終防線）
+            </p>
           </div>
-          
           <div class="flex flex-wrap gap-2 mt-2">
-            <label v-for="mins in [1, 3, 5, 10, 15, 30, 60]" :key="mins" class="relative flex items-center justify-center">
-              <input type="checkbox" 
-                     class="peer sr-only" 
-                     :value="mins" 
-                     :checked="settingsStore.performanceReminderTimes.includes(mins)"
-                     @change="handleReminderTimeChange"
+            <label
+              v-for="mins in REMINDER_OPTIONS"
+              :key="mins"
+              class="relative flex items-center justify-center"
+            >
+              <input
+                type="checkbox"
+                class="peer sr-only"
+                :value="mins"
+                :checked="settingsStore.performanceReminderTimes.includes(mins)"
+                @change="handleReminderTimeChange"
               />
-              <div :class="['px-3 py-1.5 rounded-lg border text-sm font-medium cursor-pointer transition-all duration-200', settingsStore.performanceReminderTimes.includes(mins) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400']">
+              <div
+                :class="[
+                  'px-3 py-1.5 rounded-lg border text-sm font-medium cursor-pointer transition-all duration-200',
+                  settingsStore.performanceReminderTimes.includes(mins)
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-400',
+                ]"
+              >
                 {{ mins }} 分鐘前
               </div>
             </label>
           </div>
         </div>
 
-        <button @click="showHistoryModal = true" class="mt-2 text-blue-600 hover:text-blue-800 underline text-left w-max font-medium">
+        <button
+          class="mt-2 text-blue-600 hover:text-blue-800 underline text-left w-max font-medium"
+          @click="showHistoryModal = true"
+        >
           查看歷史推播紀錄
         </button>
       </div>
-    </div>
-    
-    <div class="mb-6 border-b pb-6">
-      <h2 class="font-bold text-lg mb-3">資料管理</h2>
+    </AccordionSection>
+
+    <AccordionSection title="離線資料管理" icon="📡">
+      <label class="flex items-center justify-between cursor-pointer group mb-4">
+        <div class="pr-4">
+          <h3 class="font-medium text-gray-800 dark:text-gray-200">
+            自動將即將到來的活動存離線
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            關掉後改成完全手動，已存的資料不會被自動移除。
+          </p>
+        </div>
+        <div class="relative shrink-0">
+          <input
+            type="checkbox"
+            class="peer sr-only"
+            role="switch"
+            :checked="offlineStore.mode === 'auto'"
+            :aria-checked="offlineStore.mode === 'auto'"
+            @change="(e) => offlineStore.setMode(e.target.checked ? 'auto' : 'manual')"
+          />
+          <div class="block bg-gray-200 dark:bg-gray-600 w-12 h-7 rounded-full transition-colors duration-300 peer-checked:bg-blue-500" />
+          <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 shadow-sm peer-checked:translate-x-5" />
+        </div>
+      </label>
+
+      <div class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-3 flex-wrap">
+        <span v-if="usage">
+          已用 {{ formatBytes(usage.usage) }}<span v-if="usage.quota">
+            / 可用 {{ formatBytes(usage.quota) }}</span>
+        </span>
+        <span v-if="lastSyncedLabel">最後同步 {{ lastSyncedLabel }}</span>
+        <button
+          class="text-blue-600 hover:text-blue-800 underline ml-auto disabled:opacity-50"
+          :disabled="syncing"
+          @click="checkNow"
+        >
+          {{ syncing ? '檢查中…' : '立即檢查更新' }}
+        </button>
+      </div>
+
+      <div v-if="indexEntries.length === 0" class="text-sm text-gray-400 py-4">
+        尚未載入活動索引，請先連線。
+      </div>
+      <ul v-else class="divide-y divide-gray-100 dark:divide-gray-700 -mt-1">
+        <li
+          v-for="entry in indexEntries"
+          :key="entry.festivalId"
+          class="py-3 flex items-start justify-between gap-3"
+        >
+          <div class="min-w-0 flex-1">
+            <div class="font-medium text-gray-800 dark:text-gray-200 truncate">
+              {{ entry.name }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex flex-wrap gap-x-3 gap-y-1">
+              <span>{{ formatDateShort(entry.startTime) }}</span>
+              <span>{{ formatBytes(entry.bytes) }}</span>
+              <span :class="statusInfo(entry).class">{{ statusInfo(entry).label }}</span>
+              <span v-if="entry.status === 'upcoming'" class="text-blue-600">即將到來</span>
+            </div>
+          </div>
+          <div class="flex gap-2 items-center shrink-0">
+            <button
+              v-if="!isCached(entry)"
+              class="px-3 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              :disabled="busyIds.has(entry.festivalId) || !navigatorOnline"
+              @click="onDownload(entry)"
+            >
+              {{ busyIds.has(entry.festivalId) ? '下載中…' : '存到離線' }}
+            </button>
+            <button
+              v-else-if="hasUpdate(entry)"
+              class="px-3 py-1 text-xs rounded bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50"
+              :disabled="busyIds.has(entry.festivalId) || !navigatorOnline"
+              @click="onDownload(entry)"
+            >
+              更新
+            </button>
+            <button
+              v-if="isCached(entry)"
+              class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+              :disabled="busyIds.has(entry.festivalId)"
+              @click="onRemove(entry)"
+            >
+              移除
+            </button>
+          </div>
+        </li>
+      </ul>
+    </AccordionSection>
+
+    <AccordionSection title="隱私" icon="🔒">
+      <label class="flex items-center justify-between cursor-pointer group">
+        <div class="pr-4">
+          <h3 class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition">
+            傳送匿名使用統計
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            開啟後會把瀏覽紀錄等匿名事件送到 Google Analytics。離線時不會傳送。
+          </p>
+        </div>
+        <div class="relative shrink-0">
+          <input
+            type="checkbox"
+            class="peer sr-only"
+            role="switch"
+            :checked="settingsStore.enableAnalytics"
+            :aria-checked="settingsStore.enableAnalytics"
+            @change="(e) => settingsStore.setEnableAnalytics(e.target.checked)"
+          />
+          <div class="block bg-gray-200 dark:bg-gray-600 w-12 h-7 rounded-full transition-colors duration-300 peer-checked:bg-blue-500" />
+          <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 shadow-sm peer-checked:translate-x-5" />
+        </div>
+      </label>
+    </AccordionSection>
+
+    <AccordionSection title="資料管理" icon="🗑️">
       <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="font-medium text-gray-800">重設我的行程</h3>
-            <p class="text-sm text-gray-500">清空所有您已經加入的演出</p>
+            <h3 class="font-medium text-gray-800 dark:text-gray-200">重設我的行程</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">清空所有您已經加入的演出</p>
           </div>
-          <button @click="resetPlan" class="px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition">清空行程</button>
+          <button
+            class="px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+            @click="resetPlan"
+          >
+            清空行程
+          </button>
         </div>
 
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="font-medium text-gray-800">清除離線快取</h3>
-            <p class="text-sm text-gray-500">當網頁顯示異常或無法更新時使用</p>
+            <h3 class="font-medium text-gray-800 dark:text-gray-200">清除離線快取</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">當網頁顯示異常或無法更新時使用</p>
           </div>
-          <button @click="clearCache" class="px-3 py-1.5 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition">清除快取</button>
+          <button
+            class="px-3 py-1.5 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
+            @click="clearCache"
+          >
+            清除快取
+          </button>
         </div>
       </div>
-    </div>
+    </AccordionSection>
 
-    <!-- 歷史推播紀錄 Modal -->
-    <div v-if="showHistoryModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity" @click.self="showHistoryModal = false">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh] transform transition-transform">
-        <div class="px-5 py-4 border-b flex justify-between items-center bg-gray-50/80">
-          <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div
+      v-if="showHistoryModal"
+      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="history-title"
+      @click.self="showHistoryModal = false"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]"
+      >
+        <div class="px-5 py-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50/80 dark:bg-gray-900/40">
+          <h3 id="history-title" class="font-bold text-lg text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <span aria-hidden="true">🕒</span>
             歷史推播紀錄
           </h3>
-          <button @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-800 transition-colors p-1 rounded-md hover:bg-gray-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <button
+            class="text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-colors p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+            aria-label="關閉"
+            @click="showHistoryModal = false"
+          >
+            ✕
           </button>
         </div>
-        
-        <div class="p-5 overflow-y-auto flex-1 bg-white">
-          <div v-if="notificationHistory.length > 0" class="space-y-4">
-            <div v-for="item in notificationHistory" :key="item.timestamp" class="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors shadow-sm">
-              <div class="flex justify-between items-start mb-2 group">
-                <span class="font-bold text-gray-800 text-sm">{{ item.title }}</span>
-                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">{{ formatTimestamp(item.timestamp) }}</span>
+        <div class="p-5 overflow-y-auto flex-1">
+          <div v-if="notificationStore.history.length > 0" class="space-y-4">
+            <div
+              v-for="item in notificationStore.history"
+              :key="item.timestamp"
+              class="border border-gray-100 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors shadow-sm"
+            >
+              <div class="flex justify-between items-start mb-2">
+                <span class="font-bold text-gray-800 dark:text-gray-100 text-sm">{{ item.title }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+                  {{ formatTimestamp(item.timestamp) }}
+                </span>
               </div>
-              <p class="text-sm text-gray-600">{{ item.body }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">{{ item.body }}</p>
             </div>
           </div>
-          <div v-else class="text-center text-gray-400 py-10 flex flex-col items-center gap-3">
-            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-            <span>尚無歷史推播紀錄</span>
+          <div v-else class="text-center text-gray-400 py-10">
+            尚無歷史推播紀錄
           </div>
         </div>
-        
-        <div class="px-5 py-4 border-t bg-gray-50/80 flex justify-between items-center">
-          <button @click="handleClearHistory" class="text-sm text-red-600 hover:text-red-700 px-4 py-2 border border-red-200 bg-white rounded-lg transition-colors hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white flex items-center gap-1" :disabled="notificationHistory.length===0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        <div class="px-5 py-4 border-t dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/40 flex justify-between items-center">
+          <button
+            class="text-sm text-red-600 hover:text-red-700 px-4 py-2 border border-red-200 dark:border-red-900 bg-white dark:bg-gray-800 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="notificationStore.history.length === 0"
+            @click="handleClearHistory"
+          >
             清除紀錄
           </button>
-          <button @click="showHistoryModal = false" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">關閉</button>
+          <button
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm font-medium"
+            @click="showHistoryModal = false"
+          >
+            關閉
+          </button>
         </div>
       </div>
     </div>
@@ -145,17 +344,39 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePlanStore } from '../stores/plan';
 import { useSettingsStore } from '../stores/settings';
-import { notificationHistory, clearNotificationHistory } from '../utils/notificationHistory';
+import { useNotificationStore } from '../stores/notifications';
+import { useFestivalStore } from '../stores/festival';
+import { useOfflineStore } from '../stores/offline';
+import { useOfflineActions, formatBytes } from '../composables/useOfflineActions';
+import { useEscapeKey } from '../composables/useEscapeKey';
+import { useTheme } from '../composables/useTheme';
+import { useToast } from '../composables/useToast';
+import AccordionSection from '../components/AccordionSection.vue';
+
+const REMINDER_OPTIONS = [1, 3, 5, 10, 15, 30, 60];
 
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
+const notificationStore = useNotificationStore();
+const festivalStore = useFestivalStore();
+const offlineStore = useOfflineStore();
+const { usage, refreshUsage, download, remove, getCachedHashMap } = useOfflineActions();
+const { pref, setPref } = useTheme();
+const { showToast } = useToast();
+
+const themeOptions = [
+  { value: 'auto', label: '系統' },
+  { value: 'light', label: '亮色' },
+  { value: 'dark', label: '深色' },
+];
 
 const showHistoryModal = ref(false);
+useEscapeKey(showHistoryModal, () => (showHistoryModal.value = false));
 
-const notifStatus = ref(Notification?.permission || 'default');
+const notifStatus = ref(typeof Notification !== 'undefined' ? Notification.permission : 'default');
 const notifStatusText = computed(() => {
   if (notifStatus.value === 'granted') return '已允許';
   if (notifStatus.value === 'denied') return '已拒絕';
@@ -167,6 +388,90 @@ const notifStatusClass = computed(() => {
   return 'text-gray-500';
 });
 
+const cachedHashes = ref(getCachedHashMap());
+const busyIds = ref(new Set());
+const syncing = ref(false);
+const navigatorOnline = ref(typeof navigator === 'undefined' ? true : navigator.onLine);
+
+function refreshHashes() {
+  cachedHashes.value = getCachedHashMap();
+}
+
+const indexEntries = computed(() => festivalStore.index?.festivals || []);
+
+const lastSyncedLabel = computed(() => {
+  if (!festivalStore.lastSyncedAt) return '';
+  const diffMin = Math.round((Date.now() - festivalStore.lastSyncedAt) / 60000);
+  if (diffMin < 1) return '剛剛';
+  if (diffMin < 60) return `${diffMin} 分鐘前`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} 小時前`;
+  return `${Math.floor(diffHr / 24)} 天前`;
+});
+
+function isCached(entry) {
+  return entry.festivalId in cachedHashes.value;
+}
+
+function hasUpdate(entry) {
+  return isCached(entry) && cachedHashes.value[entry.festivalId] !== entry.hash;
+}
+
+function statusInfo(entry) {
+  if (!isCached(entry)) return { label: '未離線', class: 'text-gray-500' };
+  if (hasUpdate(entry)) return { label: '可更新', class: 'text-amber-600 font-medium' };
+  return { label: '已離線', class: 'text-green-600 font-medium' };
+}
+
+function formatDateShort(iso) {
+  return new Date(iso).toLocaleDateString('zh-TW', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+async function onDownload(entry) {
+  busyIds.value.add(entry.festivalId);
+  busyIds.value = new Set(busyIds.value);
+  try {
+    await download(entry);
+    refreshHashes();
+    showToast({ message: `已存到離線：${entry.name}`, kind: 'success' });
+  } catch (err) {
+    console.error(err);
+    showToast({ message: '下載失敗，請稍後再試', kind: 'error' });
+  } finally {
+    busyIds.value.delete(entry.festivalId);
+    busyIds.value = new Set(busyIds.value);
+  }
+}
+
+async function onRemove(entry) {
+  if (!confirm(`確定要從離線快取中移除「${entry.name}」嗎？`)) return;
+  busyIds.value.add(entry.festivalId);
+  busyIds.value = new Set(busyIds.value);
+  try {
+    await remove(entry);
+    refreshHashes();
+    showToast({ message: `已從離線移除：${entry.name}` });
+  } finally {
+    busyIds.value.delete(entry.festivalId);
+    busyIds.value = new Set(busyIds.value);
+  }
+}
+
+async function checkNow() {
+  syncing.value = true;
+  try {
+    await festivalStore.ensureLoaded({ force: true });
+    refreshHashes();
+    await refreshUsage();
+    showToast({ message: '已檢查更新' });
+  } finally {
+    syncing.value = false;
+  }
+}
+
+function handleOnlineChange() {
+  navigatorOnline.value = navigator.onLine;
+}
 
 async function requestNotif() {
   const res = await planStore.requestNotificationPermission();
@@ -177,59 +482,78 @@ function testNotification() {
   planStore.sendNotification({
     title: '🎵 測試推播',
     body: '如果你看到這則通知，代表推播功能運作正常！',
-    tag: 'test_notification'
+    tag: 'test_notification',
   });
 }
 
 function handleReminderTimeChange(e) {
-  const val = parseInt(e.target.value);
-  const currentTimes = [...settingsStore.performanceReminderTimes];
-  
+  const val = parseInt(e.target.value, 10);
+  const current = [...settingsStore.performanceReminderTimes];
   if (e.target.checked) {
-    if (!currentTimes.includes(val)) currentTimes.push(val);
+    if (!current.includes(val)) current.push(val);
   } else {
-    const idx = currentTimes.indexOf(val);
-    if (idx > -1) currentTimes.splice(idx, 1);
+    const idx = current.indexOf(val);
+    if (idx > -1) current.splice(idx, 1);
   }
-  
-  settingsStore.setPerformanceReminderTimes(currentTimes);
+  settingsStore.setPerformanceReminderTimes(current);
 }
 
 function formatTimestamp(ts) {
-  const d = new Date(ts);
-  return d.toLocaleString('zh-TW', {
-    month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-    hour12: !settingsStore.is24Hour
+  return new Date(ts).toLocaleString('zh-TW', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: !settingsStore.is24Hour,
   });
 }
 
 function handleClearHistory() {
   if (confirm('確定要清除所有通知歷史紀錄嗎？這會讓之前已推播過的通知在條件達到時重新推播。')) {
-    clearNotificationHistory();
+    notificationStore.clearAll();
   }
 }
 
 function resetPlan() {
   if (confirm('確定要重設我的行程？')) {
-    planStore.myPlan = [];
-    planStore.savePlan();
-    location.reload();
+    planStore.clearPlan();
   }
 }
 
 async function clearCache() {
   if ('caches' in window) {
     const keys = await caches.keys();
-    for (const key of keys) {
-      await caches.delete(key);
-    }
-    alert('快取已清除');
+    await Promise.all(keys.map((key) => caches.delete(key)));
+    showToast({ message: '快取已清除', kind: 'success' });
   }
 }
 
+function timeBtn(active) {
+  return [
+    'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+    active
+      ? 'bg-white dark:bg-gray-900 text-blue-600 shadow'
+      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white',
+  ];
+}
 
+function themeBtn(active) {
+  return [
+    'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+    active
+      ? 'bg-white dark:bg-gray-900 text-blue-600 shadow'
+      : 'text-gray-600 dark:text-gray-300',
+  ];
+}
+
+onMounted(() => {
+  festivalStore.refreshIndex();
+  window.addEventListener('online', handleOnlineChange);
+  window.addEventListener('offline', handleOnlineChange);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('online', handleOnlineChange);
+  window.removeEventListener('offline', handleOnlineChange);
+});
 </script>
-
-<style scoped>
-</style>

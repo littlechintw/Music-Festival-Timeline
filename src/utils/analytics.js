@@ -1,7 +1,29 @@
+// @ts-check
+// Google Analytics 是 progressive enhancement：
+// - 沒有 measurement id 直接 noop
+// - 使用者在設定關閉 analytics 也直接 noop
+// - 離線時不送 event
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
+let initialized = false;
+
+function isOnline() {
+  return typeof navigator === 'undefined' ? true : navigator.onLine;
+}
+
+function shouldTrack() {
+  if (!GA_MEASUREMENT_ID) return false;
+  try {
+    if (localStorage.getItem('enableAnalytics') === 'false') return false;
+  } catch {
+    /* localStorage unavailable — fall through */
+  }
+  return isOnline();
+}
+
 export function initGA() {
-  if (!GA_MEASUREMENT_ID) return;
+  if (!shouldTrack() || initialized) return;
+  initialized = true;
 
   const script = document.createElement('script');
   script.async = true;
@@ -9,20 +31,29 @@ export function initGA() {
   document.head.appendChild(script);
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function () { window.dataLayer.push(arguments); };
-  window.gtag('js', new Date());
-  window.gtag('config', GA_MEASUREMENT_ID);
+  /** @type {any} */
+  const gtag = function () {
+    window.dataLayer.push(arguments);
+  };
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', GA_MEASUREMENT_ID);
 }
 
+/**
+ * @param {string} path
+ * @param {string} title
+ */
 export function trackPageView(path, title) {
-  if (!GA_MEASUREMENT_ID || typeof window.gtag !== 'function') return;
-  window.gtag('config', GA_MEASUREMENT_ID, {
-    page_path: path,
-    page_title: title,
-  });
+  if (!shouldTrack() || typeof window.gtag !== 'function') return;
+  window.gtag('config', GA_MEASUREMENT_ID, { page_path: path, page_title: title });
 }
 
+/**
+ * @param {string} eventName
+ * @param {Record<string, unknown>} [params]
+ */
 export function trackEvent(eventName, params = {}) {
-  if (!GA_MEASUREMENT_ID || typeof window.gtag !== 'function') return;
+  if (!shouldTrack() || typeof window.gtag !== 'function') return;
   window.gtag('event', eventName, params);
 }
