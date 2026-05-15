@@ -129,6 +129,7 @@ import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
 import { useSettingsStore } from '../stores/settings';
 import { decodePlanFromText } from '../utils/url';
+import { getShortenerUrl } from '../utils/shortener';
 import { formatTime } from '../utils/format';
 
 const route = useRoute();
@@ -159,13 +160,7 @@ function finishImport() {
 
 onMounted(async () => {
   const shortId = route.params.shortId;
-  const gasUrl = import.meta.env.VITE_GAS_URL;
-
-  if (!gasUrl) {
-    error.value = '系統未配置短網址服務 (VITE_GAS_URL 缺失)';
-    loading.value = false;
-    return;
-  }
+  const gasUrl = getShortenerUrl();
 
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     error.value = '目前離線中，無法解析分享網址。請連線後重試。';

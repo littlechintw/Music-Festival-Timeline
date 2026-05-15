@@ -323,6 +323,7 @@ import { useSettingsStore } from '../stores/settings';
 import { useNowTicker } from '../composables/useNowTicker';
 import { useOnline } from '../composables/useOnline';
 import { encodePlanToText } from '../utils/url';
+import { getShortenerUrl } from '../utils/shortener';
 import { formatTime, formatDayLabel } from '../utils/format';
 import { trackEvent } from '../utils/analytics';
 import TimelineGrid from '../components/TimelineGrid.vue';
@@ -477,12 +478,7 @@ async function executeShare(festivalId) {
     if (!subset.length) throw new Error('這個音樂祭沒有可分享的行程');
 
     const compressedData = encodePlanToText(subset);
-    const gasUrl = import.meta.env.VITE_GAS_URL;
-    if (!gasUrl) {
-      // 之前這裡會 silent 回退到 `${origin}/plan?plan=...` 但 router 沒有 ?plan handler，
-      // 等於分享一個壞網址。改成直接擋下，告訴使用者短網址服務沒設定。
-      throw new Error('短網址服務尚未設定，請聯絡管理員（VITE_GAS_URL 未配置）');
-    }
+    const gasUrl = getShortenerUrl();
 
     // 跟另一個 short-url 專案的合約一致：
     //   POST text/plain (避免 CORS preflight) + JSON.stringify({action,content})
