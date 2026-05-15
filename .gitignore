@@ -62,9 +62,12 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# PWA related
-workbox-*.js
-sw.js
+# PWA related — 只忽略 build 產物，src/pwa/sw.js 是 SW 原始碼，要進 git
+# dist/ 已被忽略；下面這幾條涵蓋 vite-plugin-pwa 在 dev 模式產生的 dev-dist/
+# 以及不小心被 build 寫進 repo 根目錄的 sw.js / workbox-*.js
+dev-dist/
+/sw.js
+/workbox-*.js
 
 # Mac Trash
 .DS_Store
