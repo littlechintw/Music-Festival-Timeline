@@ -1,53 +1,88 @@
+// @ts-check
 import { defineStore } from 'pinia';
+import { ref, watch } from 'vue';
 
-export const useSettingsStore = defineStore('settings', {
-  state: () => {
-    // 預設提醒時間：3 分鐘與 10 分鐘
-    const defaultReminderTimes = [3, 10];
-    let savedReminderTimes;
-    try {
-      const stored = localStorage.getItem('performanceReminderTimes');
-      if (stored) {
-        savedReminderTimes = JSON.parse(stored);
-      } else {
-        // Migration from old single integer performanceReminderTime
-        const oldStored = localStorage.getItem('performanceReminderTime');
-        const oldVal = parseInt(oldStored);
-        if (!isNaN(oldVal) && oldVal > 0) {
-            // Keep the old setting and always ensure 3 exists
-            savedReminderTimes = Array.from(new Set([3, oldVal])).sort((a,b)=>a-b);
-        } else {
-           savedReminderTimes = defaultReminderTimes;
-        }
-      }
-    } catch {
-      savedReminderTimes = defaultReminderTimes;
-    }
+const DEFAULT_REMINDERS = [3, 10];
 
-    return {
-      is24Hour: localStorage.getItem('is24Hour') !== 'false', // default to true
-      enableFestivalReminders: localStorage.getItem('enableFestivalReminders') !== 'false', // default true
-      performanceReminderTimes: savedReminderTimes 
-    };
-  },
-  actions: {
-    toggle24Hour() {
-      this.is24Hour = !this.is24Hour;
-      localStorage.setItem('is24Hour', this.is24Hour);
-    },
-    set24Hour(val) {
-      this.is24Hour = val;
-      localStorage.setItem('is24Hour', val);
-    },
-    setEnableFestivalReminders(val) {
-      this.enableFestivalReminders = val;
-      localStorage.setItem('enableFestivalReminders', val);
-    },
-    setPerformanceReminderTimes(valArray) {
-      // 確保排序由小到大並過濾重複
-      const sortedUnique = Array.from(new Set(valArray)).sort((a, b) => a - b);
-      this.performanceReminderTimes = sortedUnique;
-      localStorage.setItem('performanceReminderTimes', JSON.stringify(sortedUnique));
-    }
+/**
+ * @param {string} key
+ * @param {string | null} fallback
+ */
+function read(key, fallback = null) {
+  try {
+    const val = localStorage.getItem(key);
+    return val === null ? fallback : val;
+  } catch {
+    return fallback;
   }
+}
+
+function loadReminderTimes() {
+  try {
+    const raw = read('performanceReminderTimes');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.every((n) => Number.isFinite(n))) return parsed;
+    }
+    // 從舊版單一整數欄位遷移
+    const legacy = Number.parseInt(read('performanceReminderTime') ?? '', 10);
+    if (Number.isFinite(legacy) && legacy > 0) {
+      return Array.from(new Set([3, legacy])).sort((a, b) => a - b);
+    }
+  } catch {
+    /* fall back to defaults */
+  }
+  return DEFAULT_REMINDERS;
+}
+
+export const useSettingsStore = defineStore('settings', () => {
+  const is24Hour = ref(read('is24Hour') !== 'false');
+  const enableFestivalReminders = ref(read('enableFestivalReminders') !== 'false');
+  const enableAnalytics = ref(read('enableAnalytics') !== 'false');
+  /** @type {import('vue').Ref<number[]>} */
+  const performanceReminderTimes = ref(loadReminderTimes());
+
+  watch(is24Hour, (v) => localStorage.setItem('is24Hour', String(v)));
+  watch(enableFestivalReminders, (v) => localStorage.setItem('enableFestivalReminders', String(v)));
+  watch(enableAnalytics, (v) => localStorage.setItem('enableAnalytics', String(v)));
+  watch(
+    performanceReminderTimes,
+    (v) => {
+      const sortedUnique = Array.from(new Set(v)).sort((a, b) => a - b);
+      localStorage.setItem('performanceReminderTimes', JSON.stringify(sortedUnique));
+    },
+    { deep: true }
+  );
+
+  /** @param {boolean} val */
+  function set24Hour(val) {
+    is24Hour.value = val;
+  }
+  function toggle24Hour() {
+    is24Hour.value = !is24Hour.value;
+  }
+  /** @param {boolean} val */
+  function setEnableFestivalReminders(val) {
+    enableFestivalReminders.value = val;
+  }
+  /** @param {boolean} val */
+  function setEnableAnalytics(val) {
+    enableAnalytics.value = val;
+  }
+  /** @param {number[]} valArray */
+  function setPerformanceReminderTimes(valArray) {
+    performanceReminderTimes.value = Array.from(new Set(valArray)).sort((a, b) => a - b);
+  }
+
+  return {
+    is24Hour,
+    enableFestivalReminders,
+    enableAnalytics,
+    performanceReminderTimes,
+    set24Hour,
+    toggle24Hour,
+    setEnableFestivalReminders,
+    setEnableAnalytics,
+    setPerformanceReminderTimes,
+  };
 });

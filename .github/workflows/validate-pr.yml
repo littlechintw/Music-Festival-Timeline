@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'festivals/*.json'
+      - 'src/pwa/schema.js'
+      - 'scripts/validate-festivals.mjs'
 
 jobs:
   validate-json:
@@ -17,4 +19,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Validate festival JSON files
-        run: node .github/workflows/validate-festivals.js
+        run: npm run validate:festivals

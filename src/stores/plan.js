@@ -1,161 +1,185 @@
+// @ts-check
 import { defineStore } from 'pinia';
-
+import { ref, computed, watch } from 'vue';
+import {
+  requestNotificationPermission as requestPermission,
+  showAppNotification,
+} from '../pwa/notifications';
 
 const STORAGE_KEY = 'my-festival-plan';
-const SCHEMA_VERSION = 1;
 const META_KEY = 'my-festival-meta';
+const SCHEMA_VERSION = 1;
 
-export const usePlanStore = defineStore('plan', {
-  state: () => ({
-    myPlan: [],
-    notifications: {},
-    lastOpenedFestival: null,
-    schemaVersion: SCHEMA_VERSION,
-    themeOverride: localStorage.getItem('theme-override') || null,
-    invalidShows: [],
-  }),
-  actions: {
-    addPerformance(perf) {
-      this.myPlan.push(perf);
-      this.savePlan();
-    },
-    removePerformance(perfId) {
-      this.myPlan = this.myPlan.filter(p => (p.id || p.artist + p.start) !== perfId);
-      this.savePlan();
-    },
-    setNotification(perfId, minutes) {
-      this.notifications[perfId] = minutes;
-      this.saveMeta();
-    },
+/**
+ * @typedef {{
+ *   id?: string,
+ *   artist: string,
+ *   start: string,
+ *   end?: string,
+ *   stage: string,
+ *   festivalId: string,
+ *   festivalName?: string,
+ *   description?: string,
+ * }} PlanEntry
+ */
 
-    async requestNotificationPermission() {
-      if (!('Notification' in window)) return 'unsupported';
-      if (Notification.permission === 'granted') return 'granted';
-      if (Notification.permission === 'denied') return 'denied';
-      return await Notification.requestPermission();
-    },
+/**
+ * @param {string} key
+ * @param {string} fallback
+ */
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) ?? fallback);
+  } catch {
+    return JSON.parse(fallback);
+  }
+}
 
-    async sendNotification({ title, body, tag }) {
-      if (!('Notification' in window)) return;
-      if (Notification.permission !== 'granted') return;
-      const options = {
-        body,
-        tag,
-        renotify: true,
-        vibrate: [200, 100, 200],
-        badge: '/icon-32.png',
-        data: { priority: 'high' },
-      };
-      try {
-        if ('serviceWorker' in navigator) {
-          const registration = await navigator.serviceWorker.ready;
-          await registration.showNotification(title, options);
-        } else {
-          new Notification(title, options);
-        }
-      } catch (err) {
-        if (import.meta.env.DEV) console.warn('[sendNotification] SW showNotification failed, falling back:', err);
-        try {
-          new Notification(title, options);
-        } catch (fallbackErr) {
-          if (import.meta.env.DEV) console.warn('[sendNotification] Fallback Notification also failed:', fallbackErr);
-        }
-      }
-    },
-    setLastOpenedFestival(festivalId) {
-      this.lastOpenedFestival = festivalId;
-      this.saveMeta();
-    },
-    setThemeOverride(color) {
-      this.themeOverride = color;
-      localStorage.setItem('theme-override', color);
-      this.saveMeta();
-    },
-    savePlan() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.myPlan));
-    },
-    saveMeta() {
-      const meta = {
-        notifications: this.notifications,
-        lastOpenedFestival: this.lastOpenedFestival,
-        schemaVersion: SCHEMA_VERSION,
-        themeOverride: this.themeOverride,
-      };
-      localStorage.setItem(META_KEY, JSON.stringify(meta));
-    },
-    loadPlan() {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (data) {
-        try {
-          this.myPlan = JSON.parse(data);
-        } catch {}
-      }
-      // Load meta
-      const meta = localStorage.getItem(META_KEY);
-      if (meta) {
-        try {
-          const m = JSON.parse(meta);
-          this.notifications = m.notifications || {};
-          this.lastOpenedFestival = m.lastOpenedFestival || null;
-          this.themeOverride = m.themeOverride || null;
-          this.schemaVersion = m.schemaVersion || 1;
-        } catch {}
-      }
-      // Migration logic (future-proof)
-      if (this.schemaVersion < SCHEMA_VERSION) {
-        // Example: migrate old data here
-        this.schemaVersion = SCHEMA_VERSION;
-        this.saveMeta();
-      }
-    },
-    validatePlan(festivals) {
-      if (!festivals || festivals.length === 0) return;
-      
-      let changed = false;
-      const invalidShows = [];
-      const validPlan = [];
+export const usePlanStore = defineStore('plan', () => {
+  /** @type {import('vue').Ref<PlanEntry[]>} */
+  const myPlan = ref([]);
+  /** @type {import('vue').Ref<PlanEntry[]>} */
+  const invalidShows = ref([]);
+  const schemaVersion = ref(SCHEMA_VERSION);
+  const loaded = ref(false);
 
-      for (const perf of this.myPlan) {
-        const fest = festivals.find(f => f.festivalId === perf.festivalId);
-        if (!fest) {
-          validPlan.push(perf);
-          continue;
-        }
+  function loadFromStorage() {
+    myPlan.value = readJson(STORAGE_KEY, '[]');
+    const meta = readJson(META_KEY, '{}');
+    schemaVersion.value = meta.schemaVersion || 1;
+    if (schemaVersion.value < SCHEMA_VERSION) {
+      // 未來資料結構升級的 migration 點
+      schemaVersion.value = SCHEMA_VERSION;
+      persistMeta();
+    }
+    loaded.value = true;
+  }
 
-        const stage = fest.stages.find(s => s.name === perf.stage);
-        if (!stage) {
-          invalidShows.push(perf);
-          changed = true;
-          continue;
-        }
+  function persistPlan() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(myPlan.value));
+    } catch {}
+  }
 
-        const originalStart = new Date(perf.start).getTime();
-        const originalEnd = new Date(perf.end).getTime();
-        const match = stage.performances.find(p => p.artist === perf.artist);
+  function persistMeta() {
+    try {
+      localStorage.setItem(META_KEY, JSON.stringify({ schemaVersion: SCHEMA_VERSION }));
+    } catch {}
+  }
 
-        if (!match) {
-          invalidShows.push(perf);
-          changed = true;
-          continue;
-        }
+  watch(myPlan, () => loaded.value && persistPlan(), { deep: true });
 
-        const matchStart = new Date(match.start).getTime();
-        const matchEnd = new Date(match.end).getTime();
+  /** @param {PlanEntry} perf */
+  function addPerformance(perf) {
+    const id = perf.id;
+    const exists = id ? myPlan.value.some((p) => p.id === id) : false;
+    if (!exists) myPlan.value.push(perf);
+  }
 
-        if (matchStart !== originalStart || (matchEnd && matchEnd !== originalEnd)) {
-          invalidShows.push(perf);
-          changed = true;
-          continue;
-        }
+  /** @param {string} perfId */
+  function removePerformance(perfId) {
+    myPlan.value = myPlan.value.filter((p) => (p.id || `${p.artist}_${p.start}`) !== perfId);
+  }
 
+  function clearPlan() {
+    myPlan.value = [];
+  }
+
+  /**
+   * 整個取代計畫（分享匯入用），去重以避免和現有資料衝突。
+   * @param {PlanEntry[]} next
+   */
+  function replacePlan(next) {
+    const seen = new Set();
+    const deduped = [];
+    for (const p of next) {
+      const id = p.id || `${p.festivalId}_${p.stage}_${p.artist}_${p.start}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      deduped.push({ ...p, id });
+    }
+    myPlan.value = deduped;
+  }
+
+  function dismissInvalidShows() {
+    invalidShows.value = [];
+  }
+
+  // 通知功能委派給 pwa/notifications.js
+  const requestNotificationPermission = requestPermission;
+
+  /** @param {{title: string, body: string, tag: string, data?: Record<string, unknown>}} payload */
+  async function sendNotification(payload) {
+    return showAppNotification(payload);
+  }
+
+  /**
+   * 比對 plan 是否與最新 festival 資料一致；不一致的搬到 invalidShows。
+   *
+   * @param {import('../pwa/schema').Festival[]} festivals
+   */
+  function validatePlan(festivals) {
+    if (!festivals?.length) return;
+
+    const invalid = [];
+    const validPlan = [];
+
+    for (const perf of myPlan.value) {
+      const fest = festivals.find((f) => f.festivalId === perf.festivalId);
+      if (!fest) {
+        // 沒這個 festival 的資料就先留著（可能是還沒 sync）
         validPlan.push(perf);
+        continue;
       }
+      const stage = fest.stages.find((s) => s.name === perf.stage);
+      if (!stage) {
+        invalid.push(perf);
+        continue;
+      }
+      const match = stage.performances.find((p) => p.artist === perf.artist);
+      if (!match) {
+        invalid.push(perf);
+        continue;
+      }
+      const matchStart = new Date(match.start).getTime();
+      const originalStart = new Date(perf.start).getTime();
+      if (matchStart !== originalStart) {
+        invalid.push(perf);
+        continue;
+      }
+      if (perf.end) {
+        const matchEnd = new Date(match.end).getTime();
+        const originalEnd = new Date(perf.end).getTime();
+        if (Number.isFinite(matchEnd) && Number.isFinite(originalEnd) && matchEnd !== originalEnd) {
+          invalid.push(perf);
+          continue;
+        }
+      }
+      validPlan.push(perf);
+    }
 
-      if (changed) {
-        this.myPlan = validPlan;
-        this.savePlan();
-        this.invalidShows = invalidShows;
-      }
-    },
-  },
+    if (invalid.length > 0) {
+      myPlan.value = validPlan;
+      invalidShows.value = invalid;
+    }
+  }
+
+  const planCount = computed(() => myPlan.value.length);
+
+  return {
+    myPlan,
+    invalidShows,
+    schemaVersion,
+    loaded,
+    planCount,
+    loadFromStorage,
+    addPerformance,
+    removePerformance,
+    clearPlan,
+    replacePlan,
+    dismissInvalidShows,
+    requestNotificationPermission,
+    sendNotification,
+    validatePlan,
+  };
 });

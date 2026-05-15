@@ -1,48 +1,73 @@
 <template>
   <div class="p-4 max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4">音樂祭列表</h1>
-    <input v-model="search" placeholder="搜尋名稱或地址" class="border p-2 mb-4 w-full rounded" />
+    <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">音樂祭列表</h1>
+    <input
+      v-model="search"
+      placeholder="搜尋名稱或地址"
+      class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 p-2 mb-4 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
     <div class="mb-4 flex gap-2">
-      <button @click="sortBy = 'date'" :class="btnClass('date')">依日期排序</button>
-      <button @click="sortBy = 'name'" :class="btnClass('name')">依名稱排序</button>
+      <button :class="btnClass('date')" @click="sortBy = 'date'">依日期排序</button>
+      <button :class="btnClass('name')" @click="sortBy = 'name'">依名稱排序</button>
     </div>
-    <div v-if="loading">載入中...</div>
+
+    <div
+      v-if="festivalStore.loading && festivalStore.getFestivals.length === 0"
+      class="text-gray-500 dark:text-gray-400"
+    >
+      載入中...
+    </div>
     <div v-else>
-      <div v-for="festival in filteredFestivals" :key="festival.festivalId"
-        class="border rounded p-4 mb-4 cursor-pointer transition-colors"
-        :class="festival.isFar ? 'opacity-50 bg-gray-100 grayscale hover:bg-gray-200' : 'hover:bg-gray-50'"
-        @click="goDetail(festival.festivalId)">
-        <div class="font-bold text-lg">{{ festival.name }}</div>
-        <div class="text-sm text-gray-500">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}
+      <div
+        v-for="festival in filteredFestivals"
+        :key="festival.festivalId"
+        class="border border-gray-200 dark:border-gray-700 rounded p-4 mb-4 cursor-pointer transition-colors"
+        :class="
+          festival.isFar
+            ? 'opacity-60 bg-gray-100 dark:bg-gray-800/50 grayscale hover:bg-gray-200 dark:hover:bg-gray-800'
+            : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/60'
+        "
+        @click="goDetail(festival.festivalId)"
+      >
+        <div class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ festival.name }}</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          {{ formatDateTime(festival.startTime, settingsStore.is24Hour) }} ~
+          {{ formatDateTime(festival.endTime, settingsStore.is24Hour) }}
         </div>
-        <div class="text-sm">{{ festival.location.name }}｜{{ festival.location.address }}</div>
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+          {{ festival.location.name }}｜{{ festival.location.address }}
+        </div>
       </div>
-      <div v-if="filteredFestivals.length === 0" class="text-gray-400">查無資料</div>
+      <div
+        v-if="filteredFestivals.length === 0"
+        class="text-gray-400 dark:text-gray-500"
+      >
+        查無資料
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { useSettingsStore } from '../stores/settings';
-import { useRouter } from 'vue-router';
+import { formatDateTime } from '../utils/format';
 
-const store = useFestivalStore();
+const festivalStore = useFestivalStore();
 const settingsStore = useSettingsStore();
 const router = useRouter();
+
 const search = ref('');
 const sortBy = ref('date');
-const loading = ref(false);
-
-function formatDate(str) {
-  return new Date(str).toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
-}
 
 function btnClass(type) {
   return [
-    'px-3 py-1 rounded border',
-    sortBy.value === type ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600',
+    'px-3 py-1 rounded border transition-colors',
+    sortBy.value === type
+      ? 'bg-blue-600 text-white border-blue-600'
+      : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700',
   ].join(' ');
 }
 
@@ -51,63 +76,30 @@ function goDetail(id) {
 }
 
 const filteredFestivals = computed(() => {
-  let arr = store.getFestivals || [];
-  const now = new Date();
-  const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-
-  arr = arr.map(f => {
-    const startTime = new Date(f.startTime);
-    const endTime = f.endTime ? new Date(f.endTime) : startTime;
-    // 判斷是否「已經結束」或是「距離現在還有超過30天」
-    const isFar = endTime < now || (startTime - now) > thirtyDays;
-    return { ...f, isFar };
+  const now = Date.now();
+  const thirtyDays = 30 * 86400000;
+  let arr = (festivalStore.getFestivals || []).map((f) => {
+    const start = new Date(f.startTime).getTime();
+    const end = new Date(f.endTime).getTime();
+    return { ...f, isFar: end < now || start - now > thirtyDays };
   });
 
   if (search.value) {
-    const s = search.value.toLowerCase();
-    arr = arr.filter(f =>
-      f.name.toLowerCase().includes(s) ||
-      f.location.address.toLowerCase().includes(s)
+    const q = search.value.toLowerCase();
+    arr = arr.filter(
+      (f) => f.name.toLowerCase().includes(q) || f.location.address.toLowerCase().includes(q)
     );
   }
 
-  arr = arr.slice().sort((a, b) => {
-    // 優先把已經結束或是超過30天的放下面
-    if (a.isFar !== b.isFar) {
-      return a.isFar ? 1 : -1;
-    }
-    const aStart = new Date(a.startTime);
-    const bStart = new Date(b.startTime);
-    if (sortBy.value === 'date') {
-      // 兩者都是剛過或兩者都在30天內，距離現在越近的放越上面
-      return Math.abs(aStart - now) - Math.abs(bStart - now);
-    } else if (sortBy.value === 'name') {
-      return a.name.localeCompare(b.name, 'zh-Hant');
-    }
-    return 0;
+  arr.sort((a, b) => {
+    if (a.isFar !== b.isFar) return a.isFar ? 1 : -1;
+    if (sortBy.value === 'name') return a.name.localeCompare(b.name, 'zh-Hant');
+    return Math.abs(new Date(a.startTime).getTime() - now) - Math.abs(new Date(b.startTime).getTime() - now);
   });
-
   return arr;
 });
 
-onMounted(async () => {
-  if (!Array.isArray(store.getFestivals) || store.getFestivals.length === 0) {
-    loading.value = true;
-    // Dynamically import all JSON files in /festivals
-    const files = import.meta.glob('../../festivals/*.json');
-    const loaded = [];
-    for (const path in files) {
-      try {
-        const mod = await files[path]();
-        loaded.push(mod.default);
-      } catch (e) { }
-    }
-    store.$patch({ festivals: loaded });
-    loading.value = false;
-  }
+onMounted(() => {
+  festivalStore.ensureLoaded();
 });
 </script>
-
-<style scoped>
-/* Add any custom styles here */
-</style>

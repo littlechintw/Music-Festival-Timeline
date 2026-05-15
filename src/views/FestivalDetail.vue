@@ -1,40 +1,83 @@
 <template>
   <div class="p-4 max-w-3xl mx-auto">
-    <div v-if="loading">載入中...</div>
-    <div v-else-if="!festival">找不到此音樂祭</div>
+    <div v-if="festivalStore.loading && !festival" class="text-gray-500 dark:text-gray-400">
+      載入中...
+    </div>
+    <div v-else-if="!festival" class="text-gray-500 dark:text-gray-400">找不到此音樂祭</div>
     <div v-else>
-      <div class="mb-4 rounded-lg p-4" :style="headerStyle">
-        <h1 class="text-2xl font-bold">{{ festival.name }}</h1>
-        <div class="text-gray-500 text-sm">{{ formatDate(festival.startTime) }} ~ {{ formatDate(festival.endTime) }}
+      <div
+        class="mb-4 rounded-lg p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+        :style="headerStyle"
+      >
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ festival.name }}</h1>
+        <div class="text-gray-600 dark:text-gray-300 text-sm">
+          {{ formatDateTime(festival.startTime, settingsStore.is24Hour) }} ~
+          {{ formatDateTime(festival.endTime, settingsStore.is24Hour) }}
         </div>
-        <div class="text-sm">{{ festival.location.name }}｜{{ festival.location.address }}</div>
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+          {{ festival.location.name }}｜{{ festival.location.address }}
+        </div>
       </div>
       <div class="flex gap-2 mb-4">
-        <button @click="goTimeline" class="px-4 py-2 rounded bg-blue-600 text-white">查看全日時間軸</button>
-        <button v-if="festival.map && festival.map.image" @click="goMap"
-          class="px-4 py-2 rounded bg-green-600 text-white">查看場地地圖</button>
+        <button
+          class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+          @click="goTimeline"
+        >
+          查看全日時間軸
+        </button>
+        <button
+          v-if="festival.map && festival.map.image"
+          class="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white shadow-sm"
+          @click="goMap"
+        >
+          查看場地地圖
+        </button>
       </div>
       <div class="mb-4">
-        <h2 class="font-bold mb-2">舞台與演出</h2>
+        <h2 class="font-bold mb-2 text-gray-900 dark:text-gray-100">舞台與演出</h2>
         <div v-for="stage in festival.stages" :key="stage.id" class="mb-6">
-          <h3 class="font-semibold text-lg mb-3">{{ stage.name }}</h3>
-          <div v-for="(dayPerformances, dayKey) in groupPerformancesByDay(stage.performances)" :key="dayKey"
-            class="mb-4">
-            <div class="bg-gray-100 px-3 py-2 rounded-t font-medium text-sm text-gray-700">
+          <h3 class="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
+            {{ stage.name }}
+          </h3>
+          <div
+            v-for="(dayPerformances, dayKey) in groupByDay(stage.performances)"
+            :key="dayKey"
+            class="mb-4"
+          >
+            <div
+              class="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-t font-medium text-sm text-gray-700 dark:text-gray-200"
+            >
               {{ formatDayHeader(dayKey) }}
             </div>
-            <div class="border border-t-0 rounded-b p-3">
-              <div v-for="perf in dayPerformances" :key="perf.artist + perf.start"
-                class="flex flex-row items-center gap-2 mb-2 last:mb-0">
+            <div
+              class="border border-t-0 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b p-3"
+            >
+              <div
+                v-for="perf in dayPerformances"
+                :key="perf.artist + perf.start"
+                class="flex items-center gap-2 mb-2 last:mb-0"
+              >
                 <div class="flex-1 min-w-0">
-                  <span class="font-mono text-sm text-gray-600">{{ formatTimeRange(perf.start, perf.end) }}</span>
-                  <span class="ml-3 font-bold">{{ perf.artist }}</span>
-                  <span v-if="perf.description" class="ml-2 text-gray-400 text-xs">({{ perf.description }})</span>
+                  <span class="font-mono text-sm text-gray-600 dark:text-gray-300">
+                    {{ formatTimeRange(perf.start, perf.end, settingsStore.is24Hour) }}
+                  </span>
+                  <span class="ml-3 font-bold text-gray-900 dark:text-gray-100">
+                    {{ perf.artist }}
+                  </span>
+                  <span v-if="perf.description" class="ml-2 text-gray-400 dark:text-gray-500 text-xs">
+                    ({{ perf.description }})
+                  </span>
                 </div>
-                <button @click="togglePlan(stage, perf)"
+                <button
                   class="ml-2 px-3 py-1 rounded text-xs shrink-0 transition-colors"
-                  :class="isInPlan(stage, perf) ? 'bg-gray-500 hover:bg-gray-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'">
-                  {{ isInPlan(stage, perf) ? '已加入（點擊移除）' : '加入我的行程' }}
+                  :class="
+                    inPlan(stage, perf)
+                      ? 'bg-gray-500 hover:bg-gray-600 text-white'
+                      : 'bg-green-500 hover:bg-green-600 text-white'
+                  "
+                  @click="togglePlan(stage, perf)"
+                >
+                  {{ inPlan(stage, perf) ? '已加入（點擊移除）' : '加入我的行程' }}
                 </button>
               </div>
             </div>
@@ -42,74 +85,78 @@
         </div>
       </div>
       <div v-if="festival.map && festival.map.image">
-        <h2 class="font-bold mb-2">場地地圖</h2>
-        <img :src="festival.map.image" alt="map" class="w-full max-w-md rounded border" />
+        <h2 class="font-bold mb-2 text-gray-900 dark:text-gray-100">場地地圖</h2>
+        <img
+          :src="festival.map.image"
+          alt="map"
+          class="w-full max-w-md rounded border border-gray-200 dark:border-gray-700"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
 import { useSettingsStore } from '../stores/settings';
-import { trackEvent } from '../utils/analytics.js';
-
+import { formatDateTime, formatTimeRange, formatDayHeader } from '../utils/format';
+import { makePerfId } from '../utils/perfId';
+import { themeCssVars } from '../utils/theme';
+import { trackEvent } from '../utils/analytics';
+import { useToast, haptic } from '../composables/useToast';
 
 const route = useRoute();
 const router = useRouter();
-const store = useFestivalStore();
+const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
+const { showToast } = useToast();
 
-const loading = ref(false);
-const headerStyle = ref({});
+const festival = computed(() => festivalStore.getById(route.params.id));
+const headerStyle = computed(() => themeCssVars(festival.value?.theme));
 
-const festival = computed(() => {
-  const id = route.params.id;
-  return (store.getFestivals || []).find(f => f.festivalId === id);
-});
-
-function formatDate(str, timeOnly = false) {
-  const d = new Date(str);
-  if (timeOnly) return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour });
-  return d.toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short', hour12: !settingsStore.is24Hour });
-}
-
-function formatTimeRange(startStr, endStr) {
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-  return `${start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })} - ${end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: !settingsStore.is24Hour })}`;
-}
-
-function formatDayHeader(dateStr) {
-  const date = new Date(dateStr);
-  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-  const weekday = weekdays[date.getDay()];
-  return `${date.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric' })} (${weekday})`;
-}
-
-function groupPerformancesByDay(performances) {
+function groupByDay(performances) {
   const grouped = {};
-  performances.forEach(perf => {
-    const date = new Date(perf.start);
-    const dateKey = date.toDateString(); // 使用日期字符串作為 key
-    if (!grouped[dateKey]) {
-      grouped[dateKey] = [];
-    }
-    grouped[dateKey].push(perf);
-  });
-
-  // 按時間排序每天的表演
-  Object.keys(grouped).forEach(dateKey => {
-    grouped[dateKey].sort((a, b) => new Date(a.start) - new Date(b.start));
-  });
-
+  for (const perf of performances) {
+    const key = new Date(perf.start).toDateString();
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(perf);
+  }
+  for (const key of Object.keys(grouped)) {
+    grouped[key].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+  }
   return grouped;
 }
 
+function inPlan(stage, perf) {
+  const id = makePerfId(festival.value, stage, perf);
+  return planStore.myPlan.some((p) => (p.id || '') === id);
+}
+
+function togglePlan(stage, perf) {
+  if (!festival.value) return;
+  const id = makePerfId(festival.value, stage, perf);
+  if (inPlan(stage, perf)) {
+    planStore.removePerformance(id);
+    haptic(15);
+    showToast({ message: `已移除：${perf.artist}` });
+    trackEvent('remove_from_plan', { festival_id: festival.value.festivalId, artist: perf.artist });
+  } else {
+    planStore.addPerformance({
+      ...perf,
+      stage: stage.name,
+      festivalId: festival.value.festivalId,
+      festivalName: festival.value.name,
+      id,
+    });
+    haptic([30, 30, 30]);
+    showToast({ message: `已加入：${perf.artist}`, kind: 'success', icon: '✓' });
+    trackEvent('add_to_plan', { festival_id: festival.value.festivalId, artist: perf.artist });
+  }
+}
 
 function goTimeline() {
   router.push({ name: 'RunDownTimeline', params: { id: route.params.id } });
@@ -119,82 +166,13 @@ function goMap() {
   router.push({ name: 'MapView', params: { id: route.params.id } });
 }
 
-function perfKey(stage, perf) {
-  return (
-    (festival.value?.festivalId || '') + '_' +
-    (stage?.name || '') + '_' +
-    (perf?.artist || '') + '_' +
-    (perf?.start || '')
-  );
-}
-
-function isInPlan(stage, perf) {
-  const key = perfKey(stage, perf);
-  return (planStore.myPlan || []).some(
-    p => perfKey({ name: p.stage }, p) === key && p.festivalId === festival.value.festivalId
-  );
-}
-
-function togglePlan(stage, perf) {
-  if (isInPlan(stage, perf)) {
-    planStore.removePerformance(perfKey(stage, perf));
-    trackEvent('remove_from_plan', {
-      festival_id: festival.value?.festivalId,
-      festival_name: festival.value?.name,
-      artist: perf.artist,
-      stage: stage.name,
-    });
-  } else {
-    planStore.addPerformance({
-      ...perf,
-      stage: stage.name,
-      festivalId: festival.value.festivalId,
-      festivalName: festival.value.name,
-      id: perfKey(stage, perf),
-    });
-    trackEvent('add_to_plan', {
-      festival_id: festival.value?.festivalId,
-      festival_name: festival.value?.name,
-      artist: perf.artist,
-      stage: stage.name,
-    });
-  }
-}
-
-
-
-async function applyTheme() {
-  // 移除 Logo 相關的主題顏色功能
-  headerStyle.value = {};
-}
-
 watch(festival, (val) => {
-  applyTheme();
   if (val) {
-    trackEvent('view_festival', {
-      festival_id: val.festivalId,
-      festival_name: val.name,
-    });
+    trackEvent('view_festival', { festival_id: val.festivalId, festival_name: val.name });
   }
 });
 
-onMounted(async () => {
-  if (!Array.isArray(store.getFestivals) || store.getFestivals.length === 0) {
-    loading.value = true;
-    const files = import.meta.glob('../../festivals/*.json');
-    const loaded = [];
-    for (const path in files) {
-      try {
-        const mod = await files[path]();
-        loaded.push(mod.default);
-      } catch (e) { }
-    }
-    store.$patch({ festivals: loaded });
-    loading.value = false;
-  }
-  planStore.loadPlan();
-  applyTheme();
+onMounted(() => {
+  festivalStore.ensureLoaded();
 });
 </script>
-
-<style scoped></style>
