@@ -14,13 +14,18 @@
 
       <!-- 時間欄 + 背景 -->
       <template v-for="(slot, i) in timeSlots" :key="slot.timestamp">
-        <div class="time-cell" :style="{ gridColumn: 1, gridRow: i + 2 }">
-          <span v-if="i > 0">{{ slot.time }}</span>
+        <div
+          class="time-cell"
+          :class="{ 'row-line-minor': !slot.major }"
+          :style="{ gridColumn: 1, gridRow: i + 2 }"
+        >
+          <span v-if="i > 0 && slot.major">{{ slot.time }}</span>
         </div>
         <div
           v-for="(_, sIdx) in stages"
           :key="`bg-${sIdx}-${i}`"
           class="grid-bg-cell"
+          :class="{ 'row-line-minor': !slot.major }"
           :style="{ gridColumn: sIdx + 2, gridRow: i + 2 }"
         />
       </template>
@@ -264,6 +269,7 @@ defineExpose({ scrollToCurrent });
   font-size: 0.8rem;
   font-weight: 500;
   border-right: 1px solid var(--tg-border-light);
+  border-top: 1px solid var(--tg-border-light);
   position: sticky;
   left: 0;
   z-index: 15;
@@ -277,10 +283,16 @@ defineExpose({ scrollToCurrent });
 .grid-bg-cell {
   background: var(--tg-bg);
   border-right: 1px solid var(--tg-border-light);
-  border-top: 1px dashed var(--tg-border-light);
+  border-top: 1px solid var(--tg-border-light);
 }
 .grid-bg-cell:nth-child(even) {
   background: var(--tg-bg-alt);
+}
+/* 5 分鐘的半格線：淡化成虛點，作為輔助參考，不搶走 10 分鐘整點線 */
+.time-cell.row-line-minor,
+.grid-bg-cell.row-line-minor {
+  border-top-style: dotted;
+  border-top-color: var(--tg-border-light);
 }
 @media (max-width: 768px) {
   .timeline-container {

@@ -110,9 +110,12 @@
       </div>
 
       <!-- 日期 tabs -->
-      <div v-if="planDays.length > 1" class="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div
+        v-if="planDays.length > 1 || pastDays.length"
+        class="flex gap-2 mb-6 overflow-x-auto pb-2 items-center"
+      >
         <button
-          v-for="day in planDays"
+          v-for="day in upcomingDays"
           :key="day.dateKey"
           class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2"
           :class="
@@ -134,6 +137,49 @@
             {{ day.count }}
           </span>
         </button>
+
+        <!-- 過往活動切換 -->
+        <button
+          v-if="pastDays.length"
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2 border border-dashed border-gray-400 dark:border-gray-500 text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+          @click="showPast = !showPast"
+        >
+          <span>過往活動</span>
+          <span
+            class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full text-white bg-gray-400 dark:bg-gray-600"
+          >
+            {{ pastDays.length }}
+          </span>
+          <span class="text-xs" aria-hidden="true">{{ showPast ? '▲' : '▼' }}</span>
+        </button>
+
+        <!-- 過往活動日期 -->
+        <template v-if="showPast">
+          <button
+            v-for="day in pastDays"
+            :key="day.dateKey"
+            class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2"
+            :class="
+              selectedPlanDay === day.dateKey
+                ? 'bg-gray-600 text-white shadow-md'
+                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+            "
+            @click="selectedPlanDay = day.dateKey"
+          >
+            <span>{{ day.label }}</span>
+            <span
+              class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full"
+              :class="
+                selectedPlanDay === day.dateKey
+                  ? 'text-gray-700 bg-white'
+                  : 'text-white bg-gray-400'
+              "
+            >
+              {{ day.count }}
+            </span>
+          </button>
+        </template>
       </div>
 
       <!-- 單日時間軸 -->
@@ -352,6 +398,9 @@ const planDays = computed(() => {
   if (!plan.value.length) return [];
 
   const todayKey = now.value.toDateString();
+  const startOfToday = new Date(now.value);
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfTodayMs = startOfToday.getTime();
   const grouped = new Map();
 
   for (const perf of plan.value) {
@@ -395,6 +444,7 @@ const planDays = computed(() => {
 
     return {
       ...day,
+      isPast: day.date.getTime() < startOfTodayMs,
       label: formatDayLabel(day.date),
       count: day.performances.length,
       festivalNames: [...day.festivalNames],
@@ -407,6 +457,15 @@ const planDays = computed(() => {
   return result;
 });
 
+// 即將到來（含今天）的行程，依日期由近到遠排序
+const upcomingDays = computed(() => planDays.value.filter((d) => !d.isPast));
+// 過往行程，最近結束的排在最前面
+const pastDays = computed(() =>
+  planDays.value.filter((d) => d.isPast).slice().reverse()
+);
+// 過往活動預設收合，避免干擾
+const showPast = ref(false);
+
 // 把預設選擇日的副作用從 computed 拉出來，避免 vue/no-side-effects-in-computed-properties
 watch(
   planDays,
@@ -417,7 +476,16 @@ watch(
     }
     if (!selectedPlanDay.value || !days.some((d) => d.dateKey === selectedPlanDay.value)) {
       const today = days.find((d) => d.isToday);
-      selectedPlanDay.value = today ? today.dateKey : days[0].dateKey;
+      const firstUpcoming = upcomingDays.value[0];
+      if (today) {
+        selectedPlanDay.value = today.dateKey;
+      } else if (firstUpcoming) {
+        selectedPlanDay.value = firstUpcoming.dateKey;
+      } else {
+        // 全部都是過往行程：選最近的一場並展開過往區塊
+        selectedPlanDay.value = pastDays.value[0]?.dateKey || days[0].dateKey;
+        showPast.value = true;
+      }
     }
   },
   { immediate: true }
@@ -444,14 +512,36 @@ const shareButtonLabel = computed(() => {
 });
 
 const shareableFestivals = computed(() => {
+  const nowMs = now.value.getTime();
   const fests = {};
   for (const p of plan.value) {
     if (!fests[p.festivalId]) {
-      fests[p.festivalId] = { id: p.festivalId, name: p.festivalName, count: 0 };
+      fests[p.festivalId] = {
+        id: p.festivalId,
+        name: p.festivalName,
+        count: 0,
+        // 還沒結束（進行中或未來）演出中最早的開始時間
+        nextStart: Infinity,
+        // 全部演出中最晚的結束時間，用來排序純過往的音樂祭
+        lastEnd: -Infinity,
+      };
     }
-    fests[p.festivalId].count++;
+    const fest = fests[p.festivalId];
+    fest.count++;
+    const startMs = new Date(p.start).getTime();
+    const endMs = new Date(p.end || p.start).getTime();
+    if (endMs >= nowMs && startMs < fest.nextStart) fest.nextStart = startMs;
+    if (endMs > fest.lastEnd) fest.lastEnd = endMs;
   }
-  return Object.values(fests);
+  // 時間最靠近現在的排最上面：
+  //   先列還沒結束的（即將開始的最前面），再列已經結束的（最近結束的在前）。
+  return Object.values(fests).sort((a, b) => {
+    const aUpcoming = a.nextStart !== Infinity;
+    const bUpcoming = b.nextStart !== Infinity;
+    if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+    if (aUpcoming) return a.nextStart - b.nextStart;
+    return b.lastEnd - a.lastEnd;
+  });
 });
 
 function openShareModal() {

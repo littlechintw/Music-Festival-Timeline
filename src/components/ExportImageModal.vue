@@ -223,8 +223,11 @@ const selectedKeys = computed(() => {
 const days = computed(() => {
   const fest = selectedFestivalMeta.value;
   if (!fest) return [];
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfTodayMs = startOfToday.getTime();
   const baseDays = listFestivalDays(fest);
-  return baseDays.map((d) => {
+  const mapped = baseDays.map((d) => {
     let selectedCount = 0;
     let totalCount = 0;
     for (const stage of fest.stages) {
@@ -235,7 +238,14 @@ const days = computed(() => {
         if (selectedKeys.value.has(key)) selectedCount += 1;
       }
     }
-    return { ...d, selectedCount, totalCount };
+    return { ...d, selectedCount, totalCount, isPast: d.date.getTime() < startOfTodayMs };
+  });
+  // 時間最靠近現在的排最前面：先列今天與之後的（由近到遠），再列已過的（最近的在前）。
+  return mapped.sort((a, b) => {
+    if (a.isPast !== b.isPast) return a.isPast ? 1 : -1;
+    return a.isPast
+      ? b.date.getTime() - a.date.getTime()
+      : a.date.getTime() - b.date.getTime();
   });
 });
 
