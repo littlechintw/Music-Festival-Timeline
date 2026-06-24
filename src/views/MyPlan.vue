@@ -371,6 +371,58 @@
       </div>
     </div>
 
+    <!-- 加入行事曆 Modal：選擇音樂祭 -->
+    <div
+      v-if="showCalendarModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-[100] p-4"
+      @click="showCalendarModal = false"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full mx-auto shadow-2xl"
+        @click.stop
+      >
+        <h3 class="text-xl font-bold mb-1 text-center text-gray-900 dark:text-gray-100">
+          加入行事曆
+        </h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+          選擇要匯出的範圍，會依你的提醒設定加上演出前提醒。
+        </p>
+        <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+          <button
+            v-if="shareableFestivals.length > 1"
+            class="px-4 py-3 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-medium text-left flex justify-between items-center transition-colors"
+            @click="executeCalendarExport('all')"
+          >
+            <span class="truncate pr-2">全部行程</span>
+            <span
+              class="text-sm bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-2 py-1 rounded-full whitespace-nowrap"
+            >
+              {{ plan.length }} 場
+            </span>
+          </button>
+          <button
+            v-for="fest in shareableFestivals"
+            :key="fest.id"
+            class="px-4 py-3 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-medium text-left flex justify-between items-center transition-colors"
+            @click="executeCalendarExport(fest.id)"
+          >
+            <span class="truncate pr-2">{{ fest.name }}</span>
+            <span
+              class="text-sm bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-2 py-1 rounded-full whitespace-nowrap"
+            >
+              {{ fest.count }} 場
+            </span>
+          </button>
+        </div>
+        <button
+          class="mt-6 w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
+          @click="showCalendarModal = false"
+        >
+          取消
+        </button>
+      </div>
+    </div>
+
     <ExportImageModal
       :open="showExportImageModal"
       :plan="plan"
@@ -524,18 +576,35 @@ function goToMap(festivalId) {
 }
 
 // ---- 加入行事曆（匯出 .ics）----
+const showCalendarModal = ref(false);
+
 function addToCalendar() {
   if (!plan.value.length) {
     showToast({ message: '目前沒有行程可以加入行事曆', kind: 'error' });
     return;
   }
+  showCalendarModal.value = true;
+}
+
+/** @param {string} festivalId 'all' 代表整份行程 */
+function executeCalendarExport(festivalId) {
+  const subset =
+    festivalId === 'all' ? plan.value : plan.value.filter((p) => p.festivalId === festivalId);
+  if (!subset.length) {
+    showToast({ message: '這個音樂祭沒有可加入的行程', kind: 'error' });
+    return;
+  }
   const reminderMinutes = settingsStore.performanceReminderTimes?.length
     ? settingsStore.performanceReminderTimes
     : [10];
-  const ics = buildPlanIcs(plan.value, { reminderMinutes, calendarName: '我的音樂祭行程' });
-  downloadIcs(ics, 'my-festival-plan.ics');
-  trackEvent('export_calendar', { count: plan.value.length });
+  const fest = shareableFestivals.value.find((f) => f.id === festivalId);
+  const calName = festivalId === 'all' ? '我的音樂祭行程' : fest?.name || '音樂祭行程';
+  const ics = buildPlanIcs(subset, { reminderMinutes, calendarName: calName });
+  const filename = festivalId === 'all' ? 'my-festival-plan.ics' : `${festivalId || 'festival'}.ics`;
+  downloadIcs(ics, filename);
+  trackEvent('export_calendar', { festival_id: festivalId, count: subset.length });
   showToast({ message: '已下載行事曆檔，開啟它即可加入行事曆並收到提醒' });
+  showCalendarModal.value = false;
 }
 
 // ---- 分享 ----

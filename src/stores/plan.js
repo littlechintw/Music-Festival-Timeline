@@ -136,14 +136,14 @@ export const usePlanStore = defineStore('plan', () => {
         invalid.push(perf);
         continue;
       }
-      const match = stage.performances.find((p) => p.artist === perf.artist);
-      if (!match) {
-        invalid.push(perf);
-        continue;
-      }
-      const matchStart = new Date(match.start).getTime();
       const originalStart = new Date(perf.start).getTime();
-      if (matchStart !== originalStart) {
+      // 同名藝人可能跨天／多場（D1、D2），必須用「藝人 + 開始時間」鎖定那一場，
+      // 否則只比對名稱會永遠對到第一場，害另一場每次都被誤判為時間異動。
+      const match = stage.performances.find(
+        (p) => p.artist === perf.artist && new Date(p.start).getTime() === originalStart
+      );
+      if (!match) {
+        // 找不到同名同時間的場次：可能被刪除或時間已異動
         invalid.push(perf);
         continue;
       }
