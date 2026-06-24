@@ -76,6 +76,7 @@ const route = useRoute();
 const navItems = [
   { to: '/', label: '音樂祭', icon: '🎪' },
   { to: '/plan', label: '行程', icon: '📅' },
+  { to: '/artists', label: '藝人', icon: '🎤' },
   { to: '/settings', label: '設定', icon: '⚙️' },
   { to: '/editor', label: '新增', icon: '➕' },
 ];

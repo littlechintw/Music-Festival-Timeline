@@ -25,32 +25,11 @@
       <NextUpCard :plan="plan" :now="now" :is24-hour="settingsStore.is24Hour" />
       <!-- 統計卡 -->
       <div
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-lg text-gray-800 dark:text-gray-100 relative"
+        class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-lg text-gray-800 dark:text-gray-100"
         style="box-shadow: 0 4px 24px 0 rgba(30, 64, 175, 0.1), 0 0px 8px 0 rgba(30, 64, 175, 0.1)"
       >
-        <div class="absolute top-2 right-6 hidden md:flex gap-2">
-          <button
-            class="px-3 py-1 rounded border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 shadow-sm"
-            :disabled="isSharing || !isOnline"
-            :title="!isOnline ? '離線中，無法產生分享網址' : ''"
-            @click="openShareModal"
-          >
-            <span
-              v-if="isSharing"
-              class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
-            />
-            {{ shareButtonLabel }}
-          </button>
-          <button
-            class="px-3 py-1 rounded border border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-gray-700 transition inline-flex items-center gap-1 shadow-sm"
-            aria-label="匯出行程圖"
-            @click="showExportImageModal = true"
-          >
-            <span aria-hidden="true">📸</span>
-            <span>匯出行程圖</span>
-          </button>
-        </div>
-        <div class="flex flex-col gap-2 md:hidden mt-2 mb-4">
+        <!-- 手機版操作按鈕 -->
+        <div class="flex flex-col gap-2 md:hidden mb-4">
           <button
             class="w-full px-3 py-2 rounded border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
             :disabled="isSharing || !isOnline"
@@ -69,42 +48,84 @@
             <span aria-hidden="true">📸</span>
             <span>匯出行程圖</span>
           </button>
+          <button
+            class="w-full px-3 py-2 rounded border border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-300 bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-1 shadow-sm"
+            @click="addToCalendar"
+          >
+            <span aria-hidden="true">📅</span>
+            <span>加入行事曆</span>
+          </button>
         </div>
-        <div class="flex flex-wrap gap-6 text-sm mt-2">
-          <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">{{ plan.length }}</span>
-            <span>場演出</span>
+
+        <!-- 統計與桌機版操作按鈕同一列、垂直置中對齊 -->
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-6 text-sm">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">{{ plan.length }}</span>
+              <span>場演出</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zM4 7h12v9a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">{{ planDays.length }}</span>
+              <span>天行程</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
+                {{ uniqueFestivals.length }}
+              </span>
+              <span>個音樂祭</span>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zM4 7h12v9a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"
-                clip-rule="evenodd"
+
+          <div class="hidden md:flex gap-2 flex-shrink-0">
+            <button
+              class="px-3 py-1 rounded border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 shadow-sm"
+              :disabled="isSharing || !isOnline"
+              :title="!isOnline ? '離線中，無法產生分享網址' : ''"
+              @click="openShareModal"
+            >
+              <span
+                v-if="isSharing"
+                class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
               />
-            </svg>
-            <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">{{ planDays.length }}</span>
-            <span>天行程</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
-              {{ uniqueFestivals.length }}
-            </span>
-            <span>個音樂祭</span>
+              {{ shareButtonLabel }}
+            </button>
+            <button
+              class="px-3 py-1 rounded border border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-gray-700 transition inline-flex items-center gap-1 shadow-sm"
+              aria-label="匯出行程圖"
+              @click="showExportImageModal = true"
+            >
+              <span aria-hidden="true">📸</span>
+              <span>匯出行程圖</span>
+            </button>
+            <button
+              class="px-3 py-1 rounded border border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-300 bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-gray-700 transition inline-flex items-center gap-1 shadow-sm"
+              aria-label="加入行事曆"
+              @click="addToCalendar"
+            >
+              <span aria-hidden="true">📅</span>
+              <span>加入行事曆</span>
+            </button>
           </div>
         </div>
       </div>
@@ -372,6 +393,8 @@ import { encodePlanToText } from '../utils/url';
 import { getShortenerUrl } from '../utils/shortener';
 import { formatTime, formatDayLabel } from '../utils/format';
 import { trackEvent } from '../utils/analytics';
+import { buildPlanIcs, downloadIcs } from '../utils/calendar';
+import { useToast } from '../composables/useToast';
 import TimelineGrid from '../components/TimelineGrid.vue';
 import NextUpCard from '../components/NextUpCard.vue';
 import ExportImageModal from '../components/ExportImageModal.vue';
@@ -382,6 +405,7 @@ const settingsStore = useSettingsStore();
 const router = useRouter();
 const { now } = useNowTicker(1000);
 const { isOnline } = useOnline();
+const { showToast } = useToast();
 
 const { myPlan: plan } = storeToRefs(planStore);
 const selectedPlanDay = ref('');
@@ -497,6 +521,21 @@ function dayFestivalsWithMap(day) {
 
 function goToMap(festivalId) {
   router.push({ name: 'MapView', params: { id: festivalId } });
+}
+
+// ---- 加入行事曆（匯出 .ics）----
+function addToCalendar() {
+  if (!plan.value.length) {
+    showToast({ message: '目前沒有行程可以加入行事曆', kind: 'error' });
+    return;
+  }
+  const reminderMinutes = settingsStore.performanceReminderTimes?.length
+    ? settingsStore.performanceReminderTimes
+    : [10];
+  const ics = buildPlanIcs(plan.value, { reminderMinutes, calendarName: '我的音樂祭行程' });
+  downloadIcs(ics, 'my-festival-plan.ics');
+  trackEvent('export_calendar', { count: plan.value.length });
+  showToast({ message: '已下載行事曆檔，開啟它即可加入行事曆並收到提醒' });
 }
 
 // ---- 分享 ----

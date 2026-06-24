@@ -9,6 +9,7 @@ const routes = [
   { path: '/festival/:id/timeline', name: 'RunDownTimeline', component: () => import('../views/RunDownTimeline.vue') },
   { path: '/festival/:id/map', name: 'MapView', component: () => import('../views/MapView.vue') },
   { path: '/plan', name: 'MyPlan', component: () => import('../views/MyPlan.vue') },
+  { path: '/artists', name: 'MyArtists', component: () => import('../views/MyArtists.vue') },
   { path: '/settings', name: 'Settings', component: () => import('../views/Settings.vue') },
   { path: '/editor', name: 'Editor', component: () => import('../editor/EditorView.vue') },
   { path: '/:shortId([a-zA-Z0-9]{3})', name: 'RedirectShortUrl', component: () => import('../views/RedirectShortUrl.vue') },
