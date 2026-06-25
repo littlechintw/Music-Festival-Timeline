@@ -26,6 +26,7 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git checkout -B data-live
-          git add filtered-festivals.json public/festivals/index.json
+          # 這兩個是 build 產物，被 .gitignore 忽略；data-live 分支刻意要發布它們，所以強制加入
+          git add -f filtered-festivals.json public/festivals/index.json
           git commit -m "Update live festival data" || echo "Nothing to commit"
           git push --force origin data-live
