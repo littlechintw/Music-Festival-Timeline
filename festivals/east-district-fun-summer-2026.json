@@ -16,8 +16,8 @@
   },
   "stages": [
     {
-      "id": "day-1",
-      "name": "7/25 (六) DAY 1",
+      "id": "main",
+      "name": "舞台",
       "performances": [
         {
           "artist": "TDC偶像表演學院 開場演出",
@@ -58,13 +58,7 @@
           "artist": "DJ DZRT FRST 華語金曲派對",
           "start": "2026-07-25T20:15:00+08:00",
           "end": "2026-07-25T21:10:00+08:00"
-        }
-      ]
-    },
-    {
-      "id": "day-2",
-      "name": "7/26 (日) DAY 2",
-      "performances": [
+        },
         {
           "artist": "DJ 濱崎 K POP派對",
           "start": "2026-07-26T14:10:00+08:00",
