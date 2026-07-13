@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between mb-4">
         <div>
           <h3 class="font-medium text-gray-800 dark:text-gray-200">深色模式</h3>
           <p class="text-sm text-gray-500 dark:text-gray-400">跟隨系統、或手動切換</p>
@@ -41,6 +41,29 @@
           </button>
         </div>
       </div>
+
+      <label class="flex items-center justify-between cursor-pointer group">
+        <div class="pr-4">
+          <h3 class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition">
+            時間軸團名跑馬燈動畫
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            關掉後，過長的團名會直接截斷顯示，不會左右捲動
+          </p>
+        </div>
+        <div class="relative shrink-0">
+          <input
+            type="checkbox"
+            class="peer sr-only"
+            role="switch"
+            :checked="settingsStore.enableMarqueeAnimation"
+            :aria-checked="settingsStore.enableMarqueeAnimation"
+            @change="(e) => settingsStore.setEnableMarqueeAnimation(e.target.checked)"
+          />
+          <div class="block bg-gray-200 dark:bg-gray-600 w-12 h-7 rounded-full transition-colors duration-300 peer-checked:bg-blue-500" />
+          <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 shadow-sm peer-checked:translate-x-5" />
+        </div>
+      </label>
     </AccordionSection>
 
     <AccordionSection title="通知設定" icon="🔔">

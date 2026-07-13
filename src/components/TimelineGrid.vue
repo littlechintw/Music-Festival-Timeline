@@ -54,22 +54,26 @@
         <div
           v-for="perf in performancesByStage[stage.name] || []"
           :key="perf.id || `${perf.artist}_${perf.start}`"
-          class="performance-block relative m-1 rounded p-2 text-sm shadow transition-transform hover:scale-[1.02]"
-          :class="[getPerfClasses(perf), liveClasses(perf), conflictClasses(perf)]"
+          class="performance-block relative rounded shadow transition-transform hover:scale-[1.02]"
+          :class="[sizeClasses(perf), getPerfClasses(perf), liveClasses(perf), conflictClasses(perf)]"
           :style="perfStyle(perf, stageIndex)"
           @click="$emit('perfClick', { perf, stage })"
         >
-          <div class="flex items-start gap-1">
-            <span v-if="isLive(perf)" class="text-[10px] font-bold bg-red-500 text-white px-1 rounded animate-pulse shrink-0">
-              LIVE
+          <div class="flex items-baseline flex-wrap gap-x-2">
+            <span class="flex items-start gap-1 shrink-0 max-w-full">
+              <span v-if="isLive(perf)" class="text-[10px] font-bold bg-red-500 text-white px-1 rounded animate-pulse shrink-0">
+                LIVE
+              </span>
+              <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-500 text-white px-1 rounded shrink-0" :title="conflictsFor(perf)">
+                ⚠
+              </span>
+              <span v-marquee="settingsStore.enableMarqueeAnimation" class="marquee-viewport min-w-0">
+                <span class="marquee-track font-bold">{{ perf.artist }}</span>
+              </span>
             </span>
-            <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-500 text-white px-1 rounded shrink-0" :title="conflictsFor(perf)">
-              ⚠
+            <span class="text-[0.85em] opacity-80 shrink-0">
+              {{ formatTimeRange(perf.start, perf.end, is24Hour) }}
             </span>
-            <span class="font-bold break-words min-w-0 flex-1">{{ perf.artist }}</span>
-          </div>
-          <div class="text-xs opacity-80">
-            {{ formatTimeRange(perf.start, perf.end, is24Hour) }}
           </div>
         </div>
       </template>
@@ -81,6 +85,9 @@
 import { computed, ref, nextTick, watch } from 'vue';
 import { useTimelineGrid } from '../composables/useTimelineGrid';
 import { formatTime, formatTimeRange } from '../utils/format';
+import { useSettingsStore } from '../stores/settings';
+
+const settingsStore = useSettingsStore();
 
 const props = defineProps({
   // [{ name, key? }]
@@ -119,6 +126,14 @@ const performancesByStage = computed(() => {
 function getPerfClasses(perf) {
   if (props.perfClassResolver) return props.perfClassResolver(perf);
   return 'bg-blue-600 text-white';
+}
+
+// 演出時長很短（例如開場儀式、報到）時，方塊本身的格高有限，
+// 縮小內距與字級讓內容盡量塞得下，同時仍保持方塊高度對應真實時長。
+function sizeClasses(perf) {
+  const start = new Date(perf.start).getTime();
+  const end = perf.end ? new Date(perf.end).getTime() : start + 30 * 60000;
+  return end - start <= 15 * 60000 ? 'm-0.5 p-1 text-xs' : 'm-1 p-2 text-sm';
 }
 
 function isLive(perf) {
@@ -201,6 +216,62 @@ watch(timeSlots, () => {
 });
 
 defineExpose({ scrollToCurrent });
+
+// 團名超出可用寬度（欄位太窄、或方塊太短擠不下）時，
+// 讓文字左右跑馬燈捲動，而不是換行或截斷──方塊大小仍精準對應時間。
+function prefersReducedMotion() {
+  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+}
+
+// keyframe 設計是「停頓 10% → 移動 35% → 停頓 10% → 移動 35% → 停頓 10%」，
+// 真正在移動的時間只佔整個週期的 70%（每個方向各 35%），
+// 算 duration 時得把這個比例算進去，不然實際捲動速度會比 PX_PER_SECOND 快上好幾倍。
+const TRAVEL_FRACTION = 0.35;
+const PX_PER_SECOND = 15;
+
+function setupMarquee(el) {
+  const track = el.firstElementChild;
+  if (!track) return;
+  const overflow = track.scrollWidth - el.clientWidth;
+  const wouldOverflow = overflow > 2;
+
+  if (el.__marqueeEnabled === false || prefersReducedMotion()) {
+    el.classList.remove('is-overflowing');
+    track.style.removeProperty('--marquee-shift');
+    track.style.removeProperty('--marquee-duration');
+    // 動畫關閉時，放不下的團名就直接用「…」截斷，而不是硬生生切字。
+    el.classList.toggle('is-truncated', wouldOverflow);
+    return;
+  }
+
+  el.classList.remove('is-truncated');
+  if (wouldOverflow) {
+    const shift = -(overflow + 8);
+    const duration = Math.abs(shift) / (PX_PER_SECOND * TRAVEL_FRACTION);
+    track.style.setProperty('--marquee-shift', `${shift}px`);
+    track.style.setProperty('--marquee-duration', `${Math.max(4, duration)}s`);
+    el.classList.add('is-overflowing');
+  } else {
+    el.classList.remove('is-overflowing');
+    track.style.removeProperty('--marquee-shift');
+  }
+}
+
+const vMarquee = {
+  mounted(el, binding) {
+    el.__marqueeEnabled = binding.value;
+    setupMarquee(el);
+    el.__marqueeResizeObserver = new ResizeObserver(() => setupMarquee(el));
+    el.__marqueeResizeObserver.observe(el);
+  },
+  updated(el, binding) {
+    el.__marqueeEnabled = binding.value;
+    setupMarquee(el);
+  },
+  unmounted(el) {
+    el.__marqueeResizeObserver?.disconnect();
+  },
+};
 </script>
 
 <style scoped>
@@ -230,6 +301,7 @@ defineExpose({ scrollToCurrent });
   background: var(--tg-border-light);
 }
 .timeline-container {
+  --stage-col-width: 267px;
   background: var(--tg-border-light);
   min-width: 100%;
   color: var(--tg-text);
@@ -288,6 +360,40 @@ defineExpose({ scrollToCurrent });
 .grid-bg-cell:nth-child(even) {
   background: var(--tg-bg-alt);
 }
+.marquee-viewport {
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+.marquee-track {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+}
+.marquee-viewport.is-overflowing .marquee-track {
+  animation: marquee-scroll var(--marquee-duration, 6s) ease-in-out infinite;
+}
+.marquee-viewport.is-truncated .marquee-track {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@keyframes marquee-scroll {
+  0%, 10% {
+    transform: translateX(0);
+  }
+  45%, 55% {
+    transform: translateX(var(--marquee-shift, 0));
+  }
+  90%, 100% {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-viewport.is-overflowing .marquee-track {
+    animation: none;
+  }
+}
 /* 5 分鐘的半格線：淡化成虛點，作為輔助參考，不搶走 10 分鐘整點線 */
 .time-cell.row-line-minor,
 .grid-bg-cell.row-line-minor {
@@ -312,7 +418,7 @@ defineExpose({ scrollToCurrent });
 }
 @media (max-width: 480px) {
   .timeline-container {
-    --stage-col-width: 80px;
+    --stage-col-width: 100px;
     --time-col-width: 55px;
   }
 }

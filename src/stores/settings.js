@@ -39,12 +39,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const is24Hour = ref(read('is24Hour') !== 'false');
   const enableFestivalReminders = ref(read('enableFestivalReminders') !== 'false');
   const enableAnalytics = ref(read('enableAnalytics') !== 'false');
+  const enableMarqueeAnimation = ref(read('enableMarqueeAnimation') !== 'false');
   /** @type {import('vue').Ref<number[]>} */
   const performanceReminderTimes = ref(loadReminderTimes());
 
   watch(is24Hour, (v) => localStorage.setItem('is24Hour', String(v)));
   watch(enableFestivalReminders, (v) => localStorage.setItem('enableFestivalReminders', String(v)));
   watch(enableAnalytics, (v) => localStorage.setItem('enableAnalytics', String(v)));
+  watch(enableMarqueeAnimation, (v) => localStorage.setItem('enableMarqueeAnimation', String(v)));
   watch(
     performanceReminderTimes,
     (v) => {
@@ -69,6 +71,10 @@ export const useSettingsStore = defineStore('settings', () => {
   function setEnableAnalytics(val) {
     enableAnalytics.value = val;
   }
+  /** @param {boolean} val */
+  function setEnableMarqueeAnimation(val) {
+    enableMarqueeAnimation.value = val;
+  }
   /** @param {number[]} valArray */
   function setPerformanceReminderTimes(valArray) {
     performanceReminderTimes.value = Array.from(new Set(valArray)).sort((a, b) => a - b);
@@ -78,11 +84,13 @@ export const useSettingsStore = defineStore('settings', () => {
     is24Hour,
     enableFestivalReminders,
     enableAnalytics,
+    enableMarqueeAnimation,
     performanceReminderTimes,
     set24Hour,
     toggle24Hour,
     setEnableFestivalReminders,
     setEnableAnalytics,
+    setEnableMarqueeAnimation,
     setPerformanceReminderTimes,
   };
 });
