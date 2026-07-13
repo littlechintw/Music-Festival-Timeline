@@ -59,14 +59,14 @@
           :style="perfStyle(perf, stageIndex)"
           @click="$emit('perfClick', { perf, stage })"
         >
-          <div class="flex items-center gap-1">
-            <span v-if="isLive(perf)" class="text-[10px] font-bold bg-red-500 text-white px-1 rounded animate-pulse">
+          <div class="flex items-start gap-1">
+            <span v-if="isLive(perf)" class="text-[10px] font-bold bg-red-500 text-white px-1 rounded animate-pulse shrink-0">
               LIVE
             </span>
-            <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-500 text-white px-1 rounded" :title="conflictsFor(perf)">
+            <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-500 text-white px-1 rounded shrink-0" :title="conflictsFor(perf)">
               ⚠
             </span>
-            <span class="font-bold truncate">{{ perf.artist }}</span>
+            <span class="font-bold break-words min-w-0 flex-1">{{ perf.artist }}</span>
           </div>
           <div class="text-xs opacity-80">
             {{ formatTimeRange(perf.start, perf.end, is24Hour) }}
