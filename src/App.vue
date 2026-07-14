@@ -61,6 +61,7 @@ import { onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFestivalStore } from './stores/festival';
 import { usePlanStore } from './stores/plan';
+import { useSavedPlansStore } from './stores/savedPlans';
 import { useSettingsStore } from './stores/settings';
 import { startReminderService } from './utils/reminders';
 import { initGA } from './utils/analytics';
@@ -93,6 +94,7 @@ function isActive(item) {
 
 const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
+const savedPlansStore = useSavedPlansStore();
 const settingsStore = useSettingsStore();
 
 let stopReminders = null;
@@ -131,6 +133,7 @@ function handleOnline() {
 
 onMounted(async () => {
   planStore.loadFromStorage();
+  savedPlansStore.loadFromStorage();
   await festivalStore.ensureLoaded();
   planStore.validatePlan(festivalStore.getFestivals);
   stopReminders = startReminderService();

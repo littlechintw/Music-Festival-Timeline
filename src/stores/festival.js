@@ -22,6 +22,8 @@ export const useFestivalStore = defineStore('festival', () => {
   const lastSyncedAt = ref(0);
   /** @type {import('vue').Ref<string[]>} */
   const lastErrors = ref([]);
+  /** @type {Promise<Festival[]> | null} 同一時間多個呼叫者共用同一個進行中的請求，避免後來者拿到還沒填好的空陣列 */
+  let inFlight = null;
 
   const getFestivals = computed(() => festivals.value);
 
@@ -38,37 +40,43 @@ export const useFestivalStore = defineStore('festival', () => {
    * @param {{ force?: boolean }} [options]
    */
   async function ensureLoaded(options = {}) {
-    const offlineStore = useOfflineStore();
     const stale = Date.now() - lastSyncedAt.value > REFRESH_INTERVAL_MS;
     if (!options.force && festivals.value.length > 0 && !stale) {
       return festivals.value;
     }
-    if (loading.value) return festivals.value;
+    // 同一時間可能有好幾個元件的 onMounted 都呼叫這個函式（例如 App.vue 跟頁面本身）——
+    // 後來者要等同一個請求做完，而不是直接拿還沒填好的空陣列跑掉。
+    if (inFlight) return inFlight;
 
+    const offlineStore = useOfflineStore();
     loading.value = true;
-    try {
-      const result = await syncFestivals({
-        mode: offlineStore.mode,
-        pinnedIds: offlineStore.pinned,
-        getCached: (id) => festivals.value.find((f) => f.festivalId === id),
-      });
+    inFlight = (async () => {
+      try {
+        const result = await syncFestivals({
+          mode: offlineStore.mode,
+          pinnedIds: offlineStore.pinned,
+          getCached: (id) => festivals.value.find((f) => f.festivalId === id),
+        });
 
-      if (result.index) {
-        index.value = result.index;
-      }
-      if (result.festivals.length > 0) {
-        festivals.value = result.festivals;
-        lastSyncedAt.value = Date.now();
+        if (result.index) {
+          index.value = result.index;
+        }
+        if (result.festivals.length > 0) {
+          festivals.value = result.festivals;
+          lastSyncedAt.value = Date.now();
 
-        // 背景把 upcoming festival 的場地地圖預先抓進 SW 快取，
-        // 現場切到地圖頁面才能瞬間顯示。
-        prefetchMaps(result.festivals, result.index);
+          // 背景把 upcoming festival 的場地地圖預先抓進 SW 快取，
+          // 現場切到地圖頁面才能瞬間顯示。
+          prefetchMaps(result.festivals, result.index);
+        }
+        lastErrors.value = result.errors;
+      } finally {
+        loading.value = false;
+        inFlight = null;
       }
-      lastErrors.value = result.errors;
-    } finally {
-      loading.value = false;
-    }
-    return festivals.value;
+      return festivals.value;
+    })();
+    return inFlight;
   }
 
   /**

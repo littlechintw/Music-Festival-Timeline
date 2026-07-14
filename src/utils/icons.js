@@ -36,6 +36,12 @@ import arrow_forward from '@material-symbols/svg-400/outlined/arrow_forward.svg?
 import photo_camera from '@material-symbols/svg-400/outlined/photo_camera.svg?raw';
 import keyboard_arrow_up from '@material-symbols/svg-400/outlined/keyboard_arrow_up.svg?raw';
 import event from '@material-symbols/svg-400/outlined/event.svg?raw';
+import bookmark from '@material-symbols/svg-400/outlined/bookmark.svg?raw';
+import bookmark_add from '@material-symbols/svg-400/outlined/bookmark_add.svg?raw';
+import sync from '@material-symbols/svg-400/outlined/sync.svg?raw';
+import check_circle from '@material-symbols/svg-400/outlined/check_circle.svg?raw';
+import error from '@material-symbols/svg-400/outlined/error.svg?raw';
+import info from '@material-symbols/svg-400/outlined/info.svg?raw';
 
 /** @type {Record<string, string>} */
 export const icons = {
@@ -73,4 +79,10 @@ export const icons = {
   photo_camera,
   keyboard_arrow_up,
   event,
+  bookmark,
+  bookmark_add,
+  sync,
+  check_circle,
+  error,
+  info,
 };

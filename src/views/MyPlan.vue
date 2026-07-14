@@ -2,6 +2,106 @@
   <div class="p-4 max-w-3xl mx-auto relative">
     <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">我的行程</h1>
 
+    <!-- 已儲存的分享行程 -->
+    <div class="bg-[var(--md-sys-color-surface-container)] rounded-xl px-6 mb-6">
+      <AccordionSection title="已儲存的分享行程">
+        <template #icon><MdIcon name="bookmark" /></template>
+        <p
+          class="text-xs text-[var(--md-sys-color-on-surface-variant)] mb-3 flex items-center gap-1"
+        >
+          <MdIcon name="info" style="--md-icon-size: 14px" />
+          只存在這台裝置的瀏覽器裡，不會同步到雲端或其他裝置。
+        </p>
+        <div v-if="savedPlans.length === 0" class="text-sm text-gray-400 py-2">
+          打開朋友分享的行程連結時，可以另存成一份獨立命名的行程，之後會列在這裡。
+        </div>
+        <ul v-else class="divide-y divide-gray-100 dark:divide-gray-700 -mt-1">
+          <li
+            v-for="savedPlan in savedPlans"
+            :key="savedPlan.id"
+            class="py-3 flex items-start justify-between gap-3"
+          >
+            <div
+              class="min-w-0 flex-1 cursor-pointer"
+              role="button"
+              tabindex="0"
+              @click="onViewSavedPlan(savedPlan)"
+              @keyup.enter="onViewSavedPlan(savedPlan)"
+            >
+              <div class="font-medium text-gray-800 dark:text-gray-200 truncate">
+                {{ savedPlan.name }}
+              </div>
+              <div
+                class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex flex-wrap gap-x-3 gap-y-1"
+              >
+                <span>{{ savedPlan.festivalName }}</span>
+                <span>{{ savedPlan.performances.length }} 場</span>
+                <span>存於 {{ formatDayLabel(savedPlan.savedAt) }}</span>
+              </div>
+            </div>
+            <div class="flex gap-2 items-center shrink-0">
+              <button
+                type="button"
+                class="px-3 py-1 text-xs rounded border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+                @click="onViewSavedPlan(savedPlan)"
+              >
+                檢視
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1 text-xs rounded bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]"
+                @click="onApplySavedPlan(savedPlan)"
+              >
+                套用
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1 text-xs rounded border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+                @click="onRemoveSavedPlan(savedPlan)"
+              >
+                刪除
+              </button>
+            </div>
+          </li>
+        </ul>
+      </AccordionSection>
+    </div>
+
+    <!-- 檢視已儲存的分享行程 -->
+    <BaseModal :model-value="!!viewingSavedPlan" @update:model-value="closeViewSavedPlan">
+      <template #headline>{{ viewingSavedPlan?.name }}</template>
+      <div v-if="viewingSavedPlan">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          {{ viewingSavedPlan.festivalName }} • {{ viewingSavedPlan.performances.length }} 場演出
+        </p>
+        <div v-if="viewingDays.length > 1" class="flex gap-2 mb-3 overflow-x-auto pb-1">
+          <button
+            v-for="day in viewingDays"
+            :key="day.dateKey"
+            type="button"
+            class="px-3 py-1 rounded text-sm whitespace-nowrap flex-shrink-0 transition-colors"
+            :class="
+              viewingSelectedDay === day.dateKey
+                ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
+                : 'bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]'
+            "
+            @click="viewingSelectedDay = day.dateKey"
+          >
+            {{ day.label }}
+          </button>
+        </div>
+        <TimelineGrid
+          :stages="viewingStages"
+          :performances="viewingPerformances"
+          :is24-hour="settingsStore.is24Hour"
+        />
+      </div>
+      <template #actions>
+        <md-text-button type="button" @click="closeViewSavedPlan">關閉</md-text-button>
+        <md-filled-button type="button" @click="onApplyFromView">套用此行程</md-filled-button>
+      </template>
+    </BaseModal>
+
     <div
       v-if="plan.length === 0"
       class="flex flex-col items-center justify-center text-center py-12 px-4"
@@ -288,13 +388,13 @@
               </button>
             </div>
           </div>
-          <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+          <div v-if="!selectedShareFestival" class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
             <button
               v-for="fest in shareableFestivals"
               :key="fest.id"
               class="px-4 py-3 rounded-lg border border-purple-200 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-200 font-medium text-left flex justify-between items-center transition-colors disabled:opacity-50"
               :disabled="isSharing"
-              @click="executeShare(fest.id)"
+              @click="pickShareFestival(fest)"
             >
               <span class="truncate pr-2">{{ fest.name }}</span>
               <span
@@ -303,6 +403,29 @@
                 {{ fest.count }} 場
               </span>
             </button>
+          </div>
+
+          <div v-else class="flex flex-col gap-3">
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              分享「<span class="font-bold text-[var(--md-sys-color-primary)]">{{
+                selectedShareFestival.name
+              }}</span
+              >」的 {{ selectedShareFestival.count }} 場行程
+            </p>
+            <label class="block font-bold text-sm text-gray-700 dark:text-gray-200">
+              行程名稱（選填）
+            </label>
+            <md-outlined-text-field
+              class="w-full"
+              placeholder="例如：週六場次"
+              :disabled="isSharing"
+              :value="shareName"
+              @input="(e) => (shareName = e.target.value)"
+              @keyup.enter="confirmShare"
+            ></md-outlined-text-field>
+            <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">
+              朋友打開連結時會看到這個名稱，留空則顯示產生連結的時間。
+            </p>
           </div>
         </template>
 
@@ -334,9 +457,23 @@
 
       <template #actions>
         <template v-if="!generatedLink">
-          <md-text-button type="button" :disabled="isSharing" @click="showShareModal = false">
-            取消
-          </md-text-button>
+          <template v-if="!selectedShareFestival">
+            <md-text-button type="button" :disabled="isSharing" @click="showShareModal = false">
+              取消
+            </md-text-button>
+          </template>
+          <template v-else>
+            <md-text-button
+              type="button"
+              :disabled="isSharing"
+              @click="selectedShareFestival = null"
+            >
+              返回
+            </md-text-button>
+            <md-filled-button type="button" :disabled="isSharing" @click="confirmShare">
+              產生連結
+            </md-filled-button>
+          </template>
         </template>
         <template v-else>
           <md-text-button type="button" @click="showShareModal = false">關閉</md-text-button>
@@ -399,6 +536,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { usePlanStore } from '../stores/plan';
+import { useSavedPlansStore } from '../stores/savedPlans';
 import { useFestivalStore } from '../stores/festival';
 import { useSettingsStore } from '../stores/settings';
 import { useNowTicker } from '../composables/useNowTicker';
@@ -409,21 +547,26 @@ import { formatTime, formatDayLabel } from '../utils/format';
 import { trackEvent } from '../utils/analytics';
 import { buildPlanIcs, downloadIcs } from '../utils/calendar';
 import { useToast } from '../composables/useToast';
+import { useConfirm } from '../composables/useConfirm';
 import TimelineGrid from '../components/TimelineGrid.vue';
 import NextUpCard from '../components/NextUpCard.vue';
 import ExportImageModal from '../components/ExportImageModal.vue';
 import BaseModal from '../components/BaseModal.vue';
 import MdIcon from '../components/MdIcon.vue';
+import AccordionSection from '../components/AccordionSection.vue';
 
 const planStore = usePlanStore();
+const savedPlansStore = useSavedPlansStore();
 const festivalStore = useFestivalStore();
 const settingsStore = useSettingsStore();
 const router = useRouter();
 const { now } = useNowTicker(1000);
 const { isOnline } = useOnline();
 const { showToast } = useToast();
+const { confirm } = useConfirm();
 
 const { myPlan: plan } = storeToRefs(planStore);
+const { savedPlans } = storeToRefs(savedPlansStore);
 const selectedPlanDay = ref('');
 
 const uniqueFestivals = computed(() => [
@@ -534,6 +677,69 @@ watch(
   { immediate: true }
 );
 
+// ---- 已儲存的分享行程 ----
+const viewingSavedPlan = ref(null);
+const viewingSelectedDay = ref('');
+
+const viewingDays = computed(() => {
+  if (!viewingSavedPlan.value) return [];
+  const set = new Set();
+  for (const p of viewingSavedPlan.value.performances) {
+    set.add(new Date(p.start).toDateString());
+  }
+  return Array.from(set)
+    .map((dateKey) => ({ dateKey, date: new Date(dateKey), label: formatDayLabel(dateKey) }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+});
+
+const viewingStages = computed(() => {
+  if (!viewingSavedPlan.value) return [];
+  return [...new Set(viewingSavedPlan.value.performances.map((p) => p.stage))].map((name) => ({
+    name,
+  }));
+});
+
+const viewingPerformances = computed(() => {
+  if (!viewingSavedPlan.value || !viewingSelectedDay.value) return [];
+  return viewingSavedPlan.value.performances.filter(
+    (p) => new Date(p.start).toDateString() === viewingSelectedDay.value
+  );
+});
+
+function onViewSavedPlan(savedPlan) {
+  viewingSavedPlan.value = savedPlan;
+  viewingSelectedDay.value = viewingDays.value[0]?.dateKey || '';
+}
+
+function closeViewSavedPlan() {
+  viewingSavedPlan.value = null;
+}
+
+async function onApplyFromView() {
+  if (!viewingSavedPlan.value) return;
+  await onApplySavedPlan(viewingSavedPlan.value);
+  closeViewSavedPlan();
+}
+
+async function onApplySavedPlan(savedPlan) {
+  const ok = await confirm(`確定要用「${savedPlan.name}」取代目前的行程嗎？`, {
+    confirmLabel: '套用',
+  });
+  if (!ok) return;
+  planStore.replacePlan(savedPlan.performances);
+  showToast({ message: `已套用：${savedPlan.name}`, kind: 'success', icon: '✓' });
+}
+
+async function onRemoveSavedPlan(savedPlan) {
+  const ok = await confirm(`確定要刪除已儲存的行程「${savedPlan.name}」嗎？`, {
+    confirmLabel: '刪除',
+    danger: true,
+  });
+  if (!ok) return;
+  savedPlansStore.removeSavedPlan(savedPlan.id);
+  showToast({ message: `已刪除：${savedPlan.name}` });
+}
+
 function dayFestivalsWithMap(day) {
   return (day.festivalEntries || []).filter((f) => !!festivalMap.value.get(f.id)?.map?.image);
 }
@@ -581,6 +787,8 @@ const shareError = ref('');
 const showExportImageModal = ref(false);
 const isSharing = ref(false);
 const generatedLink = ref('');
+const selectedShareFestival = ref(null);
+const shareName = ref('');
 
 const shareButtonLabel = computed(() => {
   if (!isOnline.value) return '離線中無法分享';
@@ -631,10 +839,22 @@ function openShareModal() {
   }
   generatedLink.value = '';
   shareError.value = '';
+  selectedShareFestival.value = null;
+  shareName.value = '';
   showShareModal.value = true;
 }
 
-async function executeShare(festivalId) {
+function pickShareFestival(fest) {
+  selectedShareFestival.value = fest;
+  shareName.value = '';
+}
+
+function confirmShare() {
+  if (!selectedShareFestival.value) return;
+  executeShare(selectedShareFestival.value.id, shareName.value);
+}
+
+async function executeShare(festivalId, name = '') {
   isSharing.value = true;
   generatedLink.value = '';
   shareError.value = '';
@@ -643,7 +863,7 @@ async function executeShare(festivalId) {
   try {
     if (!subset.length) throw new Error('這個音樂祭沒有可分享的行程');
 
-    const compressedData = encodePlanToText(subset);
+    const compressedData = encodePlanToText(subset, name);
     const gasUrl = getShortenerUrl();
 
     // 跟另一個 short-url 專案的合約一致：
