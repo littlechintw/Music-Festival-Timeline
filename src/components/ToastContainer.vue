@@ -27,11 +27,11 @@ const { toasts } = useToast();
 function classFor(kind) {
   switch (kind) {
     case 'success':
-      return 'bg-green-600 text-white';
+      return 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]';
     case 'error':
-      return 'bg-red-600 text-white';
+      return 'bg-[var(--md-sys-color-error)] text-[var(--md-sys-color-on-error)]';
     default:
-      return 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900';
+      return 'bg-[var(--md-sys-color-inverse-surface)] text-[var(--md-sys-color-inverse-on-surface)]';
   }
 }
 </script>

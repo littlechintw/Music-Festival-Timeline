@@ -1,13 +1,14 @@
 <template>
   <div
     v-if="nextEntry"
-    class="rounded-xl shadow-md p-4 mb-4 border bg-white dark:bg-gray-800 dark:border-gray-700 flex items-center gap-3"
+    class="relative rounded-xl p-4 mb-4 bg-[var(--md-sys-color-surface-container)] flex items-center gap-3"
     role="region"
     aria-label="下一場演出"
   >
+    <md-elevation style="--md-elevation-level: 1"></md-elevation>
     <div
       class="shrink-0 flex flex-col items-center justify-center rounded-lg px-3 py-2 min-w-[64px]"
-      :class="onStageNow ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200'"
+      :class="onStageNow ? 'bg-[var(--md-sys-color-error-container)] text-[var(--md-sys-color-on-error-container)]' : 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)]'"
     >
       <div class="text-xs font-medium">{{ onStageNow ? '進行中' : '下一場' }}</div>
       <div class="text-lg font-bold leading-tight">{{ countdownLabel }}</div>

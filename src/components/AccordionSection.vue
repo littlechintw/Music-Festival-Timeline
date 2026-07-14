@@ -8,14 +8,15 @@
       @click="toggle"
     >
       <span class="font-bold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <span v-if="icon" aria-hidden="true">{{ icon }}</span>
+        <slot name="icon" />
         {{ title }}
       </span>
       <span
         class="text-gray-400 dark:text-gray-500 transition-transform"
         :class="open ? 'rotate-180' : ''"
-        aria-hidden="true"
-      >▼</span>
+      >
+        <MdIcon name="keyboard_arrow_down" />
+      </span>
     </button>
     <div
       v-show="open"
@@ -29,10 +30,10 @@
 
 <script setup>
 import { ref, useId } from 'vue';
+import MdIcon from './MdIcon.vue';
 
 const props = defineProps({
   title: { type: String, required: true },
-  icon: { type: String, default: '' },
   defaultOpen: { type: Boolean, default: false },
 });
 

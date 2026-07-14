@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen flex flex-col bg-[var(--md-sys-color-background)] text-[var(--md-sys-color-on-background)]">
     <OfflineBanner />
     <header
-      class="w-full sticky top-0 z-40 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-black dark:via-slate-900 dark:to-black text-white shadow-md pt-safe"
+      class="w-full sticky top-0 z-40 bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface)] shadow-md pt-safe"
     >
       <nav
         class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-1 overflow-x-auto"
@@ -10,10 +10,11 @@
       >
         <router-link
           to="/"
-          class="flex items-center gap-2 font-bold tracking-wide mr-3 shrink-0 hover:opacity-80 transition"
+          class="relative flex items-center gap-2 font-bold tracking-wide mr-3 shrink-0 rounded-md px-2 py-1 hover:opacity-80 transition overflow-hidden"
           aria-label="回首頁"
         >
-          <span class="text-xl" aria-hidden="true">🎵</span>
+          <md-ripple></md-ripple>
+          <MdIcon name="music_note" class="text-xl" />
           <span class="hidden sm:inline">音樂祭行程</span>
         </router-link>
 
@@ -22,18 +23,19 @@
             v-for="item in navItems"
             :key="item.to"
             :to="item.to"
-            class="relative px-3 py-1.5 rounded-md text-sm font-medium transition-colors shrink-0 flex items-center gap-1"
+            class="relative px-3 py-1.5 rounded-md text-sm font-medium transition-colors shrink-0 flex items-center gap-1 overflow-hidden"
             :class="
               isActive(item)
-                ? 'bg-white/15 text-white'
-                : 'text-slate-200 hover:text-white hover:bg-white/10'
+                ? 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)]'
+                : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-surface-container-high)]'
             "
           >
-            <span aria-hidden="true">{{ item.icon }}</span>
+            <md-ripple></md-ripple>
+            <MdIcon :name="item.icon" />
             <span>{{ item.label }}</span>
             <span
               v-if="item.to === '/plan' && planStore.planCount > 0"
-              class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500 text-white"
+              class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)]"
               aria-label="`已加入 ${planStore.planCount} 場`"
             >
               {{ planStore.planCount }}
@@ -50,6 +52,7 @@
     <InvalidShowsModal />
     <UpdatePrompt />
     <ToastContainer />
+    <ConfirmDialog />
   </div>
 </template>
 
@@ -66,6 +69,8 @@ import OfflineBanner from './components/OfflineBanner.vue';
 import InvalidShowsModal from './components/InvalidShowsModal.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
 import ToastContainer from './components/ToastContainer.vue';
+import ConfirmDialog from './components/ConfirmDialog.vue';
+import MdIcon from './components/MdIcon.vue';
 import { useTheme } from './composables/useTheme';
 
 // 啟動 theme：監聽 prefers-color-scheme 並套上 .dark class
@@ -74,11 +79,11 @@ useTheme();
 const route = useRoute();
 
 const navItems = [
-  { to: '/', label: '音樂祭', icon: '🎪' },
-  { to: '/plan', label: '行程', icon: '📅' },
-  { to: '/artists', label: '藝人', icon: '🎤' },
-  { to: '/settings', label: '設定', icon: '⚙️' },
-  { to: '/editor', label: '新增', icon: '➕' },
+  { to: '/', label: '音樂祭', icon: 'festival' },
+  { to: '/plan', label: '行程', icon: 'calendar_month' },
+  { to: '/artists', label: '藝人', icon: 'mic' },
+  { to: '/settings', label: '設定', icon: 'settings' },
+  { to: '/editor', label: '新增', icon: 'add_circle' },
 ];
 
 function isActive(item) {

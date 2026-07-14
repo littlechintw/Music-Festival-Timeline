@@ -15,8 +15,8 @@
           class="px-3 py-1 rounded border text-sm whitespace-nowrap flex-shrink-0 transition-colors"
           :class="
             selectedDay === day.dateKey
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 border-blue-600 dark:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700'
+              ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] border-[var(--md-sys-color-primary)]'
+              : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-primary)] border-[var(--md-sys-color-outline)] hover:bg-[var(--md-sys-color-surface-container-high)]'
           "
           @click="selectedDay = day.dateKey"
         >
@@ -25,15 +25,9 @@
       </div>
 
       <div
-        class="mobile-scroll-hint md:hidden bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2"
+        class="mobile-scroll-hint md:hidden bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2"
       >
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fill-rule="evenodd"
-            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-            clip-rule="evenodd"
-          />
-        </svg>
+        <MdIcon name="arrow_forward" style="--md-icon-size: 16px" />
         左右滑動查看所有舞台
       </div>
 
@@ -61,6 +55,7 @@ import { makePerfId } from '../utils/perfId';
 import { WEEKDAYS_ZH } from '../utils/format';
 import { useToast, haptic } from '../composables/useToast';
 import TimelineGrid from '../components/TimelineGrid.vue';
+import MdIcon from '../components/MdIcon.vue';
 
 const route = useRoute();
 const festivalStore = useFestivalStore();
@@ -131,8 +126,8 @@ function inPlan(perf) {
 
 function resolvePerfClass(perf) {
   return inPlan(perf)
-    ? 'bg-blue-600 text-white cursor-pointer'
-    : 'bg-blue-50 text-blue-800 border-l-4 border-blue-600 hover:bg-blue-100 cursor-pointer';
+    ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] cursor-pointer'
+    : 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] border-l-4 border-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-secondary-container)] cursor-pointer';
 }
 
 function onPerfClick({ perf }) {

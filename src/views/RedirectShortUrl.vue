@@ -25,7 +25,8 @@
         <div class="text-5xl mb-4" aria-hidden="true">🎵</div>
         <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">收到分享的行程！</h2>
         <p class="text-gray-600 dark:text-gray-300 mb-4">
-          來自「<span class="font-bold text-blue-600 dark:text-blue-400">{{ festivalName }}</span>」的行程
+          來自「<span class="font-bold text-blue-600 dark:text-blue-400">{{ festivalName }}</span
+          >」的行程
         </p>
         <div
           class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-sm text-gray-600 dark:text-gray-300 mb-6 text-left max-h-40 overflow-y-auto"
@@ -62,45 +63,26 @@
       </div>
     </div>
 
-    <div
-      v-if="invalidMessage"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      @click="invalidMessage = ''"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-sm w-full text-center"
-        @click.stop
-      >
-        <div class="text-4xl mb-4" aria-hidden="true">⚠️</div>
-        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">部分行程失效</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6 text-left leading-relaxed">
-          {{ invalidMessage }}
-        </p>
-        <button
-          class="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-          @click="invalidMessage = ''"
-        >
-          我知道了
-        </button>
-      </div>
-    </div>
+    <BaseModal :model-value="!!invalidMessage" @update:model-value="invalidMessage = ''">
+      <template #headline>
+        <div class="flex items-center gap-2">
+          <MdIcon name="warning" class="text-[var(--md-sys-color-error)]" />
+          部分行程失效
+        </div>
+      </template>
+      <p class="text-gray-600 dark:text-gray-300 text-left leading-relaxed">
+        {{ invalidMessage }}
+      </p>
+      <template #actions>
+        <md-filled-button type="button" @click="invalidMessage = ''">我知道了</md-filled-button>
+      </template>
+    </BaseModal>
 
-    <div
-      v-if="showSuccessModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      @click="finishImport"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-sm w-full text-center"
-        @click.stop
-      >
-        <div class="text-4xl mb-4 text-green-500 dark:text-green-400">
-          <svg
-            class="w-16 h-16 mx-auto"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+    <BaseModal :model-value="showSuccessModal" @update:model-value="finishImport">
+      <template #headline>匯入成功！</template>
+      <div class="text-center">
+        <div class="text-green-500 dark:text-green-400">
+          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -109,16 +91,12 @@
             />
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">匯入成功！</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">您的行程已成功更新</p>
-        <button
-          class="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-          @click="finishImport"
-        >
-          查看行程
-        </button>
+        <p class="text-gray-600 dark:text-gray-300">您的行程已成功更新</p>
       </div>
-    </div>
+      <template #actions>
+        <md-filled-button type="button" @click="finishImport">查看行程</md-filled-button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -131,6 +109,8 @@ import { useSettingsStore } from '../stores/settings';
 import { decodePlanFromText } from '../utils/url';
 import { getShortenerUrl } from '../utils/shortener';
 import { formatTime } from '../utils/format';
+import BaseModal from '../components/BaseModal.vue';
+import MdIcon from '../components/MdIcon.vue';
 
 const route = useRoute();
 const router = useRouter();

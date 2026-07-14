@@ -1,11 +1,14 @@
 <template>
   <div class="p-4 max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">音樂祭列表</h1>
-    <input
-      v-model="search"
+    <md-outlined-text-field
+      class="mb-4 w-full"
       placeholder="搜尋名稱或地址"
-      class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 p-2 mb-4 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
+      :value="search"
+      @input="(e) => (search = e.target.value)"
+    >
+      <MdIcon name="search" slot="leading-icon" />
+    </md-outlined-text-field>
     <div class="mb-4 flex gap-2">
       <button :class="btnClass('date')" @click="sortBy = 'date'">依日期排序</button>
       <button :class="btnClass('name')" @click="sortBy = 'name'">依名稱排序</button>
@@ -21,14 +24,15 @@
       <div
         v-for="festival in filteredFestivals"
         :key="festival.festivalId"
-        class="border border-gray-200 dark:border-gray-700 rounded p-4 mb-4 cursor-pointer transition-colors"
+        class="relative rounded-xl p-4 mb-4 cursor-pointer transition-colors"
         :class="
           festival.isFar
-            ? 'opacity-60 bg-gray-100 dark:bg-gray-800/50 grayscale hover:bg-gray-200 dark:hover:bg-gray-800'
-            : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/60'
+            ? 'opacity-60 bg-[var(--md-sys-color-surface-container-low)] grayscale hover:bg-[var(--md-sys-color-surface-container)]'
+            : 'bg-[var(--md-sys-color-surface-container)] hover:bg-[var(--md-sys-color-surface-container-high)]'
         "
         @click="goDetail(festival.festivalId)"
       >
+        <md-elevation style="--md-elevation-level: 1"></md-elevation>
         <div class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ festival.name }}</div>
         <div class="text-sm text-gray-500 dark:text-gray-400">
           {{ formatDateTime(festival.startTime, settingsStore.is24Hour) }} ~
@@ -54,6 +58,7 @@ import { useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { useSettingsStore } from '../stores/settings';
 import { formatDateTime } from '../utils/format';
+import MdIcon from '../components/MdIcon.vue';
 
 const festivalStore = useFestivalStore();
 const settingsStore = useSettingsStore();
@@ -66,8 +71,8 @@ function btnClass(type) {
   return [
     'px-3 py-1 rounded border transition-colors',
     sortBy.value === type
-      ? 'bg-blue-600 text-white border-blue-600'
-      : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700',
+      ? 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] border-[var(--md-sys-color-secondary)]'
+      : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-primary)] border-[var(--md-sys-color-outline)] hover:bg-[var(--md-sys-color-surface-container-high)]',
   ].join(' ');
 }
 

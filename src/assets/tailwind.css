@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --theme-bg: #ffffff;
-    --theme-text: #111827;
-    /* TimelineGrid 用的 CSS 變數（scoped CSS 沒辦法直接吃 dark:）*/
-    --tg-bg: #ffffff;
-    --tg-bg-alt: #fafafa;
-    --tg-header-bg: #f3f4f6;
-    --tg-border: #d1d5db;
-    --tg-border-light: #e5e7eb;
-    --tg-text: #111827;
+    --theme-bg: var(--md-sys-color-background);
+    --theme-text: var(--md-sys-color-on-background);
+    /* TimelineGrid 用的 CSS 變數（scoped CSS 沒辦法直接吃 dark:），對應到 MD3 surface/outline token */
+    --tg-bg: var(--md-sys-color-surface);
+    --tg-bg-alt: var(--md-sys-color-surface-container-low);
+    --tg-header-bg: var(--md-sys-color-surface-container-high);
+    --tg-border: var(--md-sys-color-outline);
+    --tg-border-light: var(--md-sys-color-outline-variant);
+    --tg-text: var(--md-sys-color-on-surface);
   }
   .dark {
-    --theme-bg: #0f172a;
-    --theme-text: #f3f4f6;
-    --tg-bg: #1f2937;
-    --tg-bg-alt: #232f44;
-    --tg-header-bg: #111827;
-    --tg-border: #374151;
-    --tg-border-light: #2d3748;
-    --tg-text: #f3f4f6;
+    --theme-bg: var(--md-sys-color-background);
+    --theme-text: var(--md-sys-color-on-background);
+    --tg-bg: var(--md-sys-color-surface);
+    --tg-bg-alt: var(--md-sys-color-surface-container-low);
+    --tg-header-bg: var(--md-sys-color-surface-container-high);
+    --tg-border: var(--md-sys-color-outline);
+    --tg-border-light: var(--md-sys-color-outline-variant);
+    --tg-text: var(--md-sys-color-on-surface);
     color-scheme: dark;
   }
   html,

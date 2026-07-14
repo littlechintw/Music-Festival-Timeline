@@ -17,12 +17,7 @@
       <div class="mb-4 text-xs text-gray-500 dark:text-gray-400">
         地圖會由 Service Worker 自動快取，下次離線也能查看。
       </div>
-      <button
-        class="px-3 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white"
-        @click="clearMapCache"
-      >
-        清除地圖快取
-      </button>
+      <md-outlined-button type="button" @click="clearMapCache">清除地圖快取</md-outlined-button>
     </div>
   </div>
 </template>

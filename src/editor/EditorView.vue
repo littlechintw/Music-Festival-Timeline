@@ -7,86 +7,77 @@
       class="mb-4 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 p-4 text-sm text-gray-700 dark:text-gray-200"
     >
       <p class="font-bold mb-1 flex items-center gap-2">
-        <span aria-hidden="true">🤖</span> 最快的方式：用 AI 讀時間表圖片
+        <MdIcon name="smart_toy" /> 最快的方式：用 AI 讀時間表圖片
       </p>
       <p class="leading-relaxed">
         手動一場一場填很累。建議直接把音樂祭的<b>時間表／卡司圖片</b>，連同我們準備好的 Prompt
         一起貼給 ChatGPT、Claude 等支援圖片的 AI，它就會幫你產生符合格式的 JSON。產生後存成
-        <span class="font-mono">.json</span> 檔，再依「如何新增音樂祭」送出 PR 即可；當然你也可以在下方手動填寫。
+        <span class="font-mono">.json</span> 檔，再依「如何新增音樂祭」送出 PR
+        即可；當然你也可以在下方手動填寫。
       </p>
     </div>
 
     <div class="mb-4 flex flex-wrap gap-2">
-      <button
-        type="button"
-        class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white rounded font-medium shadow-sm inline-flex items-center gap-1"
-        @click="showAiPrompt = true"
-      >
-        <span aria-hidden="true">🤖</span> 顯示 AI Prompt
-      </button>
-      <button
-        type="button"
-        class="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white rounded font-medium shadow-sm"
-        @click="showGuide = true"
-      >
+      <md-filled-button type="button" @click="showAiPrompt = true">
+        <MdIcon name="smart_toy" slot="icon" />
+        顯示 AI Prompt
+      </md-filled-button>
+      <md-outlined-button type="button" @click="showGuide = true">
+        <MdIcon name="menu_book" slot="icon" />
         如何新增音樂祭
-      </button>
+      </md-outlined-button>
+      <md-filled-tonal-button
+        type="button"
+        style="
+          --md-sys-color-secondary-container: var(--md-sys-color-error-container);
+          --md-sys-color-on-secondary-container: var(--md-sys-color-on-error-container);
+        "
+        @click="clearForm"
+      >
+        <MdIcon name="delete" slot="icon" />
+        清空表單
+      </md-filled-tonal-button>
     </div>
 
     <div class="mb-4">
       <label class="block font-bold mb-1">貢獻者（GitHub 帳號，可多人）</label>
       <div class="flex flex-wrap gap-2 mb-2">
-        <span
+        <md-input-chip
           v-for="(c, idx) in festival.contributors"
           :key="c + '-' + idx"
-          class="flex items-center bg-gray-200 dark:bg-gray-700 rounded px-2 py-1 text-sm"
-        >
-          <a
-            :href="`https://github.com/${c}`"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-600 dark:text-blue-300 hover:underline mr-1"
-          >
-            {{ c }}
-          </a>
-          <button
-            type="button"
-            class="ml-1 text-xs text-red-500 dark:text-red-400"
-            @click="festival.contributors.splice(idx, 1)"
-          >
-            ✕
-          </button>
-        </span>
+          :label="c"
+          :href="`https://github.com/${c}`"
+          target="_blank"
+          @remove="festival.contributors.splice(idx, 1)"
+        ></md-input-chip>
       </div>
-      <div class="flex gap-2">
-        <input
-          v-model="newContributor"
-          :class="[inputClass, 'flex-1']"
+      <div class="flex gap-2 items-start">
+        <md-outlined-text-field
+          class="flex-1"
+          :value="newContributor"
           placeholder="輸入 GitHub 帳號後按新增"
+          @input="(e) => (newContributor = e.target.value)"
           @keyup.enter="addContributor"
-        />
-        <button
-          type="button"
-          class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
-          @click="addContributor"
-        >
-          新增
-        </button>
+        ></md-outlined-text-field>
+        <md-filled-button type="button" @click="addContributor">新增</md-filled-button>
       </div>
     </div>
 
     <form class="space-y-4" @submit.prevent="handleExport">
       <div>
-        <label class="block font-bold mb-1"
-          >音樂祭 ID <span class="text-red-500">*</span></label
-        >
-        <input
-          v-model="festival.festivalId"
-          :class="[inputClass, 'w-full']"
+        <label class="block font-bold mb-1">音樂祭 ID <span class="text-red-500">*</span></label>
+        <md-outlined-text-field
+          class="w-full"
           required
-          pattern="[a-z0-9-]+"
-          @input="validateId"
-        />
+          pattern="[a-z0-9\-]+"
+          :value="festival.festivalId"
+          @input="
+            (e) => {
+              festival.festivalId = e.target.value;
+              validateId();
+            }
+          "
+        ></md-outlined-text-field>
         <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">
           僅限小寫英文、數字、-，建議格式如
           <span class="font-mono">taipei-music-{{ currentYear }}</span
@@ -97,11 +88,16 @@
 
       <div>
         <label class="block font-bold mb-1">名稱 <span class="text-red-500">*</span></label>
-        <input v-model="festival.name" :class="[inputClass, 'w-full']" required />
+        <md-outlined-text-field
+          class="w-full"
+          required
+          :value="festival.name"
+          @input="(e) => (festival.name = e.target.value)"
+        ></md-outlined-text-field>
       </div>
 
-      <div class="flex gap-2">
-        <div class="flex-1">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <div class="flex-1 min-w-0">
           <label class="block font-bold mb-1"
             >開始時間 (UTC+8) <span class="text-red-500">*</span></label
           >
@@ -113,7 +109,7 @@
             @input="festival.startTime = toIso($event.target.value)"
           />
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <label class="block font-bold mb-1"
             >結束時間 (UTC+8) <span class="text-red-500">*</span></label
           >
@@ -129,62 +125,68 @@
 
       <div>
         <label class="block font-bold mb-1">主題色</label>
-        <input
-          v-model="festival.theme.primary"
-          :class="[inputClass, 'mr-2']"
+        <md-outlined-text-field
+          class="mr-2"
           placeholder="#主色"
-        />
-        <input
-          v-model="festival.theme.secondary"
-          :class="inputClass"
+          :value="festival.theme.primary"
+          @input="(e) => (festival.theme.primary = e.target.value)"
+        ></md-outlined-text-field>
+        <md-outlined-text-field
           placeholder="#副色"
-        />
+          :value="festival.theme.secondary"
+          @input="(e) => (festival.theme.secondary = e.target.value)"
+        ></md-outlined-text-field>
       </div>
 
       <div>
         <label class="block font-bold mb-1">地點名稱 <span class="text-red-500">*</span></label>
-        <input
-          v-model="festival.location.name"
-          :class="[inputClass, 'w-full']"
+        <md-outlined-text-field
+          class="w-full"
           required
-        />
+          :value="festival.location.name"
+          @input="(e) => (festival.location.name = e.target.value)"
+        ></md-outlined-text-field>
       </div>
       <div>
         <label class="block font-bold mb-1">地點地址 <span class="text-red-500">*</span></label>
-        <input
-          v-model="festival.location.address"
-          :class="[inputClass, 'w-full']"
+        <md-outlined-text-field
+          class="w-full"
           required
-        />
+          :value="festival.location.address"
+          @input="(e) => (festival.location.address = e.target.value)"
+        ></md-outlined-text-field>
       </div>
-      <div class="flex gap-2">
-        <div class="flex-1">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <div class="flex-1 min-w-0">
           <label class="block font-bold mb-1">緯度</label>
-          <input
-            v-model.number="festival.location.latitude"
+          <md-outlined-text-field
+            class="w-full"
             type="number"
             step="any"
-            :class="[inputClass, 'w-full']"
-          />
+            :value="festival.location.latitude"
+            @input="(e) => (festival.location.latitude = Number(e.target.value))"
+          ></md-outlined-text-field>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <label class="block font-bold mb-1">經度</label>
-          <input
-            v-model.number="festival.location.longitude"
+          <md-outlined-text-field
+            class="w-full"
             type="number"
             step="any"
-            :class="[inputClass, 'w-full']"
-          />
+            :value="festival.location.longitude"
+            @input="(e) => (festival.location.longitude = Number(e.target.value))"
+          ></md-outlined-text-field>
         </div>
       </div>
 
       <div>
         <label class="block font-bold mb-1">地圖圖片（網址或上傳 PNG/JPG/WebP）</label>
-        <input
-          v-model="festival.map.image"
-          :class="[inputClass, 'w-full', 'mb-2']"
+        <md-outlined-text-field
+          class="w-full mb-2"
           placeholder="可貼上網址或 base64"
-        />
+          :value="festival.map.image"
+          @input="(e) => (festival.map.image = e.target.value)"
+        ></md-outlined-text-field>
         <input
           type="file"
           accept="image/png,image/jpeg,image/webp"
@@ -196,78 +198,65 @@
       <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
         <div class="flex items-center mb-2">
           <span class="font-bold">舞台列表</span>
-          <button
-            type="button"
-            class="ml-2 px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs"
-            @click="addStage"
-          >
+          <md-filled-tonal-button type="button" class="ml-2" @click="addStage">
+            <MdIcon name="add" slot="icon" />
             新增舞台
-          </button>
+          </md-filled-tonal-button>
         </div>
         <div
           v-for="(stage, sidx) in festival.stages"
           :key="stage.id || sidx"
           class="border border-gray-300 dark:border-gray-600 rounded p-2 mb-4"
         >
-          <div class="flex items-center mb-2">
-            <input
-              v-model="stage.name"
-              :class="[inputClass, 'flex-1']"
+          <div class="flex items-center gap-2 mb-2">
+            <md-outlined-text-field
+              class="flex-1"
               placeholder="舞台名稱"
-            />
-            <button
-              type="button"
-              class="ml-2 px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs"
-              @click="removeStage(sidx)"
-            >
-              移除
-            </button>
+              :value="stage.name"
+              @input="(e) => (stage.name = e.target.value)"
+            ></md-outlined-text-field>
+            <md-outlined-button type="button" @click="removeStage(sidx)">移除</md-outlined-button>
           </div>
-          <div class="flex items-center mb-1">
+          <div class="flex items-center gap-2 mb-1">
             <span class="font-bold text-sm">表演</span>
-            <button
-              type="button"
-              class="ml-2 px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-xs"
-              @click="addPerformance(sidx)"
-            >
+            <md-filled-tonal-button type="button" @click="addPerformance(sidx)">
+              <MdIcon name="add" slot="icon" />
               新增表演
-            </button>
+            </md-filled-tonal-button>
           </div>
           <div
             v-for="(perf, pidx) in stage.performances"
             :key="pidx"
             class="border-2 border-gray-300 dark:border-gray-600 rounded p-2 mb-2 bg-gray-50 dark:bg-gray-900/40"
           >
-            <div class="flex gap-2 mb-2">
-              <input
-                v-model="perf.artist"
-                :class="[inputClass, 'flex-1']"
+            <div class="flex gap-2 mb-2 items-start">
+              <md-outlined-text-field
+                class="flex-1"
                 placeholder="演出者"
-              />
-              <input
-                v-model="perf.description"
-                :class="[inputClass, 'flex-1']"
+                :value="perf.artist"
+                @input="(e) => (perf.artist = e.target.value)"
+              ></md-outlined-text-field>
+              <md-outlined-text-field
+                class="flex-1"
                 placeholder="備註"
-              />
-              <button
-                type="button"
-                class="px-2 py-1 bg-red-400 hover:bg-red-500 text-white rounded text-xs"
-                @click="removePerformance(sidx, pidx)"
-              >
+                :value="perf.description"
+                @input="(e) => (perf.description = e.target.value)"
+              ></md-outlined-text-field>
+              <md-outlined-button type="button" @click="removePerformance(sidx, pidx)">
                 移除
-              </button>
+              </md-outlined-button>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
               <input
                 :value="toLocalInput(perf.start)"
                 type="datetime-local"
-                :class="[inputClass, 'flex-1']"
+                :class="[inputClass, 'flex-1 min-w-0']"
                 @input="perf.start = toIso($event.target.value)"
               />
               <input
                 :value="toLocalInput(perf.end)"
                 type="datetime-local"
-                :class="[inputClass, 'flex-1']"
+                :class="[inputClass, 'flex-1 min-w-0']"
                 @input="perf.end = toIso($event.target.value)"
               />
             </div>
@@ -275,12 +264,7 @@
         </div>
       </div>
 
-      <button
-        type="submit"
-        class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded font-medium"
-      >
-        匯出 JSON
-      </button>
+      <md-filled-button type="submit">匯出 JSON</md-filled-button>
       <div
         v-if="validationError"
         class="mt-2 text-red-600 dark:text-red-400 text-sm whitespace-pre-line"
@@ -293,156 +277,127 @@
       <h2 class="font-bold mb-2">JSON 預覽</h2>
       <pre
         class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded text-xs overflow-x-auto"
-      >{{ jsonPreview }}</pre>
+        >{{ jsonPreview }}</pre
+      >
     </div>
 
     <!-- AI Prompt 彈窗 -->
-    <div
-      v-if="showAiPrompt"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      @click.self="showAiPrompt = false"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto"
-      >
-        <button
-          class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-          @click="showAiPrompt = false"
-        >
-          ✕
-        </button>
-        <h2 class="text-lg font-bold mb-2 flex items-center gap-2">
-          <span aria-hidden="true">🤖</span> 用 AI 把時間表圖片變成 JSON
-        </h2>
-        <ol
-          class="list-decimal pl-5 space-y-1.5 text-sm text-gray-700 dark:text-gray-200 mb-4"
-        >
-          <li>準備一張時間表圖片（官方卡司圖、時刻表截圖都可以）。</li>
-          <li>按下方「複製 Prompt」。</li>
-          <li>打開 ChatGPT、Claude 等支援圖片的 AI，貼上 Prompt <b>並附上那張圖片</b>。</li>
-          <li>AI 會回傳一段 JSON，存成 <span class="font-mono">你的-festivalId.json</span>。</li>
-          <li>依「如何新增音樂祭」把檔案放進 <span class="font-mono">festivals/</span> 送出 PR。</li>
-        </ol>
-
-        <div class="flex items-center justify-between mb-1">
-          <span class="font-bold text-sm">Prompt（含範例 JSON 格式）</span>
-          <button
-            type="button"
-            class="px-2 py-1 text-xs rounded bg-purple-600 hover:bg-purple-700 text-white"
-            @click="copyToClipboard(aiPrompt, 'prompt')"
-          >
-            {{ copied === 'prompt' ? '已複製 ✓' : '複製 Prompt' }}
-          </button>
+    <BaseModal v-model="showAiPrompt">
+      <template #headline>
+        <div class="flex items-center gap-2">
+          <MdIcon name="smart_toy" />
+          用 AI 把時間表圖片變成 JSON
         </div>
-        <pre
-          class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap max-h-[40vh]"
-        >{{ aiPrompt }}</pre>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          小提醒：AI 偶爾會看錯時間或漏團，貼回來後請大致對一下；不確定的欄位（座標、主題色）留空即可。
-        </p>
+      </template>
 
-        <!-- 把 AI 產生的 JSON 貼回來匯入檢查 -->
-        <div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
-          <p class="font-bold text-sm mb-2">產生好 JSON 了嗎？貼回來檢查</p>
-          <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="px-3 py-1.5 text-sm rounded bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1"
-              @click="showPasteArea = !showPasteArea"
-            >
-              <span aria-hidden="true">📋</span> 貼上文字
-            </button>
-            <button
-              type="button"
-              class="px-3 py-1.5 text-sm rounded bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-1"
-              @click="jsonFileInput?.click()"
-            >
-              <span aria-hidden="true">📄</span> 貼上 JSON 檔案
-            </button>
-            <input
-              ref="jsonFileInput"
-              type="file"
-              accept="application/json,.json"
-              class="hidden"
-              @change="onJsonUpload"
-            />
-          </div>
+      <ol class="list-decimal pl-5 space-y-1.5 text-sm text-gray-700 dark:text-gray-200 mb-4">
+        <li>準備一張時間表圖片（官方卡司圖、時刻表截圖都可以）。</li>
+        <li>按下方「複製 Prompt」。</li>
+        <li>打開 ChatGPT、Claude 等支援圖片的 AI，貼上 Prompt <b>並附上那張圖片</b>。</li>
+        <li>AI 會回傳一段 JSON，存成 <span class="font-mono">你的-festivalId.json</span>。</li>
+        <li>依「如何新增音樂祭」把檔案放進 <span class="font-mono">festivals/</span> 送出 PR。</li>
+      </ol>
 
-          <div v-if="showPasteArea" class="mt-2">
-            <textarea
-              v-model="importText"
-              rows="6"
-              :class="[inputClass, 'w-full', 'font-mono', 'text-xs']"
-              placeholder="把 AI 產生的 JSON 整段貼在這裡…"
-            />
-            <button
-              type="button"
-              class="mt-2 px-3 py-1.5 text-sm rounded bg-purple-600 hover:bg-purple-700 text-white"
-              @click="applyImport(importText)"
-            >
-              匯入並檢查
-            </button>
-          </div>
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-bold text-sm">Prompt（含範例 JSON 格式）</span>
+        <md-text-button type="button" @click="copyToClipboard(aiPrompt, 'prompt')">
+          {{ copied === 'prompt' ? '已複製 ✓' : '複製 Prompt' }}
+        </md-text-button>
+      </div>
+      <pre
+        class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap max-h-[40vh]"
+        >{{ aiPrompt }}</pre
+      >
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+        小提醒：AI
+        偶爾會看錯時間或漏團，貼回來後請大致對一下；不確定的欄位（座標、主題色）留空即可。
+      </p>
 
-          <div
-            v-if="importMessage"
-            class="mt-3 rounded-lg px-3 py-2 text-sm whitespace-pre-line"
-            :class="{
-              'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-200 border border-green-200 dark:border-green-800':
-                importMessage.kind === 'success',
-              'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200 border border-amber-200 dark:border-amber-800':
-                importMessage.kind === 'warn',
-              'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-800':
-                importMessage.kind === 'error',
-            }"
-          >
-            {{ importMessage.text }}
-          </div>
+      <!-- 把 AI 產生的 JSON 貼回來匯入檢查 -->
+      <div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
+        <p class="font-bold text-sm mb-2">產生好 JSON 了嗎？貼回來檢查</p>
+        <div class="flex flex-wrap gap-2">
+          <md-outlined-button type="button" @click="showPasteArea = !showPasteArea">
+            <MdIcon name="content_paste" slot="icon" />
+            貼上文字
+          </md-outlined-button>
+          <md-outlined-button type="button" @click="jsonFileInput?.click()">
+            <MdIcon name="upload_file" slot="icon" />
+            貼上 JSON 檔案
+          </md-outlined-button>
+          <input
+            ref="jsonFileInput"
+            type="file"
+            accept="application/json,.json"
+            class="hidden"
+            @change="onJsonUpload"
+          />
+        </div>
+
+        <div v-if="showPasteArea" class="mt-2">
+          <md-outlined-text-field
+            type="textarea"
+            rows="6"
+            class="w-full font-mono text-xs"
+            placeholder="把 AI 產生的 JSON 整段貼在這裡…"
+            :value="importText"
+            @input="(e) => (importText = e.target.value)"
+          ></md-outlined-text-field>
+          <md-filled-button type="button" class="mt-2" @click="applyImport(importText)">
+            匯入並檢查
+          </md-filled-button>
+        </div>
+
+        <div
+          v-if="importMessage"
+          class="mt-3 rounded-lg px-3 py-2 text-sm whitespace-pre-line"
+          :class="{
+            'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-200 border border-green-200 dark:border-green-800':
+              importMessage.kind === 'success',
+            'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200 border border-amber-200 dark:border-amber-800':
+              importMessage.kind === 'warn',
+            'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-800':
+              importMessage.kind === 'error',
+          }"
+        >
+          {{ importMessage.text }}
         </div>
       </div>
-    </div>
+
+      <template #actions>
+        <md-text-button type="button" @click="showAiPrompt = false">關閉</md-text-button>
+      </template>
+    </BaseModal>
 
     <!-- PR 教學彈窗 -->
-    <div
-      v-if="showGuide"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      @click.self="showGuide = false"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl max-w-md w-full p-6 relative"
-      >
-        <button
-          class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-          @click="showGuide = false"
-        >
-          ✕
-        </button>
-        <h2 class="text-lg font-bold mb-2">如何送出音樂祭 PR？</h2>
-        <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-200">
-          <li>
-            前往
-            <a
-              href="https://github.com/littlechintw/Music-Festival-Timeline"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-blue-600 dark:text-blue-300 underline"
-              >littlechintw/Music-Festival-Timeline</a
-            >
-            並點選右上角 <b>Fork</b>，將專案複製到自己的 GitHub 帳號。
-          </li>
-          <li>
-            在自己的 Fork 倉庫中，將剛剛匯出的 JSON 檔案放到
-            <code>festivals/</code> 目錄下（build 時會自動同步到 <code>public/festivals/</code>），
-            並 <b>Commit</b>（請填寫上方的提交說明）。
-          </li>
-          <li>
-            回到 GitHub，點選 <b>Pull requests</b> → <b>New pull request</b>，選擇你的分支，送出
-            PR。
-          </li>
-          <li>等待專案管理員審核通過，即可在主站看到你的音樂祭！</li>
-        </ol>
-      </div>
-    </div>
+    <BaseModal v-model="showGuide">
+      <template #headline>如何送出音樂祭 PR？</template>
+      <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-200">
+        <li>
+          前往
+          <a
+            href="https://github.com/littlechintw/Music-Festival-Timeline"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-600 dark:text-blue-300 underline"
+            >littlechintw/Music-Festival-Timeline</a
+          >
+          並點選右上角 <b>Fork</b>，將專案複製到自己的 GitHub 帳號。
+        </li>
+        <li>
+          在自己的 Fork 倉庫中，將剛剛匯出的 JSON 檔案放到
+          <code>festivals/</code> 目錄下（build 時會自動同步到 <code>public/festivals/</code>）， 並
+          <b>Commit</b>（請填寫上方的提交說明）。
+        </li>
+        <li>
+          回到 GitHub，點選 <b>Pull requests</b> → <b>New pull request</b>，選擇你的分支，送出 PR。
+        </li>
+        <li>等待專案管理員審核通過，即可在主站看到你的音樂祭！</li>
+      </ol>
+      <template #actions>
+        <md-text-button type="button" @click="showGuide = false">關閉</md-text-button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -450,12 +405,18 @@
 import { ref, reactive, computed, watch } from 'vue';
 import { saveFestivalDraft, loadFestivalDraft, clearFestivalDraft } from './draft';
 import { festivalSchema } from '../pwa/schema';
+import BaseModal from '../components/BaseModal.vue';
+import MdIcon from '../components/MdIcon.vue';
+import { useConfirm } from '../composables/useConfirm';
+
+const { confirm } = useConfirm();
 
 const currentYear = new Date().getFullYear();
 
-// 表單輸入框共用樣式（含黑暗模式對比）
+// 這幾種原生 input type（datetime-local / number / file）md-outlined-text-field 不支援，
+// 只能維持原生 <input>，改用 MD3 token 重新上色。
 const inputClass =
-  'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded px-2 py-1';
+  'border border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] rounded px-2 py-1';
 
 const emptyFestival = () => ({
   festivalId: '',
@@ -537,6 +498,20 @@ const importText = ref('');
 const jsonFileInput = ref(null);
 /** @type {import('vue').Ref<{kind: 'success'|'warn'|'error', text: string} | null>} */
 const importMessage = ref(null);
+
+async function clearForm() {
+  const ok = await confirm('確定要清空目前填寫的表單內容嗎？此動作無法復原。', {
+    title: '清空表單',
+    confirmLabel: '清空',
+    danger: true,
+  });
+  if (!ok) return;
+  Object.assign(festival, emptyFestival());
+  clearFestivalDraft();
+  idError.value = '';
+  validationError.value = '';
+  importMessage.value = null;
+}
 
 // 給 AI 看的輕量範例 JSON（格式參考，1 個舞台 2 場演出）
 const exampleJson = `{
@@ -676,9 +651,7 @@ function addContributor() {
 }
 
 function validateId() {
-  idError.value = /^[a-z0-9-]+$/.test(festival.festivalId)
-    ? ''
-    : 'ID 僅能包含小寫英文、數字與 -';
+  idError.value = /^[a-z0-9-]+$/.test(festival.festivalId) ? '' : 'ID 僅能包含小寫英文、數字與 -';
 }
 
 function slugify(input) {
@@ -737,7 +710,8 @@ async function handleExport() {
   normalizeTimes();
   // 自動補 stage id（schema 要求）
   for (const stage of festival.stages) {
-    if (!stage.id) stage.id = slugify(stage.name) || `stage-${Math.random().toString(36).slice(2, 6)}`;
+    if (!stage.id)
+      stage.id = slugify(stage.name) || `stage-${Math.random().toString(36).slice(2, 6)}`;
   }
 
   const result = festivalSchema.safeParse(festival);

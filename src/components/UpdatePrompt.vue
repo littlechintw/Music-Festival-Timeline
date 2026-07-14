@@ -1,16 +1,24 @@
 <template>
   <div
     v-if="needsRefresh"
-    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-blue-600 text-white rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 max-w-[90vw]"
+    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[var(--md-sys-color-inverse-surface)] text-[var(--md-sys-color-inverse-on-surface)] rounded-lg px-4 py-3 flex items-center gap-3 max-w-[90vw]"
   >
+    <md-elevation style="--md-elevation-level: 3"></md-elevation>
     <span>有新版本可用</span>
-    <button
-      class="px-3 py-1 bg-white text-blue-700 rounded font-medium hover:bg-blue-50"
+    <md-text-button
+      type="button"
+      style="--md-sys-color-primary: var(--md-sys-color-inverse-primary)"
       @click="refresh"
     >
       立即更新
-    </button>
-    <button class="text-blue-200 hover:text-white" @click="dismiss">稍後</button>
+    </md-text-button>
+    <md-text-button
+      type="button"
+      style="--md-sys-color-primary: var(--md-sys-color-inverse-on-surface); opacity: 0.7"
+      @click="dismiss"
+    >
+      稍後
+    </md-text-button>
   </div>
 </template>
 

@@ -6,18 +6,16 @@
       v-if="plan.length === 0"
       class="flex flex-col items-center justify-center text-center py-12 px-4"
     >
-      <div class="text-5xl mb-4" aria-hidden="true">🎵</div>
-      <h2 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">
-        還沒有行程
-      </h2>
+      <MdIcon name="music_note" class="mb-4" style="--md-icon-size: 3rem" />
+      <h2 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">還沒有行程</h2>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xs">
         去音樂祭列表挑幾場喜歡的演出加入吧！你的行程會自動快取，現場沒網路也能查。
       </p>
-      <router-link
-        to="/"
-        class="px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium shadow-sm"
-      >
-        瀏覽音樂祭 →
+      <router-link to="/">
+        <md-filled-button type="button">
+          瀏覽音樂祭
+          <MdIcon name="arrow_forward" slot="icon" />
+        </md-filled-button>
       </router-link>
     </div>
 
@@ -25,72 +23,69 @@
       <NextUpCard :plan="plan" :now="now" :is24-hour="settingsStore.is24Hour" />
       <!-- 統計卡 -->
       <div
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-lg text-gray-800 dark:text-gray-100"
-        style="box-shadow: 0 4px 24px 0 rgba(30, 64, 175, 0.1), 0 0px 8px 0 rgba(30, 64, 175, 0.1)"
+        class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl p-6 mb-6 text-gray-800 dark:text-gray-100"
       >
+        <md-elevation style="--md-elevation-level: 1"></md-elevation>
         <!-- 手機版操作按鈕 -->
         <div class="flex flex-col gap-2 md:hidden mb-4">
-          <button
-            class="w-full px-3 py-2 rounded border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+          <md-outlined-button
+            type="button"
             :disabled="isSharing || !isOnline"
             @click="openShareModal"
           >
             <span
               v-if="isSharing"
-              class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
+              slot="icon"
+              class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
             />
             {{ shareButtonLabel }}
-          </button>
-          <button
-            class="w-full px-3 py-2 rounded border border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-1 shadow-sm"
-            @click="showExportImageModal = true"
-          >
-            <span aria-hidden="true">📸</span>
-            <span>匯出行程圖</span>
-          </button>
-          <button
-            class="w-full px-3 py-2 rounded border border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-300 bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-1 shadow-sm"
-            @click="addToCalendar"
-          >
-            <span aria-hidden="true">📅</span>
-            <span>加入行事曆</span>
-          </button>
+          </md-outlined-button>
+          <md-outlined-button type="button" @click="showExportImageModal = true">
+            <MdIcon name="photo_camera" slot="icon" />
+            匯出行程圖
+          </md-outlined-button>
+          <md-outlined-button type="button" @click="addToCalendar">
+            <MdIcon name="event" slot="icon" />
+            加入行事曆
+          </md-outlined-button>
         </div>
 
         <!-- 統計與桌機版操作按鈕同一列、垂直置中對齊 -->
         <div class="flex items-center justify-between gap-4">
           <div class="flex flex-wrap items-center gap-6 text-sm">
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">{{ plan.length }}</span>
+              <MdIcon
+                name="schedule"
+                style="--md-icon-size: 16px"
+                class="text-[var(--md-sys-color-primary)]"
+              />
+              <span
+                class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+                >{{ plan.length }}</span
+              >
               <span>場演出</span>
             </div>
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zM4 7h12v9a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">{{ planDays.length }}</span>
+              <MdIcon
+                name="calendar_month"
+                style="--md-icon-size: 16px"
+                class="text-[var(--md-sys-color-primary)]"
+              />
+              <span
+                class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+                >{{ planDays.length }}</span
+              >
               <span>天行程</span>
             </div>
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 px-2 py-0.5 rounded font-bold">
+              <MdIcon
+                name="location_on"
+                style="--md-icon-size: 16px"
+                class="text-[var(--md-sys-color-primary)]"
+              />
+              <span
+                class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+              >
                 {{ uniqueFestivals.length }}
               </span>
               <span>個音樂祭</span>
@@ -98,34 +93,31 @@
           </div>
 
           <div class="hidden md:flex gap-2 flex-shrink-0">
-            <button
-              class="px-3 py-1 rounded border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 shadow-sm"
+            <md-outlined-button
+              type="button"
               :disabled="isSharing || !isOnline"
               :title="!isOnline ? '離線中，無法產生分享網址' : ''"
               @click="openShareModal"
             >
               <span
                 v-if="isSharing"
-                class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
+                slot="icon"
+                class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
               />
               {{ shareButtonLabel }}
-            </button>
-            <button
-              class="px-3 py-1 rounded border border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-gray-700 transition inline-flex items-center gap-1 shadow-sm"
+            </md-outlined-button>
+            <md-outlined-button
+              type="button"
               aria-label="匯出行程圖"
               @click="showExportImageModal = true"
             >
-              <span aria-hidden="true">📸</span>
-              <span>匯出行程圖</span>
-            </button>
-            <button
-              class="px-3 py-1 rounded border border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-300 bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-gray-700 transition inline-flex items-center gap-1 shadow-sm"
-              aria-label="加入行事曆"
-              @click="addToCalendar"
-            >
-              <span aria-hidden="true">📅</span>
-              <span>加入行事曆</span>
-            </button>
+              <MdIcon name="photo_camera" slot="icon" />
+              匯出行程圖
+            </md-outlined-button>
+            <md-outlined-button type="button" aria-label="加入行事曆" @click="addToCalendar">
+              <MdIcon name="event" slot="icon" />
+              加入行事曆
+            </md-outlined-button>
           </div>
         </div>
       </div>
@@ -141,8 +133,8 @@
           class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2"
           :class="
             selectedPlanDay === day.dateKey
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 border border-blue-600 dark:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700'
+              ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
+              : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-primary)] border border-[var(--md-sys-color-outline)] hover:bg-[var(--md-sys-color-surface-container-high)]'
           "
           @click="selectedPlanDay = day.dateKey"
         >
@@ -151,8 +143,8 @@
             class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full"
             :class="
               selectedPlanDay === day.dateKey
-                ? 'text-blue-600 bg-white dark:text-blue-900 dark:bg-blue-200'
-                : 'text-white bg-blue-600'
+                ? 'text-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-surface)]'
+                : 'text-[var(--md-sys-color-on-primary)] bg-[var(--md-sys-color-primary)]'
             "
           >
             {{ day.count }}
@@ -163,16 +155,19 @@
         <button
           v-if="pastDays.length"
           type="button"
-          class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2 border border-dashed border-gray-400 dark:border-gray-500 text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+          class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2 border border-dashed border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] bg-[var(--md-sys-color-surface-container-low)] hover:bg-[var(--md-sys-color-surface-container-high)]"
           @click="showPast = !showPast"
         >
           <span>過往活動</span>
           <span
-            class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full text-white bg-gray-400 dark:bg-gray-600"
+            class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full text-[var(--md-sys-color-on-surface-variant)] bg-[var(--md-sys-color-surface-container-highest)]"
           >
             {{ pastDays.length }}
           </span>
-          <span class="text-xs" aria-hidden="true">{{ showPast ? '▲' : '▼' }}</span>
+          <MdIcon
+            :name="showPast ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+            style="--md-icon-size: 16px"
+          />
         </button>
 
         <!-- 過往活動日期 -->
@@ -183,8 +178,8 @@
             class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2"
             :class="
               selectedPlanDay === day.dateKey
-                ? 'bg-gray-600 text-white shadow-md'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-[var(--md-sys-color-secondary)] text-[var(--md-sys-color-on-secondary)]'
+                : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface-variant)] border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]'
             "
             @click="selectedPlanDay = day.dateKey"
           >
@@ -193,8 +188,8 @@
               class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full"
               :class="
                 selectedPlanDay === day.dateKey
-                  ? 'text-gray-700 bg-white'
-                  : 'text-white bg-gray-400'
+                  ? 'text-[var(--md-sys-color-secondary)] bg-[var(--md-sys-color-surface)]'
+                  : 'text-[var(--md-sys-color-on-surface-variant)] bg-[var(--md-sys-color-surface-container-highest)]'
               "
             >
               {{ day.count }}
@@ -208,20 +203,25 @@
         v-for="day in planDays"
         v-show="selectedPlanDay === day.dateKey"
         :key="day.dateKey"
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden"
+        class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl overflow-hidden"
       >
-        <div class="bg-blue-600 dark:bg-blue-700 text-white px-6 py-6">
+        <md-elevation style="--md-elevation-level: 1"></md-elevation>
+        <div
+          class="bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] px-6 py-6"
+        >
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-2xl font-bold">{{ day.label }}</h3>
-              <p class="text-blue-100 mt-1">
+              <p class="mt-1 opacity-90">
                 {{ day.count }} 場演出 • {{ day.festivalNames.join('、') }}
               </p>
             </div>
             <div class="flex flex-col items-end gap-2">
               <div v-if="day.isToday" class="text-right">
-                <div class="text-yellow-300 text-sm font-medium">今天</div>
-                <div class="text-yellow-100 text-xs">{{ formatTime(now, settingsStore.is24Hour) }}</div>
+                <div class="text-[var(--md-sys-color-tertiary-container)] text-sm font-medium">
+                  今天
+                </div>
+                <div class="opacity-90 text-xs">{{ formatTime(now, settingsStore.is24Hour) }}</div>
               </div>
               <div
                 v-if="dayFestivalsWithMap(day).length > 0"
@@ -233,13 +233,7 @@
                   class="text-xs bg-white bg-opacity-20 hover:bg-opacity-30 rounded px-2 py-1 transition-colors flex items-center gap-1"
                   @click="goToMap(fest.id)"
                 >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
+                  <MdIcon name="location_on" style="--md-icon-size: 14px" />
                   {{ dayFestivalsWithMap(day).length > 1 ? fest.name + ' ' : '' }}場地地圖
                 </button>
               </div>
@@ -259,15 +253,11 @@
     </div>
 
     <!-- 分享 Modal -->
-    <div
-      v-if="showShareModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-[100] p-4"
-      @click="!isSharing && (showShareModal = false)"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full mx-auto shadow-2xl relative"
-        @click.stop
-      >
+    <BaseModal v-model="showShareModal">
+      <template v-if="!generatedLink" #headline>選擇要分享的音樂祭</template>
+      <template v-else #headline>網址產生成功！</template>
+
+      <div class="relative">
         <div
           v-if="isSharing"
           class="absolute inset-0 bg-white/90 dark:bg-gray-800/90 rounded-xl flex flex-col items-center justify-center z-10"
@@ -280,15 +270,12 @@
         </div>
 
         <template v-if="!generatedLink">
-          <h3 class="text-xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">
-            選擇要分享的音樂祭
-          </h3>
           <div
             v-if="shareError"
             class="mb-4 rounded-lg border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm text-red-700 dark:text-red-200 flex items-start gap-2"
             role="alert"
           >
-            <span aria-hidden="true">⚠️</span>
+            <MdIcon name="warning" class="text-[var(--md-sys-color-error)] shrink-0" />
             <div class="flex-1">
               <p class="font-medium">產生分享網址失敗</p>
               <p class="mt-0.5 text-xs opacity-90">{{ shareError }}</p>
@@ -317,23 +304,11 @@
               </span>
             </button>
           </div>
-          <button
-            class="mt-6 w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors disabled:opacity-50"
-            :disabled="isSharing"
-            @click="showShareModal = false"
-          >
-            取消
-          </button>
         </template>
 
         <template v-else>
           <div class="flex justify-center mb-4 text-green-500 dark:text-green-400">
-            <svg
-              class="w-16 h-16"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -342,9 +317,10 @@
               />
             </svg>
           </div>
-          <h3 class="text-xl font-bold mb-2 text-center text-gray-800 dark:text-gray-100">網址產生成功！</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">可以複製以下連結分享給朋友</p>
-          <div class="mb-6 relative">
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
+            可以複製以下連結分享給朋友
+          </p>
+          <div class="relative">
             <input
               type="text"
               readonly
@@ -353,75 +329,61 @@
               @click="$event.target.select()"
             />
           </div>
-          <div class="flex gap-3">
-            <button
-              class="flex-1 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-medium transition-colors shadow-sm"
-              @click="copyGeneratedLink"
-            >
-              複製網址
-            </button>
-            <button
-              class="flex-1 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
-              @click="showShareModal = false"
-            >
-              關閉
-            </button>
-          </div>
         </template>
       </div>
-    </div>
+
+      <template #actions>
+        <template v-if="!generatedLink">
+          <md-text-button type="button" :disabled="isSharing" @click="showShareModal = false">
+            取消
+          </md-text-button>
+        </template>
+        <template v-else>
+          <md-text-button type="button" @click="showShareModal = false">關閉</md-text-button>
+          <md-filled-button type="button" @click="copyGeneratedLink">複製網址</md-filled-button>
+        </template>
+      </template>
+    </BaseModal>
 
     <!-- 加入行事曆 Modal：選擇音樂祭 -->
-    <div
-      v-if="showCalendarModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-[100] p-4"
-      @click="showCalendarModal = false"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full mx-auto shadow-2xl"
-        @click.stop
-      >
-        <h3 class="text-xl font-bold mb-1 text-center text-gray-900 dark:text-gray-100">
-          加入行事曆
-        </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-          選擇要匯出的範圍，會依你的提醒設定加上演出前提醒。
-        </p>
-        <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
-          <button
-            v-if="shareableFestivals.length > 1"
-            class="px-4 py-3 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-medium text-left flex justify-between items-center transition-colors"
-            @click="executeCalendarExport('all')"
-          >
-            <span class="truncate pr-2">全部行程</span>
-            <span
-              class="text-sm bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-2 py-1 rounded-full whitespace-nowrap"
-            >
-              {{ plan.length }} 場
-            </span>
-          </button>
-          <button
-            v-for="fest in shareableFestivals"
-            :key="fest.id"
-            class="px-4 py-3 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-medium text-left flex justify-between items-center transition-colors"
-            @click="executeCalendarExport(fest.id)"
-          >
-            <span class="truncate pr-2">{{ fest.name }}</span>
-            <span
-              class="text-sm bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-2 py-1 rounded-full whitespace-nowrap"
-            >
-              {{ fest.count }} 場
-            </span>
-          </button>
-        </div>
+    <BaseModal v-model="showCalendarModal">
+      <template #headline>加入行事曆</template>
+
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+        選擇要匯出的範圍，會依你的提醒設定加上演出前提醒。
+      </p>
+      <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
         <button
-          class="mt-6 w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
-          @click="showCalendarModal = false"
+          v-if="shareableFestivals.length > 1"
+          class="px-4 py-3 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-medium text-left flex justify-between items-center transition-colors"
+          @click="executeCalendarExport('all')"
         >
-          取消
+          <span class="truncate pr-2">全部行程</span>
+          <span
+            class="text-sm bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-2 py-1 rounded-full whitespace-nowrap"
+          >
+            {{ plan.length }} 場
+          </span>
+        </button>
+        <button
+          v-for="fest in shareableFestivals"
+          :key="fest.id"
+          class="px-4 py-3 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-medium text-left flex justify-between items-center transition-colors"
+          @click="executeCalendarExport(fest.id)"
+        >
+          <span class="truncate pr-2">{{ fest.name }}</span>
+          <span
+            class="text-sm bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-2 py-1 rounded-full whitespace-nowrap"
+          >
+            {{ fest.count }} 場
+          </span>
         </button>
       </div>
-    </div>
+
+      <template #actions>
+        <md-text-button type="button" @click="showCalendarModal = false">取消</md-text-button>
+      </template>
+    </BaseModal>
 
     <ExportImageModal
       :open="showExportImageModal"
@@ -450,6 +412,8 @@ import { useToast } from '../composables/useToast';
 import TimelineGrid from '../components/TimelineGrid.vue';
 import NextUpCard from '../components/NextUpCard.vue';
 import ExportImageModal from '../components/ExportImageModal.vue';
+import BaseModal from '../components/BaseModal.vue';
+import MdIcon from '../components/MdIcon.vue';
 
 const planStore = usePlanStore();
 const festivalStore = useFestivalStore();
@@ -537,7 +501,10 @@ const planDays = computed(() => {
 const upcomingDays = computed(() => planDays.value.filter((d) => !d.isPast));
 // 過往行程，最近結束的排在最前面
 const pastDays = computed(() =>
-  planDays.value.filter((d) => d.isPast).slice().reverse()
+  planDays.value
+    .filter((d) => d.isPast)
+    .slice()
+    .reverse()
 );
 // 過往活動預設收合，避免干擾
 const showPast = ref(false);
@@ -600,7 +567,8 @@ function executeCalendarExport(festivalId) {
   const fest = shareableFestivals.value.find((f) => f.id === festivalId);
   const calName = festivalId === 'all' ? '我的音樂祭行程' : fest?.name || '音樂祭行程';
   const ics = buildPlanIcs(subset, { reminderMinutes, calendarName: calName });
-  const filename = festivalId === 'all' ? 'my-festival-plan.ics' : `${festivalId || 'festival'}.ics`;
+  const filename =
+    festivalId === 'all' ? 'my-festival-plan.ics' : `${festivalId || 'festival'}.ics`;
   downloadIcs(ics, filename);
   trackEvent('export_calendar', { festival_id: festivalId, count: subset.length });
   showToast({ message: '已下載行事曆檔，開啟它即可加入行事曆並收到提醒' });

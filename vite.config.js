@@ -33,7 +33,15 @@ function buildFestivalManifest() {
 export default defineConfig({
   base: '/',
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          // @material/web 的 Lit custom elements（md-*），交給瀏覽器原生處理，
+          // 不當成未知的 Vue 元件。
+          isCustomElement: (tag) => tag.startsWith('md-'),
+        },
+      },
+    }),
     VitePWA({
       // injectManifest 模式：用 src/pwa/sw.js 客製化 SW，
       // vite-plugin-pwa 會把 precache manifest 注入到 self.__WB_MANIFEST。

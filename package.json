@@ -18,12 +18,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@material-symbols/svg-400": "0.45.7",
+    "@material/web": "2.4.1",
     "pinia": "^2.1.0",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@material/material-color-utilities": "0.3.0",
     "@types/node": "^25.8.0",
     "@vitejs/plugin-vue": "^4.5.0",
     "@vue/test-utils": "^2.4.10",

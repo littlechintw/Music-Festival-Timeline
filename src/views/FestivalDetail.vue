@@ -6,9 +6,10 @@
     <div v-else-if="!festival" class="text-gray-500 dark:text-gray-400">找不到此音樂祭</div>
     <div v-else>
       <div
-        class="mb-4 rounded-lg p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+        class="relative mb-4 rounded-lg p-4 bg-[var(--md-sys-color-surface-container)]"
         :style="headerStyle"
       >
+        <md-elevation style="--md-elevation-level: 1"></md-elevation>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ festival.name }}</h1>
         <div class="text-gray-600 dark:text-gray-300 text-sm">
           {{ formatDateTime(festival.startTime, settingsStore.is24Hour) }} ~
@@ -19,19 +20,14 @@
         </div>
       </div>
       <div class="flex gap-2 mb-4">
-        <button
-          class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-          @click="goTimeline"
-        >
-          查看全日時間軸
-        </button>
-        <button
+        <md-filled-button type="button" @click="goTimeline">查看全日時間軸</md-filled-button>
+        <md-filled-tonal-button
+          type="button"
           v-if="festival.map && festival.map.image"
-          class="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white shadow-sm"
           @click="goMap"
         >
           查看場地地圖
-        </button>
+        </md-filled-tonal-button>
       </div>
       <div class="mb-4">
         <h2 class="font-bold mb-2 text-gray-900 dark:text-gray-100">舞台與演出</h2>
@@ -45,13 +41,11 @@
             class="mb-4"
           >
             <div
-              class="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-t font-medium text-sm text-gray-700 dark:text-gray-200"
+              class="bg-[var(--md-sys-color-surface-container-high)] px-3 py-2 rounded-t font-medium text-sm text-gray-700 dark:text-gray-200"
             >
               {{ formatDayHeader(dayKey) }}
             </div>
-            <div
-              class="border border-t-0 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b p-3"
-            >
+            <div class="bg-[var(--md-sys-color-surface-container-low)] rounded-b p-3">
               <div
                 v-for="perf in dayPerformances"
                 :key="perf.artist + perf.start"
@@ -64,7 +58,10 @@
                   <span class="ml-3 font-bold text-gray-900 dark:text-gray-100">
                     {{ perf.artist }}
                   </span>
-                  <span v-if="perf.description" class="ml-2 text-gray-400 dark:text-gray-500 text-xs">
+                  <span
+                    v-if="perf.description"
+                    class="ml-2 text-gray-400 dark:text-gray-500 text-xs"
+                  >
                     ({{ perf.description }})
                   </span>
                 </div>
@@ -72,8 +69,8 @@
                   class="ml-2 px-3 py-1 rounded text-xs shrink-0 transition-colors"
                   :class="
                     inPlan(stage, perf)
-                      ? 'bg-gray-500 hover:bg-gray-600 text-white'
-                      : 'bg-green-500 hover:bg-green-600 text-white'
+                      ? 'bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]'
+                      : 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
                   "
                   @click="togglePlan(stage, perf)"
                 >
