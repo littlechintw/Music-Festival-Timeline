@@ -2,18 +2,29 @@
   <div class="p-4 max-w-3xl mx-auto relative">
     <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">我的行程</h1>
 
-    <!-- 已儲存的分享行程 -->
+    <!-- 朋友的分享：掃描離線分享 + 已儲存的分享行程，合併成一個預設收合的區塊 -->
     <div class="bg-[var(--md-sys-color-surface-container)] rounded-xl px-6 mb-6">
-      <AccordionSection title="已儲存的分享行程">
+      <AccordionSection :title="savedPlansTitle">
         <template #icon><MdIcon name="bookmark" /></template>
+
+        <div class="pb-4 mb-4 border-b border-gray-100 dark:border-gray-700">
+          <md-outlined-button type="button" @click="showScanModal = true">
+            <MdIcon name="qr_code_scanner" slot="icon" />
+            掃描離線分享
+          </md-outlined-button>
+          <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mt-1.5">
+            朋友沒有網路嗎？請他分享時選「離線分享」產生 QR Code，這裡掃描即可讀取，雙方都不需要連網路。
+          </p>
+        </div>
+
         <p
           class="text-xs text-[var(--md-sys-color-on-surface-variant)] mb-3 flex items-center gap-1"
         >
           <MdIcon name="info" style="--md-icon-size: 14px" />
-          只存在這台裝置的瀏覽器裡，不會同步到雲端或其他裝置。
+          已儲存的行程只存在這台裝置的瀏覽器裡，不會同步到雲端或其他裝置。
         </p>
         <div v-if="savedPlans.length === 0" class="text-sm text-gray-400 py-2">
-          打開朋友分享的行程連結時，可以另存成一份獨立命名的行程，之後會列在這裡。
+          收到朋友分享的行程連結或掃描 QR Code 時，可以另存成一份獨立命名的行程，之後會列在這裡。
         </div>
         <ul v-else class="divide-y divide-gray-100 dark:divide-gray-700 -mt-1">
           <li
@@ -102,6 +113,8 @@
       </template>
     </BaseModal>
 
+    <ScanOfflineShareModal v-if="showScanModal" @close="showScanModal = false" />
+
     <div
       v-if="plan.length === 0"
       class="flex flex-col items-center justify-center text-center py-12 px-4"
@@ -126,18 +139,36 @@
         class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl p-6 mb-6 text-gray-800 dark:text-gray-100"
       >
         <md-elevation style="--md-elevation-level: 1"></md-elevation>
-        <!-- 手機版操作按鈕 -->
-        <div class="flex flex-col gap-2 md:hidden mb-4">
-          <md-outlined-button
-            type="button"
-            :disabled="isSharing || !isOnline"
-            @click="openShareModal"
+
+        <div
+          class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--md-sys-color-on-surface-variant)] mb-4"
+        >
+          <span
+            ><strong class="text-[var(--md-sys-color-on-surface)]">{{ plan.length }}</strong>
+            場演出</span
           >
+          <span aria-hidden="true" class="opacity-40">•</span>
+          <span
+            ><strong class="text-[var(--md-sys-color-on-surface)]">{{ planDays.length }}</strong>
+            天行程</span
+          >
+          <span aria-hidden="true" class="opacity-40">•</span>
+          <span
+            ><strong class="text-[var(--md-sys-color-on-surface)]">{{
+              uniqueFestivals.length
+            }}</strong>
+            個音樂祭</span
+          >
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <md-outlined-button type="button" :disabled="isSharing" @click="openShareModal">
             <span
               v-if="isSharing"
               slot="icon"
               class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
             />
+            <MdIcon v-else name="ios_share" slot="icon" />
             {{ shareButtonLabel }}
           </md-outlined-button>
           <md-outlined-button type="button" @click="showExportImageModal = true">
@@ -148,77 +179,6 @@
             <MdIcon name="event" slot="icon" />
             加入行事曆
           </md-outlined-button>
-        </div>
-
-        <!-- 統計與桌機版操作按鈕同一列、垂直置中對齊 -->
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex flex-wrap items-center gap-6 text-sm">
-            <div class="flex items-center gap-2">
-              <MdIcon
-                name="schedule"
-                style="--md-icon-size: 16px"
-                class="text-[var(--md-sys-color-primary)]"
-              />
-              <span
-                class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
-                >{{ plan.length }}</span
-              >
-              <span>場演出</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <MdIcon
-                name="calendar_month"
-                style="--md-icon-size: 16px"
-                class="text-[var(--md-sys-color-primary)]"
-              />
-              <span
-                class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
-                >{{ planDays.length }}</span
-              >
-              <span>天行程</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <MdIcon
-                name="location_on"
-                style="--md-icon-size: 16px"
-                class="text-[var(--md-sys-color-primary)]"
-              />
-              <span
-                class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
-              >
-                {{ uniqueFestivals.length }}
-              </span>
-              <span>個音樂祭</span>
-            </div>
-          </div>
-
-          <div class="hidden md:flex gap-2 flex-shrink-0">
-            <md-outlined-button
-              type="button"
-              :disabled="isSharing || !isOnline"
-              :title="!isOnline ? '離線中，無法產生分享網址' : ''"
-              @click="openShareModal"
-            >
-              <span
-                v-if="isSharing"
-                slot="icon"
-                class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
-              />
-              {{ shareButtonLabel }}
-            </md-outlined-button>
-            <md-outlined-button
-              type="button"
-              aria-label="匯出行程圖"
-              @click="showExportImageModal = true"
-            >
-              <MdIcon name="photo_camera" slot="icon" />
-              匯出行程圖
-            </md-outlined-button>
-            <md-outlined-button type="button" aria-label="加入行事曆" @click="addToCalendar">
-              <MdIcon name="event" slot="icon" />
-              加入行事曆
-            </md-outlined-button>
-          </div>
         </div>
       </div>
 
@@ -354,8 +314,9 @@
 
     <!-- 分享 Modal -->
     <BaseModal v-model="showShareModal">
-      <template v-if="!generatedLink" #headline>選擇要分享的音樂祭</template>
-      <template v-else #headline>網址產生成功！</template>
+      <template v-if="!hasShareResult" #headline>選擇要分享的音樂祭</template>
+      <template v-else-if="shareMode === 'cloud'" #headline>網址產生成功！</template>
+      <template v-else #headline>QR Code 已產生！</template>
 
       <div class="relative">
         <div
@@ -366,10 +327,42 @@
             class="w-12 h-12 border-4 border-purple-200 dark:border-purple-800 border-t-purple-600 rounded-full animate-spin mb-4"
           />
           <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">請稍候...</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">正在產生分享網址</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {{ shareMode === 'cloud' ? '正在產生分享網址' : '正在產生 QR Code' }}
+          </p>
         </div>
 
-        <template v-if="!generatedLink">
+        <template v-if="!hasShareResult">
+          <div
+            class="flex items-center gap-2 bg-[var(--md-sys-color-surface-container-high)] p-1 rounded-lg mb-2"
+          >
+            <button
+              type="button"
+              class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+              :class="shareModeBtn(shareMode === 'cloud')"
+              @click="shareMode = 'cloud'"
+            >
+              <MdIcon name="cloud" style="--md-icon-size: 16px" />
+              雲端分享
+            </button>
+            <button
+              type="button"
+              class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+              :class="shareModeBtn(shareMode === 'offline')"
+              @click="shareMode = 'offline'"
+            >
+              <MdIcon name="qr_code" style="--md-icon-size: 16px" />
+              離線分享
+            </button>
+          </div>
+          <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mb-4">
+            {{
+              shareMode === 'cloud'
+                ? '雙方都需要連網路。產生一個短網址，複製後傳給朋友，對方點開即可匯入。'
+                : '雙方都不需要連網路。產生一個 QR Code，讓朋友在「行程」頁面用「掃描離線分享」讀取。'
+            }}
+          </p>
+
           <div
             v-if="shareError"
             class="mb-4 rounded-lg border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm text-red-700 dark:text-red-200 flex items-start gap-2"
@@ -377,7 +370,7 @@
           >
             <MdIcon name="warning" class="text-[var(--md-sys-color-error)] shrink-0" />
             <div class="flex-1">
-              <p class="font-medium">產生分享網址失敗</p>
+              <p class="font-medium">產生失敗</p>
               <p class="mt-0.5 text-xs opacity-90">{{ shareError }}</p>
               <button
                 type="button"
@@ -412,24 +405,10 @@
               }}</span
               >」的 {{ selectedShareFestival.count }} 場行程
             </p>
-            <label class="block font-bold text-sm text-gray-700 dark:text-gray-200">
-              行程名稱（選填）
-            </label>
-            <md-outlined-text-field
-              class="w-full"
-              placeholder="例如：週六場次"
-              :disabled="isSharing"
-              :value="shareName"
-              @input="(e) => (shareName = e.target.value)"
-              @keyup.enter="confirmShare"
-            ></md-outlined-text-field>
-            <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">
-              朋友打開連結時會看到這個名稱，留空則顯示產生連結的時間。
-            </p>
           </div>
         </template>
 
-        <template v-else>
+        <template v-else-if="shareMode === 'cloud'">
           <div class="flex justify-center mb-4 text-green-500 dark:text-green-400">
             <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -453,10 +432,17 @@
             />
           </div>
         </template>
+
+        <template v-else>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">
+            請朋友在「行程」頁面點選「掃描離線分享」，對準這個 QR Code
+          </p>
+          <img :src="qrDataUrl" alt="離線分享 QR Code" class="mx-auto rounded-lg" width="280" height="280" />
+        </template>
       </div>
 
       <template #actions>
-        <template v-if="!generatedLink">
+        <template v-if="!hasShareResult">
           <template v-if="!selectedShareFestival">
             <md-text-button type="button" :disabled="isSharing" @click="showShareModal = false">
               取消
@@ -471,13 +457,16 @@
               返回
             </md-text-button>
             <md-filled-button type="button" :disabled="isSharing" @click="confirmShare">
-              產生連結
+              {{ shareMode === 'cloud' ? '產生連結' : '產生 QR Code' }}
             </md-filled-button>
           </template>
         </template>
-        <template v-else>
+        <template v-else-if="shareMode === 'cloud'">
           <md-text-button type="button" @click="showShareModal = false">關閉</md-text-button>
           <md-filled-button type="button" @click="copyGeneratedLink">複製網址</md-filled-button>
+        </template>
+        <template v-else>
+          <md-filled-button type="button" @click="showShareModal = false">關閉</md-filled-button>
         </template>
       </template>
     </BaseModal>
@@ -532,7 +521,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { usePlanStore } from '../stores/plan';
@@ -554,6 +543,11 @@ import ExportImageModal from '../components/ExportImageModal.vue';
 import BaseModal from '../components/BaseModal.vue';
 import MdIcon from '../components/MdIcon.vue';
 import AccordionSection from '../components/AccordionSection.vue';
+// jsQR/相機掃描邏輯只有點開這個 modal 才需要，動態載入避免拖大 /plan 的主要 bundle
+// （這台 PWA 會把所有 JS 都放進離線 precache，要盡量避免不必要的東西被一起載入）。
+const ScanOfflineShareModal = defineAsyncComponent(
+  () => import('../components/ScanOfflineShareModal.vue')
+);
 
 const planStore = usePlanStore();
 const savedPlansStore = useSavedPlansStore();
@@ -568,6 +562,7 @@ const { confirm } = useConfirm();
 const { myPlan: plan } = storeToRefs(planStore);
 const { savedPlans } = storeToRefs(savedPlansStore);
 const selectedPlanDay = ref('');
+const showScanModal = ref(false);
 
 const uniqueFestivals = computed(() => [
   ...new Set(plan.value.map((p) => p.festivalName).filter(Boolean)),
@@ -678,6 +673,10 @@ watch(
 );
 
 // ---- 已儲存的分享行程 ----
+const savedPlansTitle = computed(() =>
+  savedPlans.value.length ? `朋友的分享 (${savedPlans.value.length})` : '朋友的分享'
+);
+
 const viewingSavedPlan = ref(null);
 const viewingSelectedDay = ref('');
 
@@ -787,13 +786,20 @@ const shareError = ref('');
 const showExportImageModal = ref(false);
 const isSharing = ref(false);
 const generatedLink = ref('');
+const qrDataUrl = ref('');
 const selectedShareFestival = ref(null);
-const shareName = ref('');
+// 'cloud' 需要雙方連網（透過短網址服務）；'offline' 產生 QR code，雙方都不需要連網。
+const shareMode = ref('cloud');
 
-const shareButtonLabel = computed(() => {
-  if (!isOnline.value) return '離線中無法分享';
-  return isSharing.value ? '產生網址中...' : '分享行程網址';
-});
+const hasShareResult = computed(() => !!generatedLink.value || !!qrDataUrl.value);
+
+const shareButtonLabel = computed(() => (isSharing.value ? '產生中...' : '分享行程'));
+
+function shareModeBtn(active) {
+  return active
+    ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-primary)] shadow'
+    : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]';
+}
 
 const shareableFestivals = computed(() => {
   const nowMs = now.value.getTime();
@@ -833,28 +839,50 @@ function openShareModal() {
     alert('目前沒有行程可以分享');
     return;
   }
-  if (!isOnline.value) {
-    alert('離線中無法產生分享網址，請連上網路後再試。');
-    return;
-  }
   generatedLink.value = '';
+  qrDataUrl.value = '';
   shareError.value = '';
   selectedShareFestival.value = null;
-  shareName.value = '';
+  shareMode.value = isOnline.value ? 'cloud' : 'offline';
   showShareModal.value = true;
 }
 
 function pickShareFestival(fest) {
   selectedShareFestival.value = fest;
-  shareName.value = '';
 }
 
 function confirmShare() {
   if (!selectedShareFestival.value) return;
-  executeShare(selectedShareFestival.value.id, shareName.value);
+  if (shareMode.value === 'offline') {
+    executeShareOffline(selectedShareFestival.value.id);
+  } else {
+    executeShare(selectedShareFestival.value.id);
+  }
 }
 
-async function executeShare(festivalId, name = '') {
+async function executeShareOffline(festivalId) {
+  isSharing.value = true;
+  qrDataUrl.value = '';
+  shareError.value = '';
+  const subset = plan.value.filter((p) => p.festivalId === festivalId);
+
+  try {
+    if (!subset.length) throw new Error('這個音樂祭沒有可分享的行程');
+    const text = encodePlanToText(subset);
+    // qrcode 套件只有實際切到離線分享才需要，動態載入避免拖大主要 bundle
+    const { generateQrDataUrl } = await import('../utils/qr');
+    qrDataUrl.value = await generateQrDataUrl(text);
+    trackEvent('generate_share_qr', { festival_id: festivalId });
+  } catch (err) {
+    console.error('[share-offline] generate failed:', err);
+    shareError.value = '行程資料過大，無法產生 QR Code，請改用雲端分享。';
+    trackEvent('generate_share_qr_error', { festival_id: festivalId });
+  } finally {
+    isSharing.value = false;
+  }
+}
+
+async function executeShare(festivalId) {
   isSharing.value = true;
   generatedLink.value = '';
   shareError.value = '';
@@ -863,7 +891,7 @@ async function executeShare(festivalId, name = '') {
   try {
     if (!subset.length) throw new Error('這個音樂祭沒有可分享的行程');
 
-    const compressedData = encodePlanToText(subset, name);
+    const compressedData = encodePlanToText(subset);
     const gasUrl = getShortenerUrl();
 
     // 跟另一個 short-url 專案的合約一致：
@@ -903,6 +931,7 @@ async function executeShare(festivalId, name = '') {
 function resetShareModal() {
   shareError.value = '';
   generatedLink.value = '';
+  qrDataUrl.value = '';
 }
 
 function copyGeneratedLink() {

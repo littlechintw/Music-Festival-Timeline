@@ -42,6 +42,9 @@ import sync from '@material-symbols/svg-400/outlined/sync.svg?raw';
 import check_circle from '@material-symbols/svg-400/outlined/check_circle.svg?raw';
 import error from '@material-symbols/svg-400/outlined/error.svg?raw';
 import info from '@material-symbols/svg-400/outlined/info.svg?raw';
+import qr_code from '@material-symbols/svg-400/outlined/qr_code.svg?raw';
+import qr_code_scanner from '@material-symbols/svg-400/outlined/qr_code_scanner.svg?raw';
+import cloud from '@material-symbols/svg-400/outlined/cloud.svg?raw';
 
 /** @type {Record<string, string>} */
 export const icons = {
@@ -85,4 +88,7 @@ export const icons = {
   check_circle,
   error,
   info,
+  qr_code,
+  qr_code_scanner,
+  cloud,
 };

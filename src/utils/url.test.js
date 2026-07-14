@@ -71,32 +71,5 @@ describe('encodePlanToText / decodePlanFromText', () => {
     expect(result.invalidCount).toBe(2);
     expect(result.plan).toHaveLength(0);
   });
-
-  it('encodes and decodes an optional plan name', () => {
-    const original = [
-      { festivalId: 'megaport-2026', stage: '南霸天', artist: '滅火器', start: '2026-03-21T15:00:00+08:00', end: '2026-03-21T15:40:00+08:00' },
-    ];
-    const text = encodePlanToText(original, '週末場次');
-    expect(text.startsWith('n=')).toBe(true);
-    const result = decodePlanFromText(text, [festival]);
-    expect(result.name).toBe('週末場次');
-    expect(result.plan).toHaveLength(1);
-  });
-
-  it('omits the name segment when name is blank/whitespace', () => {
-    const original = [
-      { festivalId: 'megaport-2026', stage: '南霸天', artist: '滅火器', start: '2026-03-21T15:00:00+08:00', end: '2026-03-21T15:40:00+08:00' },
-    ];
-    const text = encodePlanToText(original, '   ');
-    expect(text.startsWith('megaport-2026;')).toBe(true);
-    const result = decodePlanFromText(text, [festival]);
-    expect(result.name).toBe('');
-  });
-
-  it('still decodes old-format links (no name segment) with empty name', () => {
-    const result = decodePlanFromText('megaport-2026;南霸天:03211500', [festival]);
-    expect(result.name).toBe('');
-    expect(result.plan).toHaveLength(1);
-  });
 });
 

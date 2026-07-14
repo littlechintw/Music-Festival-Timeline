@@ -20,7 +20,9 @@
   "dependencies": {
     "@material-symbols/svg-400": "0.45.7",
     "@material/web": "2.4.1",
+    "jsqr": "^1.4.0",
     "pinia": "^2.1.0",
+    "qrcode": "^1.5.4",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0",
     "zod": "^3.22.0"
