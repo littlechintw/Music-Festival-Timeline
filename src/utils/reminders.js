@@ -156,9 +156,9 @@ export function startReminderService() {
     // 把已經到期（在容差內）的全部送掉
     while (triggers.length > 0 && triggers[0].at <= now + FIRE_WINDOW_MS) {
       const t = /** @type {Trigger} */ (triggers.shift());
-      // 太久之前的就跳過（avoid spamming 用戶 catch-up）
+      // 太久之前的就跳過（avoid spamming 用戶 catch-up）——只標記已處理，不寫進使用者看得到的歷史紀錄
       if (t.at < now - FIRE_WINDOW_MS) {
-        notificationStore.record(t.key, '[skipped]', '[past]'); // mark as sent 避免重複考慮
+        notificationStore.markSent(t.key);
         continue;
       }
       fire(t);
