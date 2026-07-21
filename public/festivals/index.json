@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "festivals": [
+    {
+      "festivalId": "river-ocean-music-festival-2026",
+      "name": "2026 新北市河海音樂季 貢寮場",
+      "startTime": "2026-07-25T15:00:00+08:00",
+      "endTime": "2026-07-26T22:00:00+08:00",
+      "file": "river-ocean-music-festival-2026.json"
+    },
+    {
+      "festivalId": "east-district-fun-summer-2026",
+      "name": "混東區 潮 FUN 夏日趴 2026",
+      "startTime": "2026-07-25T15:05:00+08:00",
+      "endTime": "2026-07-26T20:15:00+08:00",
+      "file": "east-district-fun-summer-2026.json"
+    }
+  ]
+}
