@@ -1,6 +1,12 @@
 name: Validate Festival JSON
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'festivals/*.json'
+      - 'src/pwa/schema.js'
+      - 'scripts/validate-festivals.mjs'
   pull_request:
     paths:
       - 'festivals/*.json'
