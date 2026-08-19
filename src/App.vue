@@ -50,6 +50,7 @@
     </main>
 
     <InvalidShowsModal />
+    <ForkRibbon />
     <UpdatePrompt />
     <ToastContainer />
     <ConfirmDialog />
@@ -71,6 +72,7 @@ import InvalidShowsModal from './components/InvalidShowsModal.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
 import ToastContainer from './components/ToastContainer.vue';
 import ConfirmDialog from './components/ConfirmDialog.vue';
+import ForkRibbon from './components/ForkRibbon.vue';
 import MdIcon from './components/MdIcon.vue';
 import { useTheme } from './composables/useTheme';
 
