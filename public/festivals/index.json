@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "festivals": [
+    {
+      "festivalId": "jam-jam-asia-2026",
+      "name": "Jam Jam Asia 2026 亞洲音樂節",
+      "startTime": "2026-08-29T12:10:00+08:00",
+      "endTime": "2026-08-30T22:00:00+08:00",
+      "file": "jam-jam-asia-2026.json"
+    },
+    {
+      "festivalId": "pawer-love-2026",
+      "name": "2026 流浪祭 PAWER LOVE",
+      "startTime": "2026-09-05T15:00:00+08:00",
+      "endTime": "2026-09-06T21:30:00+08:00",
+      "file": "pawer-love-2026.json"
+    },
+    {
+      "festivalId": "river-ocean-music-festival-2026-metropolitanpark",
+      "name": "2026 新北市河海音樂季 新北大都會公園場",
+      "startTime": "2026-09-05T15:30:00+08:00",
+      "endTime": "2026-09-06T22:00:00+08:00",
+      "file": "river-ocean-music-festival-2026-metropolitanpark.json"
+    },
+    {
+      "festivalId": "tft-festival-2026",
+      "name": "2026 TFT 有感節",
+      "startTime": "2026-09-19T15:00:00+08:00",
+      "endTime": "2026-09-20T20:00:00+08:00",
+      "file": "tft-festival-2026.json"
+    },
+    {
+      "festivalId": "wind-of-september-2026",
+      "name": "2026 九降風 Wind of September",
+      "startTime": "2026-09-19T16:00:00+08:00",
+      "endTime": "2026-09-20T21:10:00+08:00",
+      "file": "wind-of-september-2026.json"
+    }
+  ]
+}
