@@ -39,13 +39,13 @@
         :style="currentLineStyle(now)"
       >
         <div
-          class="text-red-500 bg-red-50 px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1"
+          class="text-[var(--md-sys-color-on-error-container)] bg-[var(--md-sys-color-error-container)] px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1"
         >
           {{ formatTime(now, is24Hour) }}
         </div>
-        <div class="flex-1 border-t-[3px] border-red-500 relative transform -translate-y-1/2">
+        <div class="flex-1 border-t-[3px] border-[var(--md-sys-color-error)] relative transform -translate-y-1/2">
           <div
-            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-red-500 absolute top-1/2 -left-1 transform -translate-y-1/2"
+            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-[var(--md-sys-color-error)] absolute top-1/2 -left-1 transform -translate-y-1/2"
           />
         </div>
       </div>
@@ -55,7 +55,7 @@
         <div
           v-for="perf in performancesByStage[stage.name] || []"
           :key="perf.id || `${perf.artist}_${perf.start}`"
-          class="performance-block relative rounded shadow transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--md-sys-color-on-surface)]"
+          class="performance-block relative rounded-md shadow-sm transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--md-sys-color-on-surface)]"
           :class="[sizeClasses(perf), getPerfClasses(perf), liveClasses(perf), conflictClasses(perf)]"
           :style="perfStyle(perf, stageIndex)"
           :role="interactive ? 'button' : undefined"
@@ -74,10 +74,10 @@
                 class="text-[10px] font-bold leading-4 shrink-0"
                 aria-hidden="true"
               >✓</span>
-              <span v-if="isLive(perf)" class="text-[10px] font-bold bg-red-500 text-white px-1 rounded animate-pulse shrink-0">
+              <span v-if="isLive(perf)" class="text-[10px] font-bold bg-[var(--md-sys-color-error)] text-[var(--md-sys-color-on-error)] px-1 rounded animate-pulse shrink-0">
                 LIVE
               </span>
-              <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-500 text-white px-1 rounded shrink-0" :title="conflictsFor(perf)">
+              <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-600 text-white px-1 rounded shrink-0" :title="conflictsFor(perf)">
                 ⚠
               </span>
               <span v-marquee="settingsStore.enableMarqueeAnimation" class="marquee-viewport min-w-0">
@@ -110,7 +110,7 @@ const props = defineProps({
   is24Hour: { type: Boolean, default: true },
   showCurrentTime: { type: Boolean, default: false },
   now: { type: Date, default: () => new Date() },
-  // (perf) => 'bg-blue-600 text-white' 之類
+  // (perf) => 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]' 之類；沒給就用主題主色
   perfClassResolver: { type: Function, default: null },
   // 是否偵測跨舞台時間衝突（個人行程才需要，跑馬燈時間表不需要）
   detectConflicts: { type: Boolean, default: false },
@@ -152,7 +152,7 @@ function blockLabel(perf, stage) {
 
 function getPerfClasses(perf) {
   if (props.perfClassResolver) return props.perfClassResolver(perf);
-  return 'bg-blue-600 text-white';
+  return 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]';
 }
 
 // 演出時長很短（例如開場儀式、報到）時，方塊本身的格高有限，
@@ -172,7 +172,7 @@ function isLive(perf) {
 }
 
 function liveClasses(perf) {
-  return isLive(perf) ? 'ring-2 ring-red-500 ring-offset-1' : '';
+  return isLive(perf) ? 'ring-2 ring-[var(--md-sys-color-error)] ring-offset-1' : '';
 }
 
 // 衝突偵測：對每個 perf 找出時間重疊但 stage 不同的演出
@@ -212,7 +212,7 @@ function conflictsFor(perf) {
 }
 
 function conflictClasses(perf) {
-  return conflictsFor(perf) ? 'outline outline-2 outline-amber-500 outline-offset-1' : '';
+  return conflictsFor(perf) ? 'outline outline-2 outline-amber-600 outline-offset-1' : '';
 }
 
 function scrollToCurrent() {
@@ -365,7 +365,7 @@ const vMarquee = {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  font-family: 'Courier New', monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.8rem;
   font-weight: 500;
   border-right: 1px solid var(--tg-border-light);

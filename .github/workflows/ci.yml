@@ -1,11 +1,18 @@
 name: CI
 
-# 程式碼的 PR / push 都跑：lint → 單元測試 → 完整 build（含 SW precache manifest）。
-# 節慶 JSON 的 schema 驗證另外在 validate-pr.yml。
+# 只在 PR 上跑：lint → 單元測試 → build。
+# push 到 main 的檢查併在 deploy.yml 裡（部署前會先 lint + test），避免同一次 push 跑兩份 build。
+# 只改資料或文件的 PR 不需要跑這個：資料由 validate-pr.yml 驗證 schema。
 on:
   pull_request:
-  push:
-    branches: [main]
+    paths-ignore:
+      - 'festivals/**'
+      - 'docs/**'
+      - '**.md'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:

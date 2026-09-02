@@ -70,7 +70,8 @@ export function useTimelineGrid(performancesGetter, is24HourGetter) {
       display: 'grid',
       gridTemplateColumns: `var(--time-col-width, 80px) repeat(${stageCount}, minmax(var(--stage-col-width, 0), 1fr))`,
       gridTemplateRows: gridRows,
-      backgroundColor: '#e5e7eb',
+      // 欄與欄之間 1px 的分隔線顏色，跟 MD3 outline-variant 對齊（亮暗主題都對）
+      backgroundColor: 'var(--tg-border-light)',
       // 只留直向（欄與欄之間）的 1px 間隙當分隔線；
       // 橫向的時間格線改由每格的 border-top 畫，才能分別控制 10 分 / 5 分線深淺。
       gap: '0 1px',

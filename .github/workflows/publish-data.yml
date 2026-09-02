@@ -1,12 +1,18 @@
 name: Publish Festival Data
 
+# 把驗證過的資料推到 data-live 分支。只在 main 觸發；其他分支的資料改動由 validate-pr.yml 在 PR 上檢查。
 on:
   push:
+    branches: [main]
     paths:
       - 'festivals/*.json'
       - 'src/pwa/schema.js'
       - 'scripts/validate-festivals.mjs'
   workflow_dispatch:
+
+concurrency:
+  group: publish-data
+  cancel-in-progress: true
 
 jobs:
   validate-and-publish:
