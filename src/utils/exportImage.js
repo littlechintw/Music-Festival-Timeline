@@ -1,4 +1,5 @@
 // @ts-check
+import { festivalDayKey } from './format';
 // 把行程畫成一張 PNG 圖，給使用者下載 / 分享。
 // 解析度依照當下螢幕比例計算，畫面 sharp 程度跟著 DPR。
 //
@@ -72,7 +73,7 @@ function groupByDay(perfs) {
   const map = new Map();
   for (const perf of perfs) {
     const date = new Date(perf.start);
-    const key = date.toDateString();
+    const key = festivalDayKey(date);
     if (!map.has(key)) map.set(key, { date, perfs: [] });
     map.get(key).perfs.push(perf);
   }
@@ -718,7 +719,7 @@ function roundRect(ctx, x, y, w, h, r, fill, stroke) {
  *
  * @param {{
  *   festival: { festivalId: string, stages: Array<{ id?: string, name: string, performances: Array<{ artist: string, start: string, end?: string, description?: string }> }> },
- *   dayKey: string,     // Date.toDateString() — 用來篩當天演出
+ *   dayKey: string,     // festivalDayKey(Date) — 用來篩當天演出
  *   selectedKeys: Set<string>,   // 使用者已選的 perf composite key
  * }} opts
  * @returns {TimetableStage[]}
@@ -731,7 +732,7 @@ export function buildTimetableStagesForDay(opts) {
     const perfs = [];
     for (const p of stage.performances) {
       const d = new Date(p.start);
-      if (d.toDateString() !== opts.dayKey) continue;
+      if (festivalDayKey(d) !== opts.dayKey) continue;
       const key = `${opts.festival.festivalId}_${stage.name}_${p.artist}_${p.start}`;
       perfs.push({
         artist: p.artist,
@@ -762,7 +763,7 @@ export function listFestivalDays(festival) {
   for (const s of festival.stages) {
     for (const p of s.performances) {
       const d = new Date(p.start);
-      const k = d.toDateString();
+      const k = festivalDayKey(d);
       if (!map.has(k)) map.set(k, new Date(d.getFullYear(), d.getMonth(), d.getDate()));
     }
   }

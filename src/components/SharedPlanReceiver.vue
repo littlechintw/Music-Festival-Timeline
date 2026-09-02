@@ -142,7 +142,7 @@ import { usePlanStore } from '../stores/plan';
 import { useSavedPlansStore } from '../stores/savedPlans';
 import { useSettingsStore } from '../stores/settings';
 import { makePerfId } from '../utils/perfId';
-import { WEEKDAYS_ZH } from '../utils/format';
+import { WEEKDAYS_ZH, festivalDayKey } from '../utils/format';
 import BaseModal from './BaseModal.vue';
 import MdIcon from './MdIcon.vue';
 import TimelineGrid from './TimelineGrid.vue';
@@ -163,7 +163,7 @@ const showSuccessModal = ref(false);
 const successKind = ref('replace');
 const showSaveForm = ref(false);
 const saveName = ref(formatDefaultSaveName(new Date(), props.festival.name));
-const selectedDay = ref(new Date(props.plan[0]?.start).toDateString());
+const selectedDay = ref(festivalDayKey(props.plan[0]?.start));
 const invalidMessage = ref(
   props.invalidCount > 0 ? `有 ${props.invalidCount} 個行程已經失效，僅會匯入部分有效行程` : ''
 );
@@ -174,7 +174,7 @@ const festivalDays = computed(() => {
   const set = new Set();
   for (const stage of props.festival.stages) {
     for (const perf of stage.performances) {
-      set.add(new Date(perf.start).toDateString());
+      set.add(festivalDayKey(perf.start));
     }
   }
   return Array.from(set)
@@ -196,7 +196,7 @@ const performancesForDay = computed(() => {
   const result = [];
   for (const stage of props.festival.stages) {
     for (const perf of stage.performances) {
-      if (new Date(perf.start).toDateString() !== selectedDay.value) continue;
+      if (festivalDayKey(perf.start) !== selectedDay.value) continue;
       result.push({ ...perf, stage: stage.name, _stage: stage });
     }
   }

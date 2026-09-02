@@ -73,6 +73,22 @@ export function formatDayLabel(input) {
   return `${yyyy}.${mm}.${dd} (${WEEKDAYS_ZH[d.getDay()]})`;
 }
 
+// 音樂祭的「一天」不是午夜切：跨夜企劃（例如 00:40–03:30 的 DJ set）在觀眾心裡屬於前一天的夜晚。
+// 清晨 ROLLOVER 點之前開始的演出，一律歸到前一天。所有依日期分組的畫面都要用這個函式，不要直接用 toDateString()。
+export const FESTIVAL_DAY_ROLLOVER_HOUR = 6;
+
+/**
+ * 回傳「音樂祭日」的 key，格式與 Date.toDateString() 相同，所以 `new Date(key)` 就能拿到那一天（當地時間 00:00）。
+ * @param {Date | string | number | null | undefined} input
+ */
+export function festivalDayKey(input) {
+  const d = toDate(input);
+  if (!d) return '';
+  const shifted = new Date(d);
+  if (shifted.getHours() < FESTIVAL_DAY_ROLLOVER_HOUR) shifted.setDate(shifted.getDate() - 1);
+  return shifted.toDateString();
+}
+
 export { WEEKDAYS_ZH };
 
 const WEEKDAYS_SHORT_ZH = ['日', '一', '二', '三', '四', '五', '六'];

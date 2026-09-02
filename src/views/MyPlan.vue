@@ -514,7 +514,7 @@ import { useNowTicker } from '../composables/useNowTicker';
 import { useOnline } from '../composables/useOnline';
 import { encodePlanToText } from '../utils/url';
 import { getShortenerUrl } from '../utils/shortener';
-import { formatTime, formatDayLabel, WEEKDAYS_ZH } from '../utils/format';
+import { formatTime, formatDayLabel, WEEKDAYS_ZH, festivalDayKey } from '../utils/format';
 import { trackEvent } from '../utils/analytics';
 import { buildPlanIcs, downloadIcs } from '../utils/calendar';
 import { useToast } from '../composables/useToast';
@@ -557,19 +557,19 @@ const festivalMap = computed(
 const planDays = computed(() => {
   if (!plan.value.length) return [];
 
-  const todayKey = now.value.toDateString();
+  const todayKey = festivalDayKey(now.value);
   const startOfToday = new Date(now.value);
   startOfToday.setHours(0, 0, 0, 0);
   const startOfTodayMs = startOfToday.getTime();
   const grouped = new Map();
 
   for (const perf of plan.value) {
-    const date = new Date(perf.start);
-    const key = date.toDateString();
+    const key = festivalDayKey(perf.start);
     if (!grouped.has(key)) {
       grouped.set(key, {
         dateKey: key,
-        date,
+        // 音樂祭日的 00:00；凌晨場會落在前一天
+        date: new Date(key),
         isToday: key === todayKey,
         performances: [],
         festivalNames: new Set(),
@@ -693,7 +693,7 @@ const viewingDays = computed(() => {
   if (!viewingSavedPlan.value) return [];
   const set = new Set();
   for (const p of viewingSavedPlan.value.performances) {
-    set.add(new Date(p.start).toDateString());
+    set.add(festivalDayKey(p.start));
   }
   return Array.from(set)
     .map((dateKey) => ({ dateKey, date: new Date(dateKey), label: formatDayLabel(dateKey) }))
@@ -710,7 +710,7 @@ const viewingStages = computed(() => {
 const viewingPerformances = computed(() => {
   if (!viewingSavedPlan.value || !viewingSelectedDay.value) return [];
   return viewingSavedPlan.value.performances.filter(
-    (p) => new Date(p.start).toDateString() === viewingSelectedDay.value
+    (p) => festivalDayKey(p.start) === viewingSelectedDay.value
   );
 });
 

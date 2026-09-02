@@ -167,7 +167,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { usePlanStore } from '../stores/plan';
 import { useFestivalPage } from '../composables/useFestivalPage';
 import { useSettingsStore } from '../stores/settings';
-import { formatTime, formatTimeRange, formatDateRange, festivalStatus, WEEKDAYS_ZH } from '../utils/format';
+import { formatTime, formatTimeRange, formatDateRange, festivalStatus, WEEKDAYS_ZH, festivalDayKey } from '../utils/format';
 import { makePerfId } from '../utils/perfId';
 import { themeCssVars } from '../utils/theme';
 import { trackEvent } from '../utils/analytics';
@@ -210,7 +210,7 @@ const mapsUrl = computed(() => {
 
 // 日期切換：以「演出日」為單位（跨午夜的場次歸在開始那天）
 const selectedDay = ref('');
-const todayKey = new Date().toDateString();
+const todayKey = festivalDayKey();
 
 const days = computed(() => {
   if (!festival.value) return [];
@@ -218,7 +218,7 @@ const days = computed(() => {
   const counts = new Map();
   for (const stage of festival.value.stages) {
     for (const perf of stage.performances) {
-      const key = new Date(perf.start).toDateString();
+      const key = festivalDayKey(perf.start);
       counts.set(key, (counts.get(key) || 0) + 1);
     }
   }
@@ -253,7 +253,7 @@ const stagesForDay = computed(() => {
     .map((stage) => ({
       ...stage,
       performances: stage.performances
-        .filter((p) => new Date(p.start).toDateString() === selectedDay.value)
+        .filter((p) => festivalDayKey(p.start) === selectedDay.value)
         .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()),
     }))
     .filter((s) => s.performances.length > 0);

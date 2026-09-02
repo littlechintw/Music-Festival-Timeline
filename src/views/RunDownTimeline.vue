@@ -75,7 +75,7 @@ import { useFestivalPage } from '../composables/useFestivalPage';
 import { useSettingsStore } from '../stores/settings';
 import { useNowTicker } from '../composables/useNowTicker';
 import { makePerfId } from '../utils/perfId';
-import { WEEKDAYS_ZH } from '../utils/format';
+import { WEEKDAYS_ZH, festivalDayKey } from '../utils/format';
 import { useToast, haptic } from '../composables/useToast';
 import TimelineGrid from '../components/TimelineGrid.vue';
 import PageHeader from '../components/PageHeader.vue';
@@ -91,7 +91,7 @@ const { showToast } = useToast();
 
 const gridRef = ref(null);
 const selectedDay = ref('');
-const todayKey = new Date().toDateString();
+const todayKey = festivalDayKey();
 
 const { festival, entry, status, retry } = useFestivalPage();
 
@@ -100,7 +100,7 @@ const festivalDays = computed(() => {
   const set = new Set();
   for (const stage of festival.value.stages) {
     for (const perf of stage.performances) {
-      set.add(new Date(perf.start).toDateString());
+      set.add(festivalDayKey(perf.start));
     }
   }
   return Array.from(set)
@@ -136,7 +136,7 @@ const performancesForDay = computed(() => {
   const result = [];
   for (const stage of festival.value.stages) {
     for (const perf of stage.performances) {
-      if (new Date(perf.start).toDateString() !== selectedDay.value) continue;
+      if (festivalDayKey(perf.start) !== selectedDay.value) continue;
       result.push({ ...perf, stage: stage.name, _stage: stage });
     }
   }

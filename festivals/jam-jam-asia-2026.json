@@ -1,0 +1,584 @@
+{
+  "festivalId": "jam-jam-asia-2026",
+  "name": "Jam Jam Asia 2026 亞洲音樂節",
+  "startTime": "2026-08-29T12:10:00+08:00",
+  "endTime": "2026-08-30T22:00:00+08:00",
+  "theme": {
+    "primary": "#F26B1F",
+    "secondary": "#1BA3C6",
+    "generated": false
+  },
+  "location": {
+    "name": "臺北流行音樂中心",
+    "address": "臺北市南港區市民大道八段99號",
+    "latitude": 25.0494,
+    "longitude": 121.612
+  },
+  "stages": [
+    {
+      "id": "big-wave",
+      "name": "Big Wave Stage（表演廳）",
+      "performances": [
+        {
+          "artist": "持修 Chih Siou",
+          "start": "2026-08-29T13:40:00+08:00",
+          "end": "2026-08-29T14:20:00+08:00"
+        },
+        {
+          "artist": "Asian Dub Foundation [IN][UK]",
+          "start": "2026-08-29T15:20:00+08:00",
+          "end": "2026-08-29T16:20:00+08:00"
+        },
+        {
+          "artist": "楊乃文 Naiwen Yang",
+          "start": "2026-08-29T17:20:00+08:00",
+          "end": "2026-08-29T18:00:00+08:00"
+        },
+        {
+          "artist": "ATARASHII GAKKO! [JP]",
+          "start": "2026-08-29T19:00:00+08:00",
+          "end": "2026-08-29T19:40:00+08:00"
+        },
+        {
+          "artist": "告五人 Accusefive ft. 五月天 瑪莎 Mayday Masa",
+          "start": "2026-08-29T21:10:00+08:00",
+          "end": "2026-08-29T22:00:00+08:00"
+        },
+        {
+          "artist": "盧廣仲 Crowd Lu",
+          "start": "2026-08-30T13:40:00+08:00",
+          "end": "2026-08-30T14:20:00+08:00"
+        },
+        {
+          "artist": "美秀集團 Amazing Show",
+          "start": "2026-08-30T15:20:00+08:00",
+          "end": "2026-08-30T16:00:00+08:00"
+        },
+        {
+          "artist": "大貫妙子 Taeko Onuki [JP]",
+          "start": "2026-08-30T17:00:00+08:00",
+          "end": "2026-08-30T17:50:00+08:00"
+        },
+        {
+          "artist": "范曉萱 & 100%樂團 Mavis & 100%",
+          "start": "2026-08-30T19:00:00+08:00",
+          "end": "2026-08-30T19:40:00+08:00"
+        },
+        {
+          "artist": "HYUKOH [KR] ft. 國國 Kuo",
+          "start": "2026-08-30T20:40:00+08:00",
+          "end": "2026-08-30T21:40:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "echo",
+      "name": "Echo Stage（戶外表演空間 Plaza）",
+      "performances": [
+        {
+          "artist": "The Melting Minds [ID]",
+          "start": "2026-08-29T12:50:00+08:00",
+          "end": "2026-08-29T13:30:00+08:00"
+        },
+        {
+          "artist": "LINION X 雷擎 L8ching",
+          "start": "2026-08-29T14:30:00+08:00",
+          "end": "2026-08-29T15:10:00+08:00"
+        },
+        {
+          "artist": "んoon [JP]",
+          "start": "2026-08-29T16:30:00+08:00",
+          "end": "2026-08-29T17:10:00+08:00"
+        },
+        {
+          "artist": "大象體操 Elephant Gym",
+          "start": "2026-08-29T18:10:00+08:00",
+          "end": "2026-08-29T18:50:00+08:00"
+        },
+        {
+          "artist": "布拉瑞揚舞團 Bulareyaung Dance Company",
+          "start": "2026-08-29T19:50:00+08:00",
+          "end": "2026-08-29T20:30:00+08:00"
+        },
+        {
+          "artist": "Team 那屋瓦 Team Nanguaq",
+          "start": "2026-08-30T12:50:00+08:00",
+          "end": "2026-08-30T13:30:00+08:00"
+        },
+        {
+          "artist": "H 3 F [TH]",
+          "start": "2026-08-30T14:30:00+08:00",
+          "end": "2026-08-30T15:10:00+08:00"
+        },
+        {
+          "artist": "李竺芯 Siri Lee",
+          "start": "2026-08-30T16:20:00+08:00",
+          "end": "2026-08-30T17:00:00+08:00"
+        },
+        {
+          "artist": "百合花 Lilium ft. 即將成真火舞團 Coming True Fire Group",
+          "start": "2026-08-30T18:10:00+08:00",
+          "end": "2026-08-30T18:50:00+08:00"
+        },
+        {
+          "artist": "國蛋 GorDoN",
+          "start": "2026-08-30T20:00:00+08:00",
+          "end": "2026-08-30T20:40:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "groove",
+      "name": "Groove Stage（Legacy TERA）",
+      "performances": [
+        {
+          "artist": "Green!Eyes",
+          "start": "2026-08-29T13:20:00+08:00",
+          "end": "2026-08-29T14:00:00+08:00"
+        },
+        {
+          "artist": "ADOY [KR]",
+          "start": "2026-08-29T15:00:00+08:00",
+          "end": "2026-08-29T15:40:00+08:00",
+          "description": "Busan International Rock Festival's Pick"
+        },
+        {
+          "artist": "(((O))) [PH]",
+          "start": "2026-08-29T16:35:00+08:00",
+          "end": "2026-08-29T17:30:00+08:00"
+        },
+        {
+          "artist": "陳嫺靜 Hsien Ching",
+          "start": "2026-08-29T18:30:00+08:00",
+          "end": "2026-08-29T19:10:00+08:00"
+        },
+        {
+          "artist": "聲子蟲 Bugs of Phonon",
+          "start": "2026-08-29T20:10:00+08:00",
+          "end": "2026-08-29T21:10:00+08:00"
+        },
+        {
+          "artist": "宇宙人 006 分享場 Cosmos People 006",
+          "start": "2026-08-29T22:10:00+08:00",
+          "end": "2026-08-29T22:55:00+08:00"
+        },
+        {
+          "artist": "Réjizz [TH]",
+          "start": "2026-08-30T13:20:00+08:00",
+          "end": "2026-08-30T14:00:00+08:00"
+        },
+        {
+          "artist": "鶴 The Crane",
+          "start": "2026-08-30T15:00:00+08:00",
+          "end": "2026-08-30T15:40:00+08:00"
+        },
+        {
+          "artist": "Voice of Baceprot (VOB) [ID]",
+          "start": "2026-08-30T16:40:00+08:00",
+          "end": "2026-08-30T17:20:00+08:00"
+        },
+        {
+          "artist": "孫淑媚 May Sun",
+          "start": "2026-08-30T18:30:00+08:00",
+          "end": "2026-08-30T19:10:00+08:00"
+        },
+        {
+          "artist": "Joanna 王若琳 X TPO Band 踢霹歐樂團",
+          "start": "2026-08-30T20:10:00+08:00",
+          "end": "2026-08-30T20:50:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "vibe",
+      "name": "Vibe Stage（SUB）",
+      "performances": [
+        {
+          "artist": "野巢 Nosu",
+          "start": "2026-08-29T13:50:00+08:00",
+          "end": "2026-08-29T14:30:00+08:00"
+        },
+        {
+          "artist": "Azikazin Magic World [KR]",
+          "start": "2026-08-29T15:30:00+08:00",
+          "end": "2026-08-29T16:10:00+08:00"
+        },
+        {
+          "artist": "小兵 Le Petit Soldat [HK]",
+          "start": "2026-08-29T17:10:00+08:00",
+          "end": "2026-08-29T17:50:00+08:00"
+        },
+        {
+          "artist": "Ann Sally [JP]",
+          "start": "2026-08-29T18:50:00+08:00",
+          "end": "2026-08-29T19:30:00+08:00"
+        },
+        {
+          "artist": "1300 [AU]",
+          "start": "2026-08-29T20:40:00+08:00",
+          "end": "2026-08-29T21:20:00+08:00"
+        },
+        {
+          "artist": "SAX MACHINE",
+          "start": "2026-08-29T22:30:00+08:00",
+          "end": "2026-08-29T23:10:00+08:00",
+          "description": "跨夜特別企劃"
+        },
+        {
+          "artist": "DJ KRUSH [JP]",
+          "start": "2026-08-29T23:10:00+08:00",
+          "end": "2026-08-30T00:40:00+08:00",
+          "description": "跨夜特別企劃"
+        },
+        {
+          "artist": "迪拉 Dela ft. 阿夫 Suhf",
+          "start": "2026-08-30T00:40:00+08:00",
+          "end": "2026-08-30T01:20:00+08:00",
+          "description": "跨夜特別企劃"
+        },
+        {
+          "artist": "DJ KOCO aka SHIMOKITA [JP]",
+          "start": "2026-08-30T01:20:00+08:00",
+          "end": "2026-08-30T02:50:00+08:00",
+          "description": "跨夜特別企劃"
+        },
+        {
+          "artist": "Corin Ileto [AU][PH]",
+          "start": "2026-08-30T02:50:00+08:00",
+          "end": "2026-08-30T03:30:00+08:00",
+          "description": "跨夜特別企劃"
+        },
+        {
+          "artist": "東南亞華人 S.A.C [MY]",
+          "start": "2026-08-30T13:50:00+08:00",
+          "end": "2026-08-30T14:30:00+08:00"
+        },
+        {
+          "artist": "Bremen Entertainment Inc. 布萊梅",
+          "start": "2026-08-30T15:30:00+08:00",
+          "end": "2026-08-30T16:10:00+08:00"
+        },
+        {
+          "artist": "dudeontheguitar [KZ]",
+          "start": "2026-08-30T17:10:00+08:00",
+          "end": "2026-08-30T17:50:00+08:00"
+        },
+        {
+          "artist": "假日貞操 Virgin Vacation [HK]",
+          "start": "2026-08-30T18:50:00+08:00",
+          "end": "2026-08-30T19:30:00+08:00"
+        },
+        {
+          "artist": "Robot Swing (¾ trio)",
+          "start": "2026-08-30T20:30:00+08:00",
+          "end": "2026-08-30T21:10:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "flow",
+      "name": "Flow Stage（Live House D）",
+      "performances": [
+        {
+          "artist": "蕨鳴子 fernoiz",
+          "start": "2026-08-29T12:50:00+08:00",
+          "end": "2026-08-29T13:30:00+08:00",
+          "description": "2026 臺北音樂不斷電's Pick"
+        },
+        {
+          "artist": "共振效應 Resonance Effect",
+          "start": "2026-08-29T14:30:00+08:00",
+          "end": "2026-08-29T15:10:00+08:00",
+          "description": "2026 臺北音樂不斷電's Pick"
+        },
+        {
+          "artist": "INIS [ID]",
+          "start": "2026-08-29T16:10:00+08:00",
+          "end": "2026-08-29T16:50:00+08:00",
+          "description": "LaLaLa Festival's Pick"
+        },
+        {
+          "artist": "Chivan feat. Vũ Thanh Vân [VN]",
+          "start": "2026-08-29T17:50:00+08:00",
+          "end": "2026-08-29T18:30:00+08:00",
+          "description": "VCIDA's Pick"
+        },
+        {
+          "artist": "テレビ大陸音頭 TV Tairiku Ondo [JP]",
+          "start": "2026-08-29T19:30:00+08:00",
+          "end": "2026-08-29T20:10:00+08:00",
+          "description": "FUJI ROCK's Pick"
+        },
+        {
+          "artist": "Rabbithole Offsite",
+          "start": "2026-08-29T22:30:00+08:00",
+          "end": "2026-08-30T03:30:00+08:00",
+          "description": "跨夜特別企劃"
+        },
+        {
+          "artist": "Bella Cry",
+          "start": "2026-08-30T12:50:00+08:00",
+          "end": "2026-08-30T13:30:00+08:00",
+          "description": "2026 臺北音樂不斷電's Pick"
+        },
+        {
+          "artist": "Marswalk",
+          "start": "2026-08-30T14:30:00+08:00",
+          "end": "2026-08-30T15:10:00+08:00",
+          "description": "2026 臺北音樂不斷電's Pick"
+        },
+        {
+          "artist": "Charlie Lim [SG]",
+          "start": "2026-08-30T16:10:00+08:00",
+          "end": "2026-08-30T16:50:00+08:00",
+          "description": "Freshmusic音樂誌's Pick"
+        },
+        {
+          "artist": "브로콜리너마저 Broccoli, you too? [KR]",
+          "start": "2026-08-30T17:50:00+08:00",
+          "end": "2026-08-30T18:30:00+08:00",
+          "description": "ZANDARI FESTA's Pick"
+        },
+        {
+          "artist": "板齒目 BANSHIMOKU [JP]",
+          "start": "2026-08-30T19:30:00+08:00",
+          "end": "2026-08-30T20:10:00+08:00",
+          "description": "MURO FESTIVAL's Pick"
+        }
+      ]
+    },
+    {
+      "id": "tmc-blvd",
+      "name": "北流大道 TMC Blvd.（市民大道・免費）",
+      "performances": [
+        {
+          "artist": "ギョウザマン GYOZAMAN [JP]",
+          "start": "2026-08-29T12:10:00+08:00",
+          "end": "2026-08-29T12:40:00+08:00",
+          "description": "duo music exchange's Pick"
+        },
+        {
+          "artist": "RedTank & Vanta",
+          "start": "2026-08-29T13:00:00+08:00",
+          "end": "2026-08-29T13:30:00+08:00",
+          "description": "台秋祭's Pick"
+        },
+        {
+          "artist": "Tickle Tickle 癢癢",
+          "start": "2026-08-29T13:50:00+08:00",
+          "end": "2026-08-29T14:20:00+08:00",
+          "description": "浪人祭's Pick"
+        },
+        {
+          "artist": "LanLan",
+          "start": "2026-08-29T14:40:00+08:00",
+          "end": "2026-08-29T15:10:00+08:00",
+          "description": "玉成戲院's Pick"
+        },
+        {
+          "artist": "郁欣 IVY",
+          "start": "2026-08-29T15:30:00+08:00",
+          "end": "2026-08-29T16:00:00+08:00",
+          "description": "開境娛樂's Pick"
+        },
+        {
+          "artist": "Formosa Sound System",
+          "start": "2026-08-29T17:00:00+08:00",
+          "end": "2026-08-29T22:00:00+08:00"
+        },
+        {
+          "artist": "BRBP",
+          "start": "2026-08-30T12:10:00+08:00",
+          "end": "2026-08-30T12:40:00+08:00",
+          "description": "打狗祭's Pick"
+        },
+        {
+          "artist": "BUTTER RIOT",
+          "start": "2026-08-30T13:00:00+08:00",
+          "end": "2026-08-30T13:30:00+08:00",
+          "description": "火氣音樂's Pick"
+        },
+        {
+          "artist": "來者何人 Whoou!",
+          "start": "2026-08-30T13:50:00+08:00",
+          "end": "2026-08-30T14:20:00+08:00",
+          "description": "B級音樂節's Pick"
+        },
+        {
+          "artist": "Juice Boy",
+          "start": "2026-08-30T14:40:00+08:00",
+          "end": "2026-08-30T15:10:00+08:00",
+          "description": "華納音樂's Pick"
+        },
+        {
+          "artist": "青原FIDA [MO]",
+          "start": "2026-08-30T15:30:00+08:00",
+          "end": "2026-08-30T16:00:00+08:00",
+          "description": "Bro Time Studio（歌良好音樂）'s Pick"
+        },
+        {
+          "artist": "爵犬 Joe Trane",
+          "start": "2026-08-30T17:00:00+08:00",
+          "end": "2026-08-30T22:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "open-up",
+      "name": "OPEN UP（文化館前廣場・免費）",
+      "performances": [
+        {
+          "artist": "鯊魚煙囪 Shark Chimney",
+          "start": "2026-08-29T12:10:00+08:00",
+          "end": "2026-08-29T12:40:00+08:00",
+          "description": "2025 OPEN LAB 人才培育計畫's Pick"
+        },
+        {
+          "artist": "安妮塔克 AnnieTaco",
+          "start": "2026-08-29T13:00:00+08:00",
+          "end": "2026-08-29T13:30:00+08:00",
+          "description": "信徒文化季's Pick"
+        },
+        {
+          "artist": "The Plane Plan",
+          "start": "2026-08-29T13:50:00+08:00",
+          "end": "2026-08-29T14:20:00+08:00",
+          "description": "諾羅搖滾音樂祭's Pick"
+        },
+        {
+          "artist": "宋晨星 Star Song",
+          "start": "2026-08-29T14:40:00+08:00",
+          "end": "2026-08-29T15:10:00+08:00",
+          "description": "1500聲量音創學院's Pick"
+        },
+        {
+          "artist": "The Broken Flowers 碎紙花",
+          "start": "2026-08-29T15:30:00+08:00",
+          "end": "2026-08-29T16:00:00+08:00",
+          "description": "迴響音樂展演空間's Pick"
+        },
+        {
+          "artist": "鄭馥儀 Jessica Cheng",
+          "start": "2026-08-29T16:20:00+08:00",
+          "end": "2026-08-29T16:50:00+08:00",
+          "description": "華研國際音樂's Pick"
+        },
+        {
+          "artist": "KAXA",
+          "start": "2026-08-29T17:10:00+08:00",
+          "end": "2026-08-29T17:40:00+08:00",
+          "description": "滾石唱片's Pick"
+        },
+        {
+          "artist": "宇宙資料庫 Universe Database",
+          "start": "2026-08-29T18:00:00+08:00",
+          "end": "2026-08-29T18:30:00+08:00",
+          "description": "樂團祭's Pick"
+        },
+        {
+          "artist": "陳佩賢 Jesslyn",
+          "start": "2026-08-29T18:50:00+08:00",
+          "end": "2026-08-29T19:20:00+08:00",
+          "description": "福茂唱片's Pick"
+        },
+        {
+          "artist": "モノンクル MONONKVL [JP]",
+          "start": "2026-08-29T19:40:00+08:00",
+          "end": "2026-08-29T20:10:00+08:00",
+          "description": "CUEW Showcase & Conference's Pick"
+        },
+        {
+          "artist": "王彙筑 Hui Chu Wang",
+          "start": "2026-08-29T20:30:00+08:00",
+          "end": "2026-08-29T21:00:00+08:00",
+          "description": "儂皮文創's Pick"
+        },
+        {
+          "artist": "HOA [KR]",
+          "start": "2026-08-29T21:20:00+08:00",
+          "end": "2026-08-29T21:50:00+08:00",
+          "description": "Whaley Time's Pick"
+        },
+        {
+          "artist": "安小博 Amber X 房潔恩 James",
+          "start": "2026-08-30T12:10:00+08:00",
+          "end": "2026-08-30T12:40:00+08:00",
+          "description": "2025 OPEN LAB 人才培育計畫's Pick"
+        },
+        {
+          "artist": "馬樂 Madal",
+          "start": "2026-08-30T13:00:00+08:00",
+          "end": "2026-08-30T13:30:00+08:00",
+          "description": "阿米斯音樂節's Pick"
+        },
+        {
+          "artist": "鄭亞弦 Lolli",
+          "start": "2026-08-30T13:50:00+08:00",
+          "end": "2026-08-30T14:20:00+08:00",
+          "description": "偶吉氏文創's Pick"
+        },
+        {
+          "artist": "李晉瑋 G.WeiLee",
+          "start": "2026-08-30T14:40:00+08:00",
+          "end": "2026-08-30T15:10:00+08:00",
+          "description": "小山泉音樂's Pick"
+        },
+        {
+          "artist": "LICHANG.rar",
+          "start": "2026-08-30T15:30:00+08:00",
+          "end": "2026-08-30T16:00:00+08:00",
+          "description": "Believe Music's Pick"
+        },
+        {
+          "artist": "郭子恆 Jemmy Kuo",
+          "start": "2026-08-30T16:20:00+08:00",
+          "end": "2026-08-30T16:50:00+08:00",
+          "description": "索尼音樂's Pick"
+        },
+        {
+          "artist": "우희준 huijun woo [KR]",
+          "start": "2026-08-30T17:10:00+08:00",
+          "end": "2026-08-30T17:40:00+08:00",
+          "description": "Gyeonggi Content Agency's Pick"
+        },
+        {
+          "artist": "LAWA",
+          "start": "2026-08-30T18:00:00+08:00",
+          "end": "2026-08-30T18:30:00+08:00",
+          "description": "環球音樂's Pick"
+        },
+        {
+          "artist": "LIPSTICKERZ [KR]",
+          "start": "2026-08-30T18:50:00+08:00",
+          "end": "2026-08-30T19:20:00+08:00",
+          "description": "AMUSE ENTERTAINMENT's Pick"
+        },
+        {
+          "artist": "AsaMo [JP]",
+          "start": "2026-08-30T19:40:00+08:00",
+          "end": "2026-08-30T20:10:00+08:00",
+          "description": "A-Nexus's Pick"
+        },
+        {
+          "artist": "高真 TRU",
+          "start": "2026-08-30T20:30:00+08:00",
+          "end": "2026-08-30T21:00:00+08:00",
+          "description": "好擤音樂's Pick"
+        },
+        {
+          "artist": "生命樹 Tree of Life",
+          "start": "2026-08-30T21:20:00+08:00",
+          "end": "2026-08-30T21:50:00+08:00",
+          "description": "植光土壤音創's Pick"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "image": "",
+    "notes": []
+  },
+  "contributors": [
+    "littlechintw"
+  ]
+}

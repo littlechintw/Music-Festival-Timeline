@@ -118,6 +118,7 @@
 </template>
 
 <script setup>
+import { festivalDayKey } from '../utils/format';
 import { ref, computed, watch } from 'vue';
 import {
   detectExportDimensions,
@@ -209,7 +210,7 @@ const days = computed(() => {
     let totalCount = 0;
     for (const stage of fest.stages) {
       for (const perf of stage.performances) {
-        if (new Date(perf.start).toDateString() !== d.key) continue;
+        if (festivalDayKey(perf.start) !== d.key) continue;
         totalCount += 1;
         const key = `${fest.festivalId}_${stage.name}_${perf.artist}_${perf.start}`;
         if (selectedKeys.value.has(key)) selectedCount += 1;
