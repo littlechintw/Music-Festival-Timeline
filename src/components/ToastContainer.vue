@@ -1,7 +1,6 @@
 <template>
   <div
-    class="fixed bottom-0 left-0 right-0 z-[200] flex flex-col items-center gap-2 pointer-events-none"
-    style="padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));"
+    class="fixed left-0 right-0 z-[200] flex flex-col items-center gap-2 pointer-events-none bottom-nav-offset md:bottom-0 pb-4 md:pb-safe"
     aria-live="polite"
   >
     <transition-group name="toast" tag="div" class="flex flex-col gap-2 items-center w-full px-4">

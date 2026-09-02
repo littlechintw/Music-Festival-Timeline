@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="needsRefresh"
-    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[var(--md-sys-color-inverse-surface)] text-[var(--md-sys-color-inverse-on-surface)] rounded-lg px-4 py-3 flex items-center gap-3 max-w-[90vw]"
+    class="fixed left-1/2 -translate-x-1/2 z-50 bottom-nav-offset md:bottom-4 mb-4 md:mb-0 bg-[var(--md-sys-color-inverse-surface)] text-[var(--md-sys-color-inverse-on-surface)] rounded-lg px-4 py-3 flex items-center gap-3 max-w-[90vw]"
   >
     <md-elevation style="--md-elevation-level: 3"></md-elevation>
     <span>有新版本可用</span>

@@ -2,6 +2,18 @@
   "name": "music-festival-planner",
   "version": "0.2.0",
   "private": true,
+  "description": "離線優先的音樂祭行程規劃 PWA：瀏覽時間表、排自己的行程、演出前提醒。",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/littlechintw/Music-Festival-Timeline.git"
+  },
+  "homepage": "https://github.com/littlechintw/Music-Festival-Timeline#readme",
+  "bugs": {
+    "url": "https://github.com/littlechintw/Music-Festival-Timeline/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "scripts": {
     "predev": "node scripts/build-festival-index.mjs",
@@ -15,7 +27,8 @@
     "format": "prettier --write \"src/**/*.{js,vue,css}\"",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@material-symbols/svg-400": "0.45.7",

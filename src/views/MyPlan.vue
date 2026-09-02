@@ -182,78 +182,60 @@
         </div>
       </div>
 
-      <!-- 日期 tabs -->
+      <!-- 日期切換：樣式與 DayChips 一致（膠囊、主色選中、數量徽章、今天紅點） -->
       <div
         v-if="planDays.length > 1 || pastDays.length"
-        class="flex gap-2 mb-6 overflow-x-auto pb-2 items-center"
+        class="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-4 px-4 items-center scrollbar-none"
+        role="group"
+        aria-label="選擇日期"
       >
         <button
           v-for="day in upcomingDays"
           :key="day.dateKey"
-          class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2"
-          :class="
-            selectedPlanDay === day.dateKey
-              ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
-              : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-primary)] border border-[var(--md-sys-color-outline)] hover:bg-[var(--md-sys-color-surface-container-high)]'
-          "
+          type="button"
+          :class="dayChipClass(selectedPlanDay === day.dateKey)"
+          :aria-pressed="selectedPlanDay === day.dateKey"
           @click="selectedPlanDay = day.dateKey"
         >
+          <md-ripple></md-ripple>
           <span>{{ day.label }}</span>
+          <span :class="dayCountClass(selectedPlanDay === day.dateKey)">{{ day.count }}</span>
           <span
-            class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full"
-            :class="
-              selectedPlanDay === day.dateKey
-                ? 'text-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-surface)]'
-                : 'text-[var(--md-sys-color-on-primary)] bg-[var(--md-sys-color-primary)]'
-            "
-          >
-            {{ day.count }}
-          </span>
+            v-if="day.isToday"
+            class="w-1.5 h-1.5 rounded-full bg-[var(--md-sys-color-error)]"
+            aria-label="今天"
+          />
         </button>
 
-        <!-- 過往活動切換 -->
+        <!-- 過往活動切換：只有在同時有即將到來的日期時才需要收合 -->
         <button
-          v-if="pastDays.length"
+          v-if="pastDays.length && upcomingDays.length"
           type="button"
-          class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2 border border-dashed border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] bg-[var(--md-sys-color-surface-container-low)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+          class="relative px-4 py-2 rounded-full text-sm whitespace-nowrap shrink-0 font-medium flex items-center gap-2 overflow-hidden border border-dashed border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+          :aria-expanded="showPast"
           @click="showPast = !showPast"
         >
-          <span>過往活動</span>
-          <span
-            class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full text-[var(--md-sys-color-on-surface-variant)] bg-[var(--md-sys-color-surface-container-highest)]"
-          >
-            {{ pastDays.length }}
-          </span>
+          <md-ripple></md-ripple>
+          <span>過往</span>
+          <span :class="dayCountClass(false)">{{ pastDays.length }}</span>
           <MdIcon
             :name="showPast ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
             style="--md-icon-size: 16px"
           />
         </button>
 
-        <!-- 過往活動日期 -->
-        <template v-if="showPast">
+        <template v-if="showPast || upcomingDays.length === 0">
           <button
             v-for="day in pastDays"
             :key="day.dateKey"
-            class="px-4 py-2 rounded-lg text-sm whitespace-nowrap flex-shrink-0 transition-all font-medium flex items-center gap-2"
-            :class="
-              selectedPlanDay === day.dateKey
-                ? 'bg-[var(--md-sys-color-secondary)] text-[var(--md-sys-color-on-secondary)]'
-                : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface-variant)] border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]'
-            "
+            type="button"
+            :class="dayChipClass(selectedPlanDay === day.dateKey, true)"
+            :aria-pressed="selectedPlanDay === day.dateKey"
             @click="selectedPlanDay = day.dateKey"
           >
+            <md-ripple></md-ripple>
             <span>{{ day.label }}</span>
-            <span
-              class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full"
-              :class="
-                selectedPlanDay === day.dateKey
-                  ? 'text-[var(--md-sys-color-secondary)] bg-[var(--md-sys-color-surface)]'
-                  : 'text-[var(--md-sys-color-on-surface-variant)] bg-[var(--md-sys-color-surface-container-highest)]'
-              "
-            >
-              {{ day.count }}
-            </span>
+            <span :class="dayCountClass(selectedPlanDay === day.dateKey)">{{ day.count }}</span>
           </button>
         </template>
       </div>
@@ -271,7 +253,7 @@
         >
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-2xl font-bold">{{ day.label }}</h3>
+              <h2 class="text-2xl font-bold">{{ day.fullLabel }}</h2>
               <p class="mt-1 opacity-90">
                 {{ day.count }} 場演出 • {{ day.festivalNames.join('、') }}
               </p>
@@ -532,7 +514,7 @@ import { useNowTicker } from '../composables/useNowTicker';
 import { useOnline } from '../composables/useOnline';
 import { encodePlanToText } from '../utils/url';
 import { getShortenerUrl } from '../utils/shortener';
-import { formatTime, formatDayLabel } from '../utils/format';
+import { formatTime, formatDayLabel, WEEKDAYS_ZH } from '../utils/format';
 import { trackEvent } from '../utils/analytics';
 import { buildPlanIcs, downloadIcs } from '../utils/calendar';
 import { useToast } from '../composables/useToast';
@@ -623,7 +605,8 @@ const planDays = computed(() => {
     return {
       ...day,
       isPast: day.date.getTime() < startOfTodayMs,
-      label: formatDayLabel(day.date),
+      label: formatDayChip(day.date),
+      fullLabel: formatDayLabel(day.date),
       count: day.performances.length,
       festivalNames: [...day.festivalNames],
       festivalEntries: entries,
@@ -646,6 +629,32 @@ const pastDays = computed(() =>
 );
 // 過往活動預設收合，避免干擾
 const showPast = ref(false);
+
+/** 與 DayChips.vue 相同的膠囊樣式；過往日期的選中色用 secondary 區別 */
+function dayChipClass(active, past = false) {
+  return [
+    'relative px-4 py-2 rounded-full text-sm whitespace-nowrap shrink-0 transition-colors font-medium flex items-center gap-2 overflow-hidden',
+    active
+      ? past
+        ? 'bg-[var(--md-sys-color-secondary)] text-[var(--md-sys-color-on-secondary)]'
+        : 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
+      : 'bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]',
+  ];
+}
+function dayCountClass(active) {
+  return [
+    'inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full',
+    active
+      ? 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)]'
+      : 'bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface-variant)]',
+  ];
+}
+
+/** 膠囊上的短日期：「6/27 (六)」，跨年才補年份 */
+function formatDayChip(date) {
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return `${sameYear ? '' : `${date.getFullYear()}/`}${date.getMonth() + 1}/${date.getDate()} (${WEEKDAYS_ZH[date.getDay()].replace('星期', '')})`;
+}
 
 // 把預設選擇日的副作用從 computed 拉出來，避免 vue/no-side-effects-in-computed-properties
 watch(
@@ -950,3 +959,12 @@ onMounted(() => {
   festivalStore.ensureLoaded();
 });
 </script>
+
+<style scoped>
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+</style>

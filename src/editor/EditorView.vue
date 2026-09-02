@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-2xl mx-auto p-4 text-gray-900 dark:text-gray-100 dark:[color-scheme:dark]">
-    <h1 class="text-2xl font-bold mb-4">新增音樂祭</h1>
+    <PageHeader title="新增音樂祭" subtitle="產生時間表 JSON，送 PR 給專案" back="/settings" />
 
     <!-- 推薦做法說明 -->
     <div
@@ -54,6 +54,7 @@
       <div class="flex gap-2 items-start">
         <md-outlined-text-field
           class="flex-1"
+          aria-label="貢獻者 GitHub 帳號"
           :value="newContributor"
           placeholder="輸入 GitHub 帳號後按新增"
           @input="(e) => (newContributor = e.target.value)"
@@ -70,6 +71,7 @@
           class="w-full"
           required
           pattern="[a-z0-9\-]+"
+          aria-label="音樂祭 ID"
           :value="festival.festivalId"
           @input="
             (e) => {
@@ -91,6 +93,7 @@
         <md-outlined-text-field
           class="w-full"
           required
+          aria-label="名稱"
           :value="festival.name"
           @input="(e) => (festival.name = e.target.value)"
         ></md-outlined-text-field>
@@ -102,6 +105,7 @@
             >開始時間 (UTC+8) <span class="text-red-500">*</span></label
           >
           <input
+            aria-label="開始時間"
             :value="toLocalInput(festival.startTime)"
             type="datetime-local"
             :class="[inputClass, 'w-full']"
@@ -114,6 +118,7 @@
             >結束時間 (UTC+8) <span class="text-red-500">*</span></label
           >
           <input
+            aria-label="結束時間"
             :value="toLocalInput(festival.endTime)"
             type="datetime-local"
             :class="[inputClass, 'w-full']"
@@ -127,11 +132,13 @@
         <label class="block font-bold mb-1">主題色</label>
         <md-outlined-text-field
           class="mr-2"
+          aria-label="主題主色"
           placeholder="#主色"
           :value="festival.theme.primary"
           @input="(e) => (festival.theme.primary = e.target.value)"
         ></md-outlined-text-field>
         <md-outlined-text-field
+          aria-label="主題副色"
           placeholder="#副色"
           :value="festival.theme.secondary"
           @input="(e) => (festival.theme.secondary = e.target.value)"
@@ -143,6 +150,7 @@
         <md-outlined-text-field
           class="w-full"
           required
+          aria-label="地點名稱"
           :value="festival.location.name"
           @input="(e) => (festival.location.name = e.target.value)"
         ></md-outlined-text-field>
@@ -152,6 +160,7 @@
         <md-outlined-text-field
           class="w-full"
           required
+          aria-label="地點地址"
           :value="festival.location.address"
           @input="(e) => (festival.location.address = e.target.value)"
         ></md-outlined-text-field>
@@ -163,6 +172,7 @@
             class="w-full"
             type="number"
             step="any"
+            aria-label="緯度"
             :value="festival.location.latitude"
             @input="(e) => (festival.location.latitude = Number(e.target.value))"
           ></md-outlined-text-field>
@@ -173,6 +183,7 @@
             class="w-full"
             type="number"
             step="any"
+            aria-label="經度"
             :value="festival.location.longitude"
             @input="(e) => (festival.location.longitude = Number(e.target.value))"
           ></md-outlined-text-field>
@@ -184,11 +195,13 @@
         <md-outlined-text-field
           class="w-full mb-2"
           placeholder="可貼上網址或 base64"
+          aria-label="地圖圖片網址或 base64"
           :value="festival.map.image"
           @input="(e) => (festival.map.image = e.target.value)"
         ></md-outlined-text-field>
         <input
           type="file"
+          aria-label="上傳地圖圖片"
           accept="image/png,image/jpeg,image/webp"
           class="text-sm text-gray-600 dark:text-gray-300"
           @change="onMapUpload"
@@ -211,11 +224,14 @@
           <div class="flex items-center gap-2 mb-2">
             <md-outlined-text-field
               class="flex-1"
+              aria-label="舞台名稱"
               placeholder="舞台名稱"
               :value="stage.name"
               @input="(e) => (stage.name = e.target.value)"
             ></md-outlined-text-field>
-            <md-outlined-button type="button" @click="removeStage(sidx)">移除</md-outlined-button>
+            <md-outlined-button type="button" aria-label="移除此舞台" @click="removeStage(sidx)">
+              移除
+            </md-outlined-button>
           </div>
           <div class="flex items-center gap-2 mb-1">
             <span class="font-bold text-sm">表演</span>
@@ -229,32 +245,41 @@
             :key="pidx"
             class="border-2 border-gray-300 dark:border-gray-600 rounded p-2 mb-2 bg-gray-50 dark:bg-gray-900/40"
           >
-            <div class="flex gap-2 mb-2 items-start">
+            <div class="flex flex-col sm:flex-row gap-2 mb-2 items-stretch sm:items-start">
               <md-outlined-text-field
                 class="flex-1"
+                aria-label="演出者"
                 placeholder="演出者"
                 :value="perf.artist"
                 @input="(e) => (perf.artist = e.target.value)"
               ></md-outlined-text-field>
               <md-outlined-text-field
                 class="flex-1"
+                aria-label="備註"
                 placeholder="備註"
                 :value="perf.description"
                 @input="(e) => (perf.description = e.target.value)"
               ></md-outlined-text-field>
-              <md-outlined-button type="button" @click="removePerformance(sidx, pidx)">
+              <md-outlined-button
+                type="button"
+                class="self-end sm:self-auto"
+                aria-label="移除此表演"
+                @click="removePerformance(sidx, pidx)"
+              >
                 移除
               </md-outlined-button>
             </div>
             <div class="flex flex-col sm:flex-row gap-2">
               <input
                 :value="toLocalInput(perf.start)"
+                aria-label="開始時間"
                 type="datetime-local"
                 :class="[inputClass, 'flex-1 min-w-0']"
                 @input="perf.start = toIso($event.target.value)"
               />
               <input
                 :value="toLocalInput(perf.end)"
+                aria-label="結束時間"
                 type="datetime-local"
                 :class="[inputClass, 'flex-1 min-w-0']"
                 @input="perf.end = toIso($event.target.value)"
@@ -264,7 +289,19 @@
         </div>
       </div>
 
-      <md-filled-button type="submit">匯出 JSON</md-filled-button>
+      <div class="flex flex-wrap gap-2">
+        <md-filled-button type="submit">
+          <MdIcon name="download" slot="icon" />
+          下載 JSON
+        </md-filled-button>
+        <md-outlined-button type="button" @click="copyJson">
+          <MdIcon name="content_paste" slot="icon" />
+          {{ copied === 'json' ? '已複製 ✓' : '複製 JSON' }}
+        </md-outlined-button>
+      </div>
+      <p class="text-xs text-gray-500 dark:text-gray-400 -mt-2">
+        手機（特別是加入主畫面後的 iPhone）下載檔案不一定成功，可改用「複製 JSON」貼到電腦或 GitHub。
+      </p>
       <div
         v-if="validationError"
         class="mt-2 text-red-600 dark:text-red-400 text-sm whitespace-pre-line"
@@ -407,9 +444,12 @@ import { saveFestivalDraft, loadFestivalDraft, clearFestivalDraft } from './draf
 import { festivalSchema } from '../pwa/schema';
 import BaseModal from '../components/BaseModal.vue';
 import MdIcon from '../components/MdIcon.vue';
+import PageHeader from '../components/PageHeader.vue';
 import { useConfirm } from '../composables/useConfirm';
+import { useToast } from '../composables/useToast';
 
 const { confirm } = useConfirm();
+const { showToast } = useToast();
 
 const currentYear = new Date().getFullYear();
 
@@ -568,7 +608,7 @@ async function copyToClipboard(text, tag) {
       if (copied.value === tag) copied.value = '';
     }, 2000);
   } catch {
-    alert('複製失敗，請手動選取複製');
+    showToast({ message: '複製失敗，請手動選取複製', kind: 'error' });
   }
 }
 
@@ -695,7 +735,7 @@ function onMapUpload(e) {
   const file = e.target.files?.[0];
   if (!file) return;
   if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
-    alert('只支援 PNG / JPEG / WebP 圖片');
+    showToast({ message: '只支援 PNG / JPEG / WebP 圖片', kind: 'error' });
     return;
   }
   const reader = new FileReader();
@@ -705,24 +745,37 @@ function onMapUpload(e) {
   reader.readAsDataURL(file);
 }
 
-async function handleExport() {
+/** 驗證通過才複製，避免把壞掉的 JSON 貼去送 PR */
+async function copyJson() {
+  const data = validateForExport();
+  if (!data) return;
+  await copyToClipboard(JSON.stringify(data, null, 2), 'json');
+  showToast({ message: '已複製 JSON', kind: 'success', icon: '✓' });
+}
+
+/** 正規化時間、補 stage id、跑 schema。失敗會把錯誤寫進 validationError 並回傳 null。 */
+function validateForExport() {
   validationError.value = '';
   normalizeTimes();
-  // 自動補 stage id（schema 要求）
   for (const stage of festival.stages) {
     if (!stage.id)
       stage.id = slugify(stage.name) || `stage-${Math.random().toString(36).slice(2, 6)}`;
   }
-
   const result = festivalSchema.safeParse(festival);
   if (!result.success) {
     validationError.value = result.error.errors
       .map((err) => `${err.path.join('.')}: ${err.message}`)
       .join('\n');
-    return;
+    return null;
   }
+  return result.data;
+}
 
-  const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+async function handleExport() {
+  const data = validateForExport();
+  if (!data) return;
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

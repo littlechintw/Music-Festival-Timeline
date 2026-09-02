@@ -1,43 +1,65 @@
 <template>
   <div class="p-4 max-w-full mx-auto">
-    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-      {{ festival?.name }} - 全日時間軸
-    </h2>
-    <div v-if="festivalStore.loading && !festival" class="text-gray-500 dark:text-gray-400">
+    <div v-if="festivalStore.loading && !festival" class="text-[var(--md-sys-color-on-surface-variant)]">
       載入中...
     </div>
-    <div v-else-if="!festival" class="text-gray-500 dark:text-gray-400">找不到此音樂祭</div>
+    <div v-else-if="!festival">
+      <PageHeader title="找不到此音樂祭" back="/" />
+    </div>
     <div v-else>
-      <div v-if="festivalDays.length > 1" class="flex gap-2 mb-4 overflow-x-auto pb-2">
-        <button
-          v-for="day in festivalDays"
-          :key="day.dateKey"
-          class="px-3 py-1 rounded border text-sm whitespace-nowrap flex-shrink-0 transition-colors"
-          :class="
-            selectedDay === day.dateKey
-              ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] border-[var(--md-sys-color-primary)]'
-              : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-primary)] border-[var(--md-sys-color-outline)] hover:bg-[var(--md-sys-color-surface-container-high)]'
-          "
-          @click="selectedDay = day.dateKey"
-        >
-          {{ day.label }}
-        </button>
-      </div>
-
-      <div
-        class="mobile-scroll-hint md:hidden bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2"
+      <PageHeader
+        :title="festival.name"
+        subtitle="全日時間軸"
+        :back="{ name: 'FestivalDetail', params: { id: festival.festivalId } }"
       >
-        <MdIcon name="arrow_forward" style="--md-icon-size: 16px" />
-        左右滑動查看所有舞台
+        <template #actions>
+          <md-icon-button
+            v-if="isToday"
+            type="button"
+            aria-label="跳到現在"
+            title="跳到現在"
+            @click="gridRef?.scrollToCurrent()"
+          >
+            <MdIcon name="my_location" />
+          </md-icon-button>
+          <md-icon-button
+            v-if="festival.map && festival.map.image"
+            type="button"
+            aria-label="場地地圖"
+            @click="router.push({ name: 'MapView', params: { id: festival.festivalId } })"
+          >
+            <MdIcon name="map" />
+          </md-icon-button>
+        </template>
+      </PageHeader>
+
+      <DayChips v-model="selectedDay" :days="festivalDays" class="mb-3" />
+
+      <!-- 圖例＋操作提示，一行搞定 -->
+      <div
+        class="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-[var(--md-sys-color-on-surface-variant)] mb-3"
+      >
+        <span class="inline-flex items-center gap-1">
+          <span class="w-3 h-3 rounded-sm bg-[var(--md-sys-color-primary)] inline-block" />
+          已加入
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <span class="w-3 h-3 rounded-sm bg-[var(--md-sys-color-primary-container)] border-l-2 border-[var(--md-sys-color-primary)] inline-block" />
+          未加入
+        </span>
+        <span class="ml-auto">點方塊加入／移除・左右滑動看其他舞台</span>
       </div>
 
       <TimelineGrid
+        ref="gridRef"
         :stages="stagesForGrid"
         :performances="performancesForDay"
         :is24-hour="settingsStore.is24Hour"
         :show-current-time="isToday"
         :now="now"
         :perf-class-resolver="resolvePerfClass"
+        :selected-resolver="inPlan"
+        interactive
         @perf-click="onPerfClick"
       />
     </div>
@@ -46,7 +68,7 @@
 
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
 import { useSettingsStore } from '../stores/settings';
@@ -55,16 +77,21 @@ import { makePerfId } from '../utils/perfId';
 import { WEEKDAYS_ZH } from '../utils/format';
 import { useToast, haptic } from '../composables/useToast';
 import TimelineGrid from '../components/TimelineGrid.vue';
+import PageHeader from '../components/PageHeader.vue';
+import DayChips from '../components/DayChips.vue';
 import MdIcon from '../components/MdIcon.vue';
 
 const route = useRoute();
+const router = useRouter();
 const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
 const { now } = useNowTicker(1000);
 const { showToast } = useToast();
 
+const gridRef = ref(null);
 const selectedDay = ref('');
+const todayKey = new Date().toDateString();
 
 const festival = computed(() => festivalStore.getById(route.params.id));
 
@@ -77,12 +104,13 @@ const festivalDays = computed(() => {
     }
   }
   return Array.from(set)
-    .map((dateKey) => {
-      const date = new Date(dateKey);
+    .map((key) => {
+      const date = new Date(key);
       return {
-        dateKey,
-        label: `${date.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric' })} (${WEEKDAYS_ZH[date.getDay()]})`,
+        key,
         date,
+        isToday: key === todayKey,
+        label: `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAYS_ZH[date.getDay()].replace('星期', '')})`,
       };
     })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -91,7 +119,9 @@ const festivalDays = computed(() => {
 watch(
   festivalDays,
   (days) => {
-    if (days.length > 0 && !selectedDay.value) selectedDay.value = days[0].dateKey;
+    if (days.length === 0) return;
+    if (days.some((d) => d.key === selectedDay.value)) return;
+    selectedDay.value = (days.find((d) => d.isToday) || days[0]).key;
   },
   { immediate: true }
 );
@@ -113,10 +143,7 @@ const performancesForDay = computed(() => {
   return result;
 });
 
-const isToday = computed(() => {
-  if (!selectedDay.value) return false;
-  return new Date(selectedDay.value).toDateString() === new Date().toDateString();
-});
+const isToday = computed(() => !!selectedDay.value && selectedDay.value === todayKey);
 
 function inPlan(perf) {
   if (!festival.value) return false;
@@ -155,21 +182,3 @@ onMounted(() => {
   festivalStore.ensureLoaded();
 });
 </script>
-
-<style scoped>
-@media (max-width: 768px) {
-  .mobile-scroll-hint {
-    animation: slideIn 0.3s ease-out;
-  }
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-}
-</style>

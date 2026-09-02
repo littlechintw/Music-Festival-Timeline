@@ -9,6 +9,10 @@ module.exports = {
     'eslint:recommended',
     'plugin:vue/vue3-recommended',
   ],
+  globals: {
+    // vite.config.js 的 define 注入
+    __APP_VERSION__: 'readonly',
+  },
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',

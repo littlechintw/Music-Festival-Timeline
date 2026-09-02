@@ -45,4 +45,17 @@
   .pr-safe {
     padding-right: env(safe-area-inset-right, 0px);
   }
+  /* 手機版底部導覽的高度（h-16）＋安全區，給 <main> 與浮動元素用 */
+  .pb-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  .bottom-nav-offset {
+    bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* 手機 Safari 在 standalone 模式下，避免捲到底時整頁被橘皮拉動、以及點擊時的灰色閃爍 */
+html {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }

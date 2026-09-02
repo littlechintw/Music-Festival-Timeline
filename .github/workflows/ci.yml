@@ -1,0 +1,22 @@
+name: CI
+
+# 程式碼的 PR / push 都跑：lint → 單元測試 → 完整 build（含 SW precache manifest）。
+# 節慶 JSON 的 schema 驗證另外在 validate-pr.yml。
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build

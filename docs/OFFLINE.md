@@ -16,7 +16,7 @@
 
 Build 時就決定的「絕對要存」清單，使用者第一次造訪 app 安裝完 SW 後就會抓完。`vite.config.js` 用 injectManifest 模式，自訂 SW 在 `src/pwa/sw.js`。Precache manifest 由兩部分組成：
 
-1. `workbox.globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}']` — app shell（程式碼、CSS、icon、manifest）。
+1. `globPatterns: ['**/*.{js,css,html,ico,png,svg}']` — app shell（程式碼、CSS、icon）。**刻意不含 `manifest.webmanifest`**：Chrome 會定期重抓 manifest 比對已安裝 App 的名稱／圖示，SW 若回舊快取會讓使用者反覆看到「圖示已更新」的確認框；已安裝的 App 離線時不需要 manifest。
 2. `additionalManifestEntries`（build 時動態產生）— 讀 `public/festivals/index.json`，**只把 `status === 'upcoming'` 的活動列進去**，revision 用 SHA。
 
 之所以不全部 precache：archived 活動使用者通常不需要再看；4MB 的舊資料每個新使用者都要下載很浪費。但仍會 list 在 index.json，使用者要的話可在 Settings 手動拉。
@@ -27,10 +27,12 @@ Precache 沒命中的請求進入 runtime route，依資源類型分別處理：
 
 | 路徑 | 策略 | Cache 名稱 | 設定 |
 |------|------|-----------|------|
-| `/festivals/*.json` | StaleWhileRevalidate | `festival-data` | 50 entries, 30 天 |
-| `request.destination === 'image'` | CacheFirst | `festival-images` | 60 entries, 30 天 |
-| 跨域資源 | NetworkFirst, 5s timeout | `external-resources` | 30 entries, 7 天 |
-| SPA navigation | `createHandlerBoundToURL('/index.html')` | — | denylist API + festival JSON |
+| `/festivals/*.json`（precache 沒命中的：archived、手動存離線） | StaleWhileRevalidate | `festival-data` | 50 entries, 180 天 |
+| `request.destination === 'image'`（`/festivals/`、`/icon-`、跨域圖片） | CacheFirst | `festival-images` | 80 entries, 60 天 |
+| Google Fonts（`fonts.googleapis.com` / `fonts.gstatic.com`） | StaleWhileRevalidate | `app-fonts` | 30 entries, 1 年 |
+| SPA navigation | precache 的 `index.html` | — | 由 `precacheAndRoute` 處理 |
+
+實際的 route 定義都在 `src/pwa/sw.js`，改這張表時請同步改程式（或反過來）。
 
 StaleWhileRevalidate 的意義：**離線時立刻回快取**、上線時背景更新。使用者體驗永遠是「先看到東西、再看到新版」。
 
@@ -39,9 +41,12 @@ StaleWhileRevalidate 的意義：**離線時立刻回快取**、上線時背景�
 不會放在 SW cache。完全在 client 端：
 
 - `my-festival-plan` — 個人行程清單
-- `my-festival-meta` — 通知偏好、上次開啟的 festival、theme override
-- `notification_history` / `sent_reminders` — 通知歷史，避免重複觸發
-- `is24Hour` / `enableFestivalReminders` / `performanceReminderTimes` / `enableAnalytics` — 各種偏好
+- `my-festival-meta` — plan 資料的 schema 版本（未來 migration 用）
+- `saved-shared-plans-v1` — 朋友分享後「另存」的行程
+- `notification_history` / `sent_reminders` — 通知歷史與去重紀錄，避免重複觸發
+- `is24Hour` / `enableFestivalReminders` / `performanceReminderTimes` / `enableAnalytics` / `enableMarqueeAnimation` — 各種偏好
+- `theme-pref-v1` — 亮／暗／跟隨系統
+- `install-prompt-dismissed-at` — 使用者關掉「安裝到主畫面」提示的時間（14 天內不再顯示）
 - `festival_hashes_v1` — 對 `festivalId → hash` 的本地映射，是 SHA 更新偵測的核心
 - `offline_mode` / `offline_pinned` — 離線管理偏好（auto/manual + 手動 pin 清單）
 
@@ -94,7 +99,7 @@ syncFestivals(opts):
 
 ### 更新觸發點
 
-- App `onMounted`：`festivalStore.ensureLoaded()`（有 5 分鐘 staleness 保護，剛抓過不重抓）
+- App `onMounted`：`festivalStore.ensureLoaded()`（有 6 小時 staleness 保護，剛抓過不重抓）
 - App `setInterval` 每 6 小時：`ensureLoaded()`（背景時不跑，前景回來補跑）
 - `window.online` 事件：`ensureLoaded({ force: true })`
 - Settings「立即檢查更新」：`ensureLoaded({ force: true })`
@@ -115,7 +120,7 @@ syncFestivals(opts):
 
 | UI 動作 | 程式行為 |
 |---------|----------|
-| 存到離線 / 更新 | `fetch(url, { cache: 'reload' })` → SW 接住 → 進 `festival-data` cache |
+| 存到離線 / 更新 | `fetch(url, { cache: 'no-cache' })` → SW 的 StaleWhileRevalidate route 接住 → 進 `festival-data` cache，並更新 `festival_hashes_v1` |
 | 移除離線 | `caches.open('festival-data').delete(url)` + `localStorage[festival_hashes_v1]` 移除該 id |
 
 ---

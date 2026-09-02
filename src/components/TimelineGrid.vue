@@ -1,5 +1,6 @@
 <template>
-  <div class="timeline-scroll-container" ref="scrollRef">
+  <!-- 可捲動區域要能用鍵盤聚焦，方向鍵才捲得動 -->
+  <div class="timeline-scroll-container" ref="scrollRef" tabindex="0" role="region" aria-label="時間軸，左右捲動查看舞台、上下捲動查看時間">
     <div class="timeline-container" :style="gridStyle(stages.length)">
       <!-- 表頭 -->
       <div class="time-column-header" :style="{ gridColumn: 1, gridRow: 1 }">時間</div>
@@ -54,13 +55,25 @@
         <div
           v-for="perf in performancesByStage[stage.name] || []"
           :key="perf.id || `${perf.artist}_${perf.start}`"
-          class="performance-block relative rounded shadow transition-transform hover:scale-[1.02]"
+          class="performance-block relative rounded shadow transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--md-sys-color-on-surface)]"
           :class="[sizeClasses(perf), getPerfClasses(perf), liveClasses(perf), conflictClasses(perf)]"
           :style="perfStyle(perf, stageIndex)"
+          :role="interactive ? 'button' : undefined"
+          :tabindex="interactive ? 0 : undefined"
+          :aria-pressed="interactive && selectedResolver ? !!selectedResolver(perf) : undefined"
+          :aria-label="blockLabel(perf, stage)"
           @click="$emit('perfClick', { perf, stage })"
+          @keydown.enter.prevent="$emit('perfClick', { perf, stage })"
+          @keydown.space.prevent="$emit('perfClick', { perf, stage })"
         >
           <div class="flex items-baseline flex-wrap gap-x-2">
             <span class="flex items-start gap-1 shrink-0 max-w-full">
+              <!-- 已加入的方塊多一個勾號：不能只靠顏色深淺分辨（色弱、低對比環境） -->
+              <span
+                v-if="selectedResolver && selectedResolver(perf)"
+                class="text-[10px] font-bold leading-4 shrink-0"
+                aria-hidden="true"
+              >✓</span>
               <span v-if="isLive(perf)" class="text-[10px] font-bold bg-red-500 text-white px-1 rounded animate-pulse shrink-0">
                 LIVE
               </span>
@@ -101,6 +114,10 @@ const props = defineProps({
   perfClassResolver: { type: Function, default: null },
   // 是否偵測跨舞台時間衝突（個人行程才需要，跑馬燈時間表不需要）
   detectConflicts: { type: Boolean, default: false },
+  // 方塊可點（加入／移除）時設 true：會變成可用鍵盤操作的 button
+  interactive: { type: Boolean, default: false },
+  // (perf) => boolean：這場是否已在行程裡。用來畫勾號與 aria-pressed
+  selectedResolver: { type: Function, default: null },
 });
 
 defineEmits(['perfClick']);
@@ -122,6 +139,16 @@ const performancesByStage = computed(() => {
   }
   return map;
 });
+
+/** 螢幕閱讀器聽到的完整描述：藝人、舞台、時間、狀態 */
+function blockLabel(perf, stage) {
+  const parts = [perf.artist, stage.name, formatTimeRange(perf.start, perf.end, props.is24Hour)];
+  if (isLive(perf)) parts.push('進行中');
+  if (perf.isPast) parts.push('已結束');
+  const conflict = conflictsFor(perf);
+  if (conflict) parts.push(conflict);
+  return parts.join('，');
+}
 
 function getPerfClasses(perf) {
   if (props.perfClassResolver) return props.perfClassResolver(perf);
@@ -278,7 +305,8 @@ const vMarquee = {
 .timeline-scroll-container {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: calc(100vh - 200px);
+  /* 桌面：扣掉頂欄與標題；手機另外扣掉底部導覽（見下方 media query）。dvh 會隨手機瀏覽器工具列收合而變 */
+  max-height: calc(100dvh - 200px);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--tg-border) var(--tg-header-bg);
@@ -401,8 +429,12 @@ const vMarquee = {
   border-top-color: var(--tg-border-light);
 }
 @media (max-width: 768px) {
+  .timeline-scroll-container {
+    max-height: calc(100dvh - 16rem);
+  }
   .timeline-container {
-    --stage-col-width: 70px;
+    /* 手機一屏約可放 2.5 個舞台欄，團名放得下又不必捲太遠 */
+    --stage-col-width: 120px;
     --time-col-width: 55px;
     font-size: 0.75rem;
   }
@@ -418,7 +450,7 @@ const vMarquee = {
 }
 @media (max-width: 480px) {
   .timeline-container {
-    --stage-col-width: 100px;
+    --stage-col-width: 110px;
     --time-col-width: 55px;
   }
 }

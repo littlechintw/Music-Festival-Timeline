@@ -1,13 +1,14 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-[var(--md-sys-color-background)] text-[var(--md-sys-color-on-background)]">
+  <div
+    class="min-h-screen flex flex-col bg-[var(--md-sys-color-background)] text-[var(--md-sys-color-on-background)]"
+  >
     <OfflineBanner />
+
+    <!-- 頂欄：手機只放 App 名稱＋連線狀態；桌面版把主導覽放在右邊 -->
     <header
       class="w-full sticky top-0 z-40 bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface)] shadow-md pt-safe"
     >
-      <nav
-        class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-1 overflow-x-auto"
-        aria-label="主要導覽"
-      >
+      <nav class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-1" aria-label="主要導覽">
         <router-link
           to="/"
           class="relative flex items-center gap-2 font-bold tracking-wide mr-3 shrink-0 rounded-md px-2 py-1 hover:opacity-80 transition overflow-hidden"
@@ -15,10 +16,19 @@
         >
           <md-ripple></md-ripple>
           <MdIcon name="music_note" class="text-xl" />
-          <span class="hidden sm:inline">音樂祭行程</span>
+          <span>音樂祭行程</span>
         </router-link>
 
-        <div class="flex items-center gap-1 ml-auto shrink-0">
+        <span
+          v-if="!isOnline"
+          class="md:hidden ml-auto inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)]"
+          aria-label="目前離線"
+        >
+          <MdIcon name="wifi_off" style="--md-icon-size: 14px" />
+          離線
+        </span>
+
+        <div class="hidden md:flex items-center gap-1 ml-auto shrink-0">
           <router-link
             v-for="item in navItems"
             :key="item.to"
@@ -36,7 +46,7 @@
             <span
               v-if="item.to === '/plan' && planStore.planCount > 0"
               class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)]"
-              aria-label="`已加入 ${planStore.planCount} 場`"
+              :aria-label="`已加入 ${planStore.planCount} 場`"
             >
               {{ planStore.planCount }}
             </span>
@@ -45,9 +55,47 @@
       </nav>
     </header>
 
-    <main class="flex-1 pb-safe">
+    <!-- 手機版：內容底部留出底部導覽的高度，避免最後一張卡被蓋住 -->
+    <main class="flex-1 pb-safe pb-nav md:pb-0">
       <router-view />
     </main>
+
+    <!-- 底部導覽（手機）：拇指可及、四個主要頁面、行程數量徽章 -->
+    <nav
+      class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--md-sys-color-surface-container)] border-t border-[var(--md-sys-color-outline-variant)] pb-safe bottom-nav"
+      aria-label="底部導覽"
+    >
+      <ul class="grid grid-cols-4 h-16">
+        <li v-for="item in navItems" :key="item.to" class="min-w-0">
+          <router-link
+            :to="item.to"
+            class="relative h-full w-full flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors overflow-hidden"
+            :class="
+              isActive(item)
+                ? 'text-[var(--md-sys-color-on-surface)]'
+                : 'text-[var(--md-sys-color-on-surface-variant)]'
+            "
+            :aria-current="isActive(item) ? 'page' : undefined"
+          >
+            <md-ripple></md-ripple>
+            <span
+              class="relative flex items-center justify-center w-14 h-7 rounded-full transition-colors"
+              :class="isActive(item) ? 'bg-[var(--md-sys-color-secondary-container)]' : ''"
+            >
+              <MdIcon :name="item.icon" style="--md-icon-size: 22px" />
+              <span
+                v-if="item.to === '/plan' && planStore.planCount > 0"
+                class="absolute -top-1 right-1 min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4 font-bold text-center bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)]"
+                :aria-label="`已加入 ${planStore.planCount} 場`"
+              >
+                {{ planStore.planCount > 99 ? '99+' : planStore.planCount }}
+              </span>
+            </span>
+            <span>{{ item.label }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </nav>
 
     <InvalidShowsModal />
     <UpdatePrompt />
@@ -73,22 +121,25 @@ import ToastContainer from './components/ToastContainer.vue';
 import ConfirmDialog from './components/ConfirmDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import { useTheme } from './composables/useTheme';
+import { useOnline } from './composables/useOnline';
 
 // 啟動 theme：監聽 prefers-color-scheme 並套上 .dark class
 useTheme();
 
 const route = useRoute();
+const { isOnline } = useOnline();
 
+// 「新增音樂祭」是貢獻者用的工具，不放在主導覽；入口在設定頁與音樂祭列表底部。
 const navItems = [
   { to: '/', label: '音樂祭', icon: 'festival' },
   { to: '/plan', label: '行程', icon: 'calendar_month' },
   { to: '/artists', label: '藝人', icon: 'mic' },
   { to: '/settings', label: '設定', icon: 'settings' },
-  { to: '/editor', label: '新增', icon: 'add_circle' },
 ];
 
 function isActive(item) {
   if (item.to === '/') return route.path === '/' || route.path.startsWith('/festival/');
+  if (item.to === '/settings') return route.path === '/settings' || route.path === '/editor';
   return route.path === item.to || route.path.startsWith(item.to + '/');
 }
 
@@ -163,3 +214,10 @@ watch(
 );
 </script>
 
+
+<style scoped>
+/* 固定底欄自成一個合成圖層：捲動時不會跟內容一起重繪、也避免某些瀏覽器把它的文字殘影畫到別處 */
+.bottom-nav {
+  transform: translateZ(0);
+}
+</style>

@@ -45,6 +45,24 @@ import info from '@material-symbols/svg-400/outlined/info.svg?raw';
 import qr_code from '@material-symbols/svg-400/outlined/qr_code.svg?raw';
 import qr_code_scanner from '@material-symbols/svg-400/outlined/qr_code_scanner.svg?raw';
 import cloud from '@material-symbols/svg-400/outlined/cloud.svg?raw';
+import arrow_back from '@material-symbols/svg-400/outlined/arrow_back.svg?raw';
+import check from '@material-symbols/svg-400/outlined/check.svg?raw';
+import my_location from '@material-symbols/svg-400/outlined/my_location.svg?raw';
+import open_in_new from '@material-symbols/svg-400/outlined/open_in_new.svg?raw';
+import code from '@material-symbols/svg-400/outlined/code.svg?raw';
+import zoom_in from '@material-symbols/svg-400/outlined/zoom_in.svg?raw';
+import zoom_out from '@material-symbols/svg-400/outlined/zoom_out.svg?raw';
+import today from '@material-symbols/svg-400/outlined/today.svg?raw';
+import chevron_right from '@material-symbols/svg-400/outlined/chevron_right.svg?raw';
+import install_desktop from '@material-symbols/svg-400/outlined/install_desktop.svg?raw';
+import download_for_offline from '@material-symbols/svg-400/outlined/download_for_offline.svg?raw';
+import offline_pin from '@material-symbols/svg-400/outlined/offline_pin.svg?raw';
+import more_horiz from '@material-symbols/svg-400/outlined/more_horiz.svg?raw';
+import celebration from '@material-symbols/svg-400/outlined/celebration.svg?raw';
+import stadium from '@material-symbols/svg-400/outlined/stadium.svg?raw';
+import event_available from '@material-symbols/svg-400/outlined/event_available.svg?raw';
+import share from '@material-symbols/svg-400/outlined/share.svg?raw';
+import refresh from '@material-symbols/svg-400/outlined/refresh.svg?raw';
 
 /** @type {Record<string, string>} */
 export const icons = {
@@ -91,4 +109,22 @@ export const icons = {
   qr_code,
   qr_code_scanner,
   cloud,
+  arrow_back,
+  check,
+  my_location,
+  open_in_new,
+  code,
+  zoom_in,
+  zoom_out,
+  today,
+  chevron_right,
+  install_desktop,
+  download_for_offline,
+  offline_pin,
+  more_horiz,
+  celebration,
+  stadium,
+  event_available,
+  share,
+  refresh,
 };

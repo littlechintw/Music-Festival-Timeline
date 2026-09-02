@@ -74,3 +74,50 @@ export function formatDayLabel(input) {
 }
 
 export { WEEKDAYS_ZH };
+
+const WEEKDAYS_SHORT_ZH = ['日', '一', '二', '三', '四', '五', '六'];
+
+/**
+ * 給列表卡片用的精簡日期範圍：
+ * - 同一天：`2026/6/27 (六)`
+ * - 跨天：`2026/6/27 (六) – 6/28 (日)`（跨年才會在結束日補年份）
+ * @param {Date | string} start
+ * @param {Date | string} end
+ */
+export function formatDateRange(start, end) {
+  const s = toDate(start);
+  const e = toDate(end);
+  if (!s) return '';
+  const day = (/** @type {Date} */ d, withYear) =>
+    `${withYear ? `${d.getFullYear()}/` : ''}${d.getMonth() + 1}/${d.getDate()} (${WEEKDAYS_SHORT_ZH[d.getDay()]})`;
+  if (!e || s.toDateString() === e.toDateString()) return day(s, true);
+  return `${day(s, true)} – ${day(e, e.getFullYear() !== s.getFullYear())}`;
+}
+
+/**
+ * 活動相對於現在的狀態，給狀態徽章用。
+ * @param {Date | string} start
+ * @param {Date | string} end
+ * @param {Date | number} [now]
+ * @returns {{ label: string, tone: 'live' | 'soon' | 'upcoming' | 'past' }}
+ */
+export function festivalStatus(start, end, now = Date.now()) {
+  const s = toDate(start);
+  const e = toDate(end);
+  const nowMs = typeof now === 'number' ? now : now.getTime();
+  if (!s) return { label: '', tone: 'upcoming' };
+  const endMs = e ? e.getTime() : s.getTime();
+  if (nowMs > endMs) return { label: '已結束', tone: 'past' };
+  if (nowMs >= s.getTime()) return { label: '進行中', tone: 'live' };
+  // 以「日曆天」計算，避免下午看到「0 天後」
+  const startDay = new Date(s);
+  startDay.setHours(0, 0, 0, 0);
+  const today = new Date(nowMs);
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((startDay.getTime() - today.getTime()) / 86400000);
+  if (days <= 0) return { label: '今天開始', tone: 'soon' };
+  if (days === 1) return { label: '明天', tone: 'soon' };
+  if (days <= 7) return { label: `${days} 天後`, tone: 'soon' };
+  if (days <= 60) return { label: `${days} 天後`, tone: 'upcoming' };
+  return { label: `${Math.round(days / 30)} 個月後`, tone: 'upcoming' };
+}

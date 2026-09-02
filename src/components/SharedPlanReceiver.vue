@@ -53,6 +53,7 @@
       :performances="performancesForDay"
       :is24-hour="settingsStore.is24Hour"
       :perf-class-resolver="resolvePerfClass"
+      :selected-resolver="isShared"
     />
 
     <div class="max-w-sm mx-auto mt-6">

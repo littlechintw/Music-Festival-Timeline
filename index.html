@@ -3,13 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#22223b" />
-    <meta name="description" content="離線可用的音樂祭行程規劃工具" />
+    <!-- 狀態列顏色跟 MD3 surface-container-highest（App 頂欄）對齊，亮暗各一組 -->
+    <meta name="theme-color" content="#e3e2e9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1b21" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="離線可用的音樂祭行程規劃工具：瀏覽時間表、排自己的行程、演出前提醒，現場沒網路也能查。" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- iOS 加入主畫面後以獨立 App 模式開啟 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="音樂祭行程" />
+    <!-- 演出時間、地址不要被 iOS 自動轉成電話連結 -->
+    <meta name="format-detection" content="telephone=no" />
     <title>音樂祭行程規劃 - Music Festival Planner</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- manifest.webmanifest 由 vite-plugin-pwa 在 build 時產生並自動注入 <link>，這裡不用手動放 -->
     <script>
       // GitHub Pages SPA 重導：把 404 重導過來的路徑還原
       (function (l) {

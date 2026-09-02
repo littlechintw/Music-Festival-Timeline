@@ -164,7 +164,7 @@
               <span>{{ formatDateShort(entry.startTime) }}</span>
               <span>{{ formatBytes(entry.bytes) }}</span>
               <span :class="statusInfo(entry).class">{{ statusInfo(entry).label }}</span>
-              <span v-if="entry.status === 'upcoming'" class="text-blue-600">即將到來</span>
+              <span v-if="entry.status === 'upcoming'" class="text-blue-700 dark:text-blue-300">即將到來</span>
             </div>
           </div>
           <div class="flex gap-2 items-center shrink-0">
@@ -247,6 +247,89 @@
       </div>
     </AccordionSection>
 
+    <AccordionSection title="安裝與關於">
+      <template #icon><MdIcon name="info" /></template>
+      <div class="flex flex-col gap-4">
+        <div v-if="!standalone" class="flex items-center justify-between gap-3">
+          <div class="pr-2">
+            <h3 class="font-medium text-gray-800 dark:text-gray-200">安裝到主畫面</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              像 App 一樣全螢幕開啟、離線可用、演出提醒更可靠。
+            </p>
+          </div>
+          <md-filled-button v-if="canPromptNatively" type="button" @click="onInstall">
+            安裝
+          </md-filled-button>
+          <md-outlined-button v-else type="button" @click="showInstallGuide = true">
+            看怎麼加入
+          </md-outlined-button>
+        </div>
+        <p v-else class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <MdIcon name="check_circle" style="--md-icon-size: 18px" class="text-green-700 dark:text-green-300" />
+          已安裝為 App，正以獨立視窗執行。
+        </p>
+
+        <div class="flex items-center justify-between gap-3">
+          <div class="pr-2">
+            <h3 class="font-medium text-gray-800 dark:text-gray-200">新增音樂祭資料</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              找不到你要去的音樂祭？用內建工具產生時間表 JSON，送 PR 給我們。
+            </p>
+          </div>
+          <md-outlined-button type="button" @click="$router.push('/editor')">
+            <MdIcon name="add" slot="icon" />
+            新增
+          </md-outlined-button>
+        </div>
+
+        <div class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 border-t border-gray-100 dark:border-gray-700">
+          <span>版本 {{ appVersion }}</span>
+          <a
+            :href="REPO_URL"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-1 text-[var(--md-sys-color-primary)] hover:underline"
+          >
+            <MdIcon name="code" style="--md-icon-size: 16px" />
+            原始碼
+            <MdIcon name="open_in_new" style="--md-icon-size: 12px" />
+          </a>
+          <a
+            :href="`${REPO_URL}/issues`"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-1 text-[var(--md-sys-color-primary)] hover:underline"
+          >
+            回報問題
+            <MdIcon name="open_in_new" style="--md-icon-size: 12px" />
+          </a>
+        </div>
+      </div>
+    </AccordionSection>
+
+    <BaseModal v-model="showInstallGuide">
+      <template #headline>加入手機主畫面</template>
+      <div class="text-sm text-[var(--md-sys-color-on-surface)] space-y-3">
+        <div>
+          <p class="font-medium mb-1">iPhone / iPad（Safari）</p>
+          <ol class="list-decimal pl-5 space-y-1">
+            <li>點底部工具列的「分享」按鈕。</li>
+            <li>往下捲選「加入主畫面」，再按「新增」。</li>
+          </ol>
+        </div>
+        <div>
+          <p class="font-medium mb-1">Android（Chrome）</p>
+          <ol class="list-decimal pl-5 space-y-1">
+            <li>點右上角「⋮」選單。</li>
+            <li>選「安裝應用程式」或「加到主畫面」。</li>
+          </ol>
+        </div>
+      </div>
+      <template #actions>
+        <md-filled-button type="button" @click="showInstallGuide = false">知道了</md-filled-button>
+      </template>
+    </BaseModal>
+
     <BaseModal v-model="showHistoryModal">
       <template #headline>
         <div class="flex items-center justify-between gap-2">
@@ -306,6 +389,7 @@ import { useFestivalStore } from '../stores/festival';
 import { useOfflineStore } from '../stores/offline';
 import { useOfflineActions, formatBytes } from '../composables/useOfflineActions';
 import { useTheme } from '../composables/useTheme';
+import { useInstallPrompt } from '../composables/useInstallPrompt';
 import { useToast } from '../composables/useToast';
 import { useConfirm } from '../composables/useConfirm';
 import AccordionSection from '../components/AccordionSection.vue';
@@ -313,6 +397,8 @@ import MdIcon from '../components/MdIcon.vue';
 import BaseModal from '../components/BaseModal.vue';
 
 const REMINDER_OPTIONS = [1, 3, 5, 10, 15, 30, 60];
+const REPO_URL = 'https://github.com/littlechintw/Music-Festival-Timeline';
+const appVersion = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';
 
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
@@ -321,6 +407,13 @@ const festivalStore = useFestivalStore();
 const offlineStore = useOfflineStore();
 const { usage, refreshUsage, download, remove, getCachedHashMap } = useOfflineActions();
 const { pref, setPref } = useTheme();
+const { standalone, canPromptNatively, promptInstall } = useInstallPrompt();
+const showInstallGuide = ref(false);
+
+async function onInstall() {
+  const result = await promptInstall();
+  if (result === 'accepted') showToast({ message: '已加入主畫面', kind: 'success', icon: '✓' });
+}
 const { showToast } = useToast();
 const { confirm } = useConfirm();
 
@@ -339,8 +432,8 @@ const notifStatusText = computed(() => {
   return '尚未取得通知權限';
 });
 const notifStatusClass = computed(() => {
-  if (notifStatus.value === 'granted') return 'text-green-600';
-  if (notifStatus.value === 'denied') return 'text-red-600';
+  if (notifStatus.value === 'granted') return 'text-green-700 dark:text-green-300';
+  if (notifStatus.value === 'denied') return 'text-red-700 dark:text-red-300';
   return 'text-gray-500';
 });
 
@@ -375,8 +468,8 @@ function hasUpdate(entry) {
 
 function statusInfo(entry) {
   if (!isCached(entry)) return { label: '未離線', class: 'text-gray-500' };
-  if (hasUpdate(entry)) return { label: '可更新', class: 'text-amber-600 font-medium' };
-  return { label: '已離線', class: 'text-green-600 font-medium' };
+  if (hasUpdate(entry)) return { label: '可更新', class: 'text-amber-700 dark:text-amber-300 font-medium' };
+  return { label: '已離線', class: 'text-green-700 dark:text-green-300 font-medium' };
 }
 
 function formatDateShort(iso) {
