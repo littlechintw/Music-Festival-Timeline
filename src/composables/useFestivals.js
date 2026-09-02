@@ -12,12 +12,39 @@ import { festivalSchema } from '../pwa/schema';
  *   hash: string,
  *   bytes: number,
  *   status: 'upcoming' | 'archived',
+ *   location?: { name: string, address: string },
+ *   stageCount?: number,
+ *   performanceCount?: number,
+ *   themePrimary?: string,
  * }} FestivalIndexEntry
  * @typedef {{ version: 2, generatedAt: string, indexHash: string, festivals: FestivalIndexEntry[] }} FestivalIndex
  */
 
 const INDEX_URL = '/festivals/index.json';
 const HASHES_KEY = 'festival_hashes_v1';
+// 跟 src/pwa/sw.js 的 runtime cache 名稱對齊
+export const FESTIVAL_DATA_CACHE = 'festival-data';
+
+// ---- 離線保留規則（單一來源，Settings 文案與 store 都從這裡拿）----
+// 開始時間在未來 AUTO_FUTURE_DAYS 天內、或結束時間在過去 AUTO_PAST_DAYS 天內的活動 = 「近期活動」，
+// 開 App 時自動下載；其他活動只有使用者點開時才下載。
+export const AUTO_FUTURE_DAYS = 30;
+export const AUTO_PAST_DAYS = 14;
+// 已下載的資料最多保留 RETENTION_DAYS 天；期間有再打開就從那天重算。
+export const RETENTION_DAYS = 30;
+const DAY_MS = 86400000;
+
+/**
+ * 這場活動是否落在「自動下載」的時間窗內。
+ * @param {{ startTime: string, endTime: string }} entry
+ * @param {number} [now]
+ */
+export function isInAutoWindow(entry, now = Date.now()) {
+  const start = new Date(entry.startTime).getTime();
+  const end = new Date(entry.endTime).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
+  return start <= now + AUTO_FUTURE_DAYS * DAY_MS && end >= now - AUTO_PAST_DAYS * DAY_MS;
+}
 
 /** @returns {Record<string, string>} */
 export function loadLocalHashes() {
@@ -62,6 +89,7 @@ export async function fetchIndex() {
 
 /**
  * 真正去抓一個 festival JSON 並驗 schema。會更新 localStorage hash。
+ * 線上時 SW 的 StaleWhileRevalidate route 會順便把回應存進 festival-data cache。
  *
  * @param {FestivalIndexEntry} entry
  * @param {Record<string, string>} hashMap
@@ -78,49 +106,45 @@ async function fetchFestival(entry, hashMap) {
 }
 
 /**
- * 對使用者的離線策略執行同步：
+ * 依「該不該留在裝置上」同步節慶資料：
  *
- * - mode='auto':    列表上看得到的活動全部抓（包含 archived），讓使用者可以瀏覽過往活動。
- *                   SHA 一樣的不重抓，所以實際上只有第一次 + 更新時才下載。
- *                   離線時抓不到的就靜默跳過（仍會回傳已快取的版本）。
- *                   ※ 「auto 自動 precache」只在 SW install 時針對 upcoming 生效（vite.config.js 控制），
- *                     和這裡的「runtime 抓取」是兩件事。
- * - mode='manual':  只更新 pin 過的 + 已經有快取的，不會主動抓 archived。
- *
- * 不論 mode，**hash 一樣就完全不打網路**。
+ * - shouldKeep(entry) 為 true：需要的資料。hash 一樣且記憶體有就直接用（0 網路）；
+ *   否則抓一份（離線時由 SW cache 供應；完全沒有就跳過並回報錯誤）。
+ * - shouldKeep(entry) 為 false：不需要。之前若有下載過就從 SW cache 與 hash 紀錄移除。
  *
  * @param {{
- *   mode: 'auto' | 'manual',
- *   pinnedIds: Set<string> | string[],
+ *   shouldKeep: (entry: FestivalIndexEntry) => boolean,
  *   getCached: (id: string) => Festival | undefined,
  * }} opts
- * @returns {Promise<{ index: FestivalIndex | null, festivals: Festival[], errors: string[] }>}
+ * @returns {Promise<{ index: FestivalIndex | null, festivals: Festival[], errors: string[], evicted: string[] }>}
  */
 export async function syncFestivals(opts) {
   const index = await fetchIndex();
-  if (!index) return { index: null, festivals: [], errors: ['index-unavailable'] };
+  if (!index) return { index: null, festivals: [], errors: ['index-unavailable'], evicted: [] };
 
   const hashes = loadLocalHashes();
-  const pinned = opts.pinnedIds instanceof Set ? opts.pinnedIds : new Set(opts.pinnedIds);
   /** @type {Festival[]} */
   const out = [];
   /** @type {string[]} */
   const errors = [];
+  /** @type {string[]} */
+  const evicted = [];
 
   for (const entry of index.festivals) {
     const cached = opts.getCached(entry.festivalId);
     const hashOk = hashes[entry.festivalId] === entry.hash;
 
-    if (cached && hashOk) {
-      out.push(cached);
+    if (!opts.shouldKeep(entry)) {
+      if (entry.festivalId in hashes) {
+        await deleteFromCache(entry);
+        delete hashes[entry.festivalId];
+        evicted.push(entry.festivalId);
+      }
       continue;
     }
 
-    const shouldFetch =
-      opts.mode === 'auto' || pinned.has(entry.festivalId) || !!cached;
-
-    if (!shouldFetch) {
-      // manual mode：使用者沒 pin、也沒抓過 → 跳過。Settings UI 可以手動觸發。
+    if (cached && hashOk) {
+      out.push(cached);
       continue;
     }
 
@@ -136,11 +160,11 @@ export async function syncFestivals(opts) {
   }
 
   saveLocalHashes(hashes);
-  return { index, festivals: out, errors };
+  return { index, festivals: out, errors, evicted };
 }
 
 /**
- * 強制把一個 festival 抓下來並進 cache（手動離線管理用）。
+ * 使用者點開某場活動時的按需下載（也用於「更新」）。
  * @param {FestivalIndexEntry} entry
  */
 export async function downloadFestivalToCache(entry) {
@@ -150,38 +174,26 @@ export async function downloadFestivalToCache(entry) {
   return data;
 }
 
+/** @param {FestivalIndexEntry} entry */
+async function deleteFromCache(entry) {
+  if (typeof caches === 'undefined') return;
+  try {
+    const cache = await caches.open(FESTIVAL_DATA_CACHE);
+    await cache.delete(`/festivals/${entry.file}`, { ignoreSearch: true });
+  } catch (err) {
+    console.warn('[festival] cache delete failed:', err);
+  }
+}
+
 /**
  * 從 SW cache 與本地 hash 紀錄中移除一個 festival。
  * @param {FestivalIndexEntry} entry
  */
 export async function removeFestivalFromCache(entry) {
-  if ('caches' in self) {
-    try {
-      const cache = await caches.open('festival-data');
-      await cache.delete(`/festivals/${entry.file}`);
-    } catch (err) {
-      console.warn('[festival] cache delete failed:', err);
-    }
-  }
+  await deleteFromCache(entry);
   const hashes = loadLocalHashes();
   delete hashes[entry.festivalId];
   saveLocalHashes(hashes);
-}
-
-/**
- * 純載入：給第一次開 app、UI 還沒 mount 之前用。會走 syncFestivals。
- * @param {{
- *   mode?: 'auto' | 'manual',
- *   pinnedIds?: Set<string> | string[],
- * }} [opts]
- */
-export async function loadAllFestivals(opts = {}) {
-  const result = await syncFestivals({
-    mode: opts.mode ?? 'auto',
-    pinnedIds: opts.pinnedIds ?? new Set(),
-    getCached: () => undefined,
-  });
-  return result.festivals;
 }
 
 /**

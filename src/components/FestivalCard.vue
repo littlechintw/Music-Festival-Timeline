@@ -48,11 +48,11 @@
         </div>
         <div class="text-sm text-[var(--md-sys-color-on-surface-variant)] mt-0.5 flex items-center gap-1 min-w-0">
           <MdIcon name="location_on" style="--md-icon-size: 16px" class="shrink-0" />
-          <span class="truncate">{{ festival.location.name }}</span>
+          <span class="truncate">{{ festival.location?.name || '地點未提供' }}</span>
         </div>
         <div class="text-xs text-[var(--md-sys-color-on-surface-variant)] mt-2 flex items-center gap-x-3 gap-y-1 flex-wrap">
-          <span>{{ festival.stages.length }} 個舞台</span>
-          <span>{{ performanceCount }} 場演出</span>
+          <span v-if="stageCount">{{ stageCount }} 個舞台</span>
+          <span v-if="performanceCount">{{ performanceCount }} 場演出</span>
           <span v-if="isCached" class="inline-flex items-center gap-1">
             <MdIcon name="offline_pin" style="--md-icon-size: 14px" />
             已可離線
@@ -71,7 +71,6 @@
 import { computed } from 'vue';
 import { usePlanStore } from '../stores/plan';
 import { useFestivalStore } from '../stores/festival';
-import { loadLocalHashes } from '../composables/useFestivals';
 import { formatDateRange, festivalStatus } from '../utils/format';
 import MdIcon from './MdIcon.vue';
 import StatusChip from './StatusChip.vue';
@@ -86,22 +85,20 @@ const festivalStore = useFestivalStore();
 
 const status = computed(() => festivalStatus(props.festival.startTime, props.festival.endTime));
 
-const performanceCount = computed(() =>
-  props.festival.stages.reduce((sum, s) => sum + (s.performances?.length || 0), 0)
+// 可能是索引項目（stageCount / performanceCount）或完整資料（stages[]）
+const stageCount = computed(() => props.festival.stageCount ?? props.festival.stages?.length ?? 0);
+const performanceCount = computed(
+  () =>
+    props.festival.performanceCount ??
+    (props.festival.stages || []).reduce((sum, s) => sum + (s.performances?.length || 0), 0)
 );
 
 const plannedCount = computed(
   () => planStore.myPlan.filter((p) => p.festivalId === props.festival.festivalId).length
 );
 
-const accent = computed(() => props.festival.theme?.primary || '');
+const accent = computed(() => props.festival.themePrimary || props.festival.theme?.primary || '');
 
-// 本地 hash 與索引一致 = 這份資料已在裝置上、離線可讀
-const isCached = computed(() => {
-  const entry = festivalStore.index?.festivals?.find(
-    (f) => f.festivalId === props.festival.festivalId
-  );
-  if (!entry) return false;
-  return loadLocalHashes()[props.festival.festivalId] === entry.hash;
-});
+// 這份資料已在裝置上、離線可讀
+const isCached = computed(() => festivalStore.isCached(props.festival.festivalId));
 </script>

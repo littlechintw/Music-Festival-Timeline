@@ -30,7 +30,7 @@
 | 🔗 **分享行程** | 雲端短網址（雙方連網）或 **QR Code 離線分享**（雙方都不用網路），朋友可一鍵套用或另存。 |
 | 🗺 **場地地圖** | 圖片可放大捲動，離線也看得到；一鍵開 Google 地圖導航。 |
 | 🎤 **聽過的藝人** | 從行程自動統計看過哪些藝人、看了幾次、跨了幾個音樂祭。 |
-| 📡 **真正離線** | App shell 與即將到來的活動資料在第一次開啟時就存進裝置，之後靠 hash 差異更新，過往活動也可手動存離線。詳見 [`docs/OFFLINE.md`](docs/OFFLINE.md)。 |
+| 📡 **真正離線** | 近期活動（開始前 30 天到結束後 14 天）自動下載到裝置；其他活動點開時才下載。離線資料保留 30 天，期間有再打開就延長，過期自動清除。詳見 [`docs/OFFLINE.md`](docs/OFFLINE.md)。 |
 | 📲 **安裝到主畫面** | Android／桌面 Chrome 直接跳原生安裝；iPhone 顯示 Safari「加入主畫面」教學。 |
 | 🌗 **深色模式** | Material Design 3 色票，跟隨系統或手動切換。 |
 
@@ -138,13 +138,48 @@ docs/
 
 ## 📡 離線與更新機制（摘要）
 
-1. **Precache**：build 時把 app shell 與 `status === 'upcoming'` 的節慶 JSON 列進 Workbox precache，第一次開啟就全部存好。
-2. **Runtime cache**：其他節慶 JSON（過往活動、手動存離線）走 StaleWhileRevalidate；地圖圖片 CacheFirst。
-3. **Hash 比對**：`index.json` 帶每份 JSON 的 SHA，client 比對 localStorage 裡的 hash，一樣就完全不打網路。
-4. **更新提示**：新版 SW 進入 waiting，畫面顯示「有新版本可用」，使用者按下才切換，不會打斷正在使用的畫面。
-5. **降級**：雲端分享、GA 等需要網路的功能離線時自動停用，離線 QR 分享仍可用。
+哪些資料會在裝置上，由三條規則決定：
 
-完整細節與邊角情境見 [`docs/OFFLINE.md`](docs/OFFLINE.md)。
+| 規則 | 說明 |
+|------|------|
+| **近期活動自動下載** | 開始時間在未來 30 天內、或結束時間在過去 14 天內的活動，開 App 時自動下載並持續保留。 |
+| **其他活動點開才下載** | 列表只靠索引（`index.json`）就能顯示全部活動；點進詳情、時間軸或地圖時才抓完整時間表。 |
+| **30 天沒用就移除** | 每場活動記錄最後使用時間（打開過或被下載），超過 30 天沒再打開就從裝置移除；期間有打開就重算。 |
+
+實作上：
+
+1. **Precache** 只放 app shell 與 `index.json`。活動 JSON 一律走 runtime cache（StaleWhileRevalidate），使用者在設定頁移除的資料才不會被 Service Worker 塞回來。
+2. **Hash 比對**：索引帶每份 JSON 的 SHA，client 比對 localStorage 裡的 hash，一樣就完全不打網路。
+3. **更新提示**：新版 SW 進入 waiting，畫面顯示「有新版本可用」，使用者按下才切換，不會打斷正在使用的畫面。
+4. **降級**：雲端分享、GA 等需要網路的功能離線時自動停用，離線 QR 分享仍可用。
+
+設定頁的「離線資料管理」只列出裝置上有的活動，近期活動標示「自動保留」，其他顯示剩餘保留天數並可手動移除。完整細節與邊角情境見 [`docs/OFFLINE.md`](docs/OFFLINE.md)。
+
+---
+
+## 🔗 分享機制
+
+行程分享有兩條路，編碼格式相同，差別只在傳遞方式：
+
+**1. 編碼**（`src/utils/url.js`）：一個音樂祭的行程壓成一行純文字，只記舞台名稱與每場的開始時間（`MMDDHHmm`），接收端用自己裝置上的時間表還原完整資訊。
+
+```
+<festivalId>;<舞台>:<MMDDHHmm>,<MMDDHHmm>;<舞台>:<MMDDHHmm>
+例：wind-top-fest-2026;風神舞台:06271200,06271340;雷神舞台:06271100
+```
+
+**2a. 雲端分享（短網址）**：把上面的文字交給獨立的短網址服務 [littlechintw/Short-Text-Tool](https://github.com/littlechintw/Short-Text-Tool)。後端是一支 Google Apps Script，資料存在 Google Sheet，API 只有兩個動作：
+
+| 動作 | Request（`POST`，`Content-Type: text/plain` 避免 CORS preflight） | Response |
+|------|------|------|
+| 建立 | `{ "action": "create", "content": "<編碼文字>" }` | `{ "err": false, "s": "<3 碼短碼>" }` |
+| 查詢 | `{ "action": "get", "short_id": "<短碼>" }` | `{ "err": false, "t": "<原文字>" }` |
+
+本 App 產生的分享連結是 `https://<本站網域>/<短碼>`；朋友點開後，路由 `/:shortId` 向同一支 GAS 查回原文字、按需下載該音樂祭的時間表、解碼後預覽並匯入。短碼長度 3、內容上限 2000 字元，雙方都需要網路。GAS 端點寫在 `src/utils/shortener.js`，可用 `VITE_GAS_URL` 覆寫成自己的部署（GAS 原始碼在該 repo 的 `GAS/` 目錄）。
+
+**2b. 離線分享（QR Code）**：同一段文字直接轉成 QR Code，朋友在「行程」頁用相機掃描，雙方都不需要網路。接收端若沒有該音樂祭的時間表，會在有網路時自動下載一次。
+
+收到分享的人可以選「取代目前行程」或「另存為新行程」，另存的行程列在「行程 → 朋友的分享」。
 
 ---
 

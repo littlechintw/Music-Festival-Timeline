@@ -9,26 +9,18 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
 
-// 在 build 階段讀 public/festivals/index.json，
-// 只把 status==='upcoming' 的活動加進 precache manifest。
-// archived 活動不會自動下載，使用者要的話可從 Settings 手動存。
+// 在 build 階段讀 public/festivals/index.json，只把「索引」放進 precache。
+// 各場活動的 JSON 刻意不 precache：要下載哪些由執行期規則決定
+// （近期活動自動下載、點開才下載、30 天沒用就移除），這樣使用者在設定頁移除的資料才不會被 SW 硬塞回來。
 function buildFestivalManifest() {
   const indexPath = resolve(__dirname, 'public/festivals/index.json');
   if (!existsSync(indexPath)) {
     console.warn('[pwa] public/festivals/index.json not found — run `npm run build:festivals` first.');
     return [];
   }
-  /** @type {{indexHash: string, festivals: Array<{file:string, hash:string, status:string}>}} */
+  /** @type {{indexHash: string}} */
   const idx = JSON.parse(readFileSync(indexPath, 'utf-8'));
-  /** @type {Array<{url:string, revision:string|null}>} */
-  const entries = [{ url: 'festivals/index.json', revision: idx.indexHash }];
-  for (const f of idx.festivals || []) {
-    if (f.status === 'upcoming') {
-      entries.push({ url: `festivals/${f.file}`, revision: f.hash });
-    }
-  }
-  console.log(`[pwa] precaching ${entries.length} festival manifest entries`);
-  return entries;
+  return [{ url: 'festivals/index.json', revision: idx.indexHash }];
 }
 
 export default defineConfig({
@@ -83,8 +75,6 @@ export default defineConfig({
         ],
       },
       injectManifest: {
-        // 允許大檔（大港 4.2MB）進 precache；upcoming 才會被選中
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         // 不把 manifest.webmanifest 放進 precache：Chrome 會定期重新抓 manifest 比對已安裝的 App 身分，
         // 若 SW 回的是舊版快取、網路又是新版，兩邊交替就會反覆跳「圖示已更新，要檢查新圖示嗎？」。
         // 已安裝的 App 離線時不需要 manifest，所以拿掉沒有離線代價。

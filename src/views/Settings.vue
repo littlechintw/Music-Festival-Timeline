@@ -121,18 +121,10 @@
 
     <AccordionSection title="離線資料管理">
       <template #icon><MdIcon name="wifi_tethering" /></template>
-      <label class="flex items-center justify-between cursor-pointer group mb-4">
-        <div class="pr-4">
-          <h3 class="font-medium text-gray-800 dark:text-gray-200">自動將即將到來的活動存離線</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            關掉後改成完全手動，已存的資料不會被自動移除。
-          </p>
-        </div>
-        <md-switch
-          :selected="offlineStore.mode === 'auto'"
-          @change="(e) => offlineStore.setMode(e.target.selected ? 'auto' : 'manual')"
-        ></md-switch>
-      </label>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">
+        近期活動（開始前 {{ AUTO_FUTURE_DAYS }} 天到結束後 {{ AUTO_PAST_DAYS }} 天）會自動下載到手機；
+        其他音樂祭在你點開時才下載。離線資料保留 {{ RETENTION_DAYS }} 天，期間有再打開就重新計算，過期自動移除。
+      </p>
 
       <div class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-3 flex-wrap">
         <span v-if="usage">
@@ -148,9 +140,12 @@
       <div v-if="indexEntries.length === 0" class="text-sm text-gray-400 py-4">
         尚未載入活動索引，請先連線。
       </div>
+      <div v-else-if="offlineEntries.length === 0" class="text-sm text-gray-400 py-4">
+        目前沒有已下載的音樂祭。點開任何一場活動就會下載到手機。
+      </div>
       <ul v-else class="divide-y divide-gray-100 dark:divide-gray-700 -mt-1">
         <li
-          v-for="entry in indexEntries"
+          v-for="entry in offlineEntries"
           :key="entry.festivalId"
           class="py-3 flex items-start justify-between gap-3"
         >
@@ -163,29 +158,22 @@
             >
               <span>{{ formatDateShort(entry.startTime) }}</span>
               <span>{{ formatBytes(entry.bytes) }}</span>
-              <span :class="statusInfo(entry).class">{{ statusInfo(entry).label }}</span>
-              <span v-if="entry.status === 'upcoming'" class="text-blue-700 dark:text-blue-300">即將到來</span>
+              <span v-if="hasUpdate(entry)" class="text-amber-700 dark:text-amber-300 font-medium">有新版</span>
+              <span v-if="isAuto(entry)" class="text-blue-700 dark:text-blue-300">近期活動・自動保留</span>
+              <span v-else>{{ retentionLabel(entry) }}</span>
             </div>
           </div>
           <div class="flex gap-2 items-center shrink-0">
             <button
-              v-if="!isCached(entry)"
-              class="px-3 py-1 text-xs rounded bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] disabled:opacity-50"
-              :disabled="busyIds.has(entry.festivalId) || !navigatorOnline"
-              @click="onDownload(entry)"
-            >
-              {{ busyIds.has(entry.festivalId) ? '下載中…' : '存到離線' }}
-            </button>
-            <button
-              v-else-if="hasUpdate(entry)"
+              v-if="hasUpdate(entry)"
               class="px-3 py-1 text-xs rounded bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)] disabled:opacity-50"
               :disabled="busyIds.has(entry.festivalId) || !navigatorOnline"
               @click="onDownload(entry)"
             >
-              更新
+              {{ busyIds.has(entry.festivalId) ? '下載中…' : '更新' }}
             </button>
             <button
-              v-if="isCached(entry)"
+              v-if="!isAuto(entry)"
               class="px-3 py-1 text-xs rounded border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] disabled:opacity-50"
               :disabled="busyIds.has(entry.festivalId)"
               @click="onRemove(entry)"
@@ -388,6 +376,13 @@ import { useNotificationStore } from '../stores/notifications';
 import { useFestivalStore } from '../stores/festival';
 import { useOfflineStore } from '../stores/offline';
 import { useOfflineActions, formatBytes } from '../composables/useOfflineActions';
+import {
+  isInAutoWindow,
+  AUTO_FUTURE_DAYS,
+  AUTO_PAST_DAYS,
+  RETENTION_DAYS,
+  loadLocalHashes,
+} from '../composables/useFestivals';
 import { useTheme } from '../composables/useTheme';
 import { useInstallPrompt } from '../composables/useInstallPrompt';
 import { useToast } from '../composables/useToast';
@@ -405,7 +400,7 @@ const settingsStore = useSettingsStore();
 const notificationStore = useNotificationStore();
 const festivalStore = useFestivalStore();
 const offlineStore = useOfflineStore();
-const { usage, refreshUsage, download, remove, getCachedHashMap } = useOfflineActions();
+const { usage, refreshUsage, download, remove } = useOfflineActions();
 const { pref, setPref } = useTheme();
 const { standalone, canPromptNatively, promptInstall } = useInstallPrompt();
 const showInstallGuide = ref(false);
@@ -437,16 +432,38 @@ const notifStatusClass = computed(() => {
   return 'text-gray-500';
 });
 
-const cachedHashes = ref(getCachedHashMap());
+const cachedHashes = ref(loadLocalHashes());
 const busyIds = ref(new Set());
 const syncing = ref(false);
 const navigatorOnline = ref(typeof navigator === 'undefined' ? true : navigator.onLine);
 
 function refreshHashes() {
-  cachedHashes.value = getCachedHashMap();
+  cachedHashes.value = loadLocalHashes();
 }
 
-const indexEntries = computed(() => festivalStore.index?.festivals || []);
+const indexEntries = computed(() => festivalStore.indexEntries);
+// 只列出裝置上有的活動；近期活動排前面，其餘依最後使用時間
+const offlineEntries = computed(() =>
+  indexEntries.value
+    .filter((e) => isCached(e))
+    .sort((a, b) => {
+      const aAuto = isAuto(a) ? 0 : 1;
+      const bAuto = isAuto(b) ? 0 : 1;
+      if (aAuto !== bAuto) return aAuto - bAuto;
+      return offlineStore.lastUsedAt(b.festivalId) - offlineStore.lastUsedAt(a.festivalId);
+    })
+);
+
+function isAuto(entry) {
+  return isInAutoWindow(entry);
+}
+
+function retentionLabel(entry) {
+  const exp = offlineStore.expiresAt(entry.festivalId);
+  if (!exp) return '';
+  const days = Math.max(0, Math.ceil((exp - Date.now()) / 86400000));
+  return days === 0 ? '今天到期' : `再保留 ${days} 天`;
+}
 
 const lastSyncedLabel = computed(() => {
   if (!festivalStore.lastSyncedAt) return '';
@@ -466,12 +483,6 @@ function hasUpdate(entry) {
   return isCached(entry) && cachedHashes.value[entry.festivalId] !== entry.hash;
 }
 
-function statusInfo(entry) {
-  if (!isCached(entry)) return { label: '未離線', class: 'text-gray-500' };
-  if (hasUpdate(entry)) return { label: '可更新', class: 'text-amber-700 dark:text-amber-300 font-medium' };
-  return { label: '已離線', class: 'text-green-700 dark:text-green-300 font-medium' };
-}
-
 function formatDateShort(iso) {
   return new Date(iso).toLocaleDateString('zh-TW', {
     year: 'numeric',
@@ -486,7 +497,7 @@ async function onDownload(entry) {
   try {
     await download(entry);
     refreshHashes();
-    showToast({ message: `已存到離線：${entry.name}`, kind: 'success' });
+    showToast({ message: `已更新：${entry.name}`, kind: 'success' });
   } catch (err) {
     console.error(err);
     showToast({ message: '下載失敗，請稍後再試', kind: 'error' });
@@ -497,7 +508,9 @@ async function onDownload(entry) {
 }
 
 async function onRemove(entry) {
-  const ok = await confirm(`確定要從離線快取中移除「${entry.name}」嗎？`, { confirmLabel: '移除' });
+  const ok = await confirm(`確定要從手機移除「${entry.name}」的離線資料嗎？之後點開它時會重新下載。`, {
+    confirmLabel: '移除',
+  });
   if (!ok) return;
   busyIds.value.add(entry.festivalId);
   busyIds.value = new Set(busyIds.value);

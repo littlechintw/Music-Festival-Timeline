@@ -17,7 +17,10 @@
       </template>
     </PageHeader>
 
-    <div v-if="!festival" class="text-[var(--md-sys-color-on-surface-variant)]">找不到音樂祭</div>
+    <div v-if="status === 'loading'" class="text-[var(--md-sys-color-on-surface-variant)]" aria-busy="true">
+      載入中...
+    </div>
+    <FestivalUnavailable v-else-if="!festival" :status="status" @retry="retry" />
     <div v-else-if="!hasImage" class="text-center py-12">
       <MdIcon name="map" class="mb-3" style="--md-icon-size: 3rem" />
       <p class="text-[var(--md-sys-color-on-surface-variant)]">此音樂祭尚未提供場地地圖</p>
@@ -61,17 +64,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { useFestivalStore } from '../stores/festival';
+import { computed, ref } from 'vue';
+import { useFestivalPage } from '../composables/useFestivalPage';
 import PageHeader from '../components/PageHeader.vue';
 import MdIcon from '../components/MdIcon.vue';
+import FestivalUnavailable from '../components/FestivalUnavailable.vue';
 
 const MAX_ZOOM = 3;
 
-const route = useRoute();
-const festivalStore = useFestivalStore();
-const festival = computed(() => festivalStore.getById(route.params.id));
+const { festival, status, retry } = useFestivalPage();
 const hasImage = computed(() => !!festival.value?.map?.image);
 
 const zoom = ref(1);
@@ -93,10 +94,6 @@ const mapsUrl = computed(() => {
   if (!loc) return '#';
   const q = loc.latitude && loc.longitude ? `${loc.latitude},${loc.longitude}` : loc.address;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
-});
-
-onMounted(() => {
-  festivalStore.ensureLoaded();
 });
 </script>
 

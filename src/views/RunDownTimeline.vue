@@ -1,10 +1,11 @@
 <template>
   <div class="p-4 max-w-full mx-auto">
-    <div v-if="festivalStore.loading && !festival" class="text-[var(--md-sys-color-on-surface-variant)]">
+    <div v-if="status === 'loading'" class="text-[var(--md-sys-color-on-surface-variant)]" aria-busy="true">
       載入中...
     </div>
     <div v-else-if="!festival">
-      <PageHeader title="找不到此音樂祭" back="/" />
+      <PageHeader :title="entry?.name || '音樂祭'" back="/" />
+      <FestivalUnavailable :status="status" @retry="retry" />
     </div>
     <div v-else>
       <PageHeader
@@ -67,10 +68,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useFestivalStore } from '../stores/festival';
+import { computed, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { usePlanStore } from '../stores/plan';
+import { useFestivalPage } from '../composables/useFestivalPage';
 import { useSettingsStore } from '../stores/settings';
 import { useNowTicker } from '../composables/useNowTicker';
 import { makePerfId } from '../utils/perfId';
@@ -80,10 +81,9 @@ import TimelineGrid from '../components/TimelineGrid.vue';
 import PageHeader from '../components/PageHeader.vue';
 import DayChips from '../components/DayChips.vue';
 import MdIcon from '../components/MdIcon.vue';
+import FestivalUnavailable from '../components/FestivalUnavailable.vue';
 
-const route = useRoute();
 const router = useRouter();
-const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
 const { now } = useNowTicker(1000);
@@ -93,7 +93,7 @@ const gridRef = ref(null);
 const selectedDay = ref('');
 const todayKey = new Date().toDateString();
 
-const festival = computed(() => festivalStore.getById(route.params.id));
+const { festival, entry, status, retry } = useFestivalPage();
 
 const festivalDays = computed(() => {
   if (!festival.value) return [];
@@ -177,8 +177,4 @@ function onPerfClick({ perf }) {
     showToast({ message: `已加入：${perf.artist}`, kind: 'success', icon: '✓' });
   }
 }
-
-onMounted(() => {
-  festivalStore.ensureLoaded();
-});
 </script>

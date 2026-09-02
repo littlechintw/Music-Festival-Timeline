@@ -1,77 +1,96 @@
 // @ts-check
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
+import { RETENTION_DAYS } from '../composables/useFestivals';
 
-const MODE_KEY = 'offline_mode';
-const PINNED_KEY = 'offline_pinned';
+const LAST_USED_KEY = 'offline_last_used_v1';
+// 舊版（auto/manual + pin 清單）的 key，升級時把 pin 過的視為「剛用過」，然後清掉
+const LEGACY_MODE_KEY = 'offline_mode';
+const LEGACY_PINNED_KEY = 'offline_pinned';
+const DAY_MS = 86400000;
 
-/** @typedef {'auto' | 'manual'} OfflineMode */
-
-function readMode() {
+/** @returns {Record<string, number>} festivalId → 最後使用時間（epoch ms） */
+function readLastUsed() {
+  /** @type {Record<string, number>} */
+  let map = {};
   try {
-    const v = localStorage.getItem(MODE_KEY);
-    return v === 'manual' ? 'manual' : 'auto';
+    const raw = localStorage.getItem(LAST_USED_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    if (parsed && typeof parsed === 'object') map = parsed;
   } catch {
-    return 'auto';
+    map = {};
   }
+  try {
+    const legacy = localStorage.getItem(LEGACY_PINNED_KEY);
+    if (legacy) {
+      const ids = JSON.parse(legacy);
+      if (Array.isArray(ids)) for (const id of ids) map[id] = map[id] || Date.now();
+      localStorage.removeItem(LEGACY_PINNED_KEY);
+      localStorage.removeItem(LEGACY_MODE_KEY);
+    }
+  } catch {}
+  return map;
 }
 
-function readPinned() {
-  try {
-    const raw = localStorage.getItem(PINNED_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(arr) ? arr : []);
-  } catch {
-    return new Set();
-  }
-}
-
+/**
+ * 記錄每場活動「最後一次被使用」的時間，決定離線資料要不要繼續留著。
+ * 「使用」= 打開該活動的詳情／時間軸／地圖，或第一次被下載進裝置。
+ */
 export const useOfflineStore = defineStore('offline', () => {
-  /** @type {import('vue').Ref<OfflineMode>} */
-  const mode = ref(readMode());
-  /** @type {import('vue').Ref<Set<string>>} */
-  const pinned = ref(readPinned());
-
-  watch(mode, (v) => {
-    try {
-      localStorage.setItem(MODE_KEY, v);
-    } catch {}
-  });
+  /** @type {import('vue').Ref<Record<string, number>>} */
+  const lastUsed = ref(readLastUsed());
 
   watch(
-    pinned,
+    lastUsed,
     (v) => {
       try {
-        localStorage.setItem(PINNED_KEY, JSON.stringify([...v]));
+        localStorage.setItem(LAST_USED_KEY, JSON.stringify(v));
       } catch {}
     },
     { deep: true }
   );
 
-  const pinnedList = computed(() => [...pinned.value]);
-
   /** @param {string} id */
-  function pin(id) {
-    pinned.value.add(id);
-    // 觸發 deep watcher（Set 內部變動 Vue 偵測不到）
-    pinned.value = new Set(pinned.value);
+  function touch(id) {
+    if (!id) return;
+    lastUsed.value = { ...lastUsed.value, [id]: Date.now() };
   }
 
-  /** @param {string} id */
-  function unpin(id) {
-    pinned.value.delete(id);
-    pinned.value = new Set(pinned.value);
-  }
-
-  /** @param {OfflineMode} m */
-  function setMode(m) {
-    mode.value = m;
+  /** 第一次下載時補記錄，之後不覆蓋（保留真實的最後使用時間） @param {string} id */
+  function touchIfMissing(id) {
+    if (!id || lastUsed.value[id]) return;
+    touch(id);
   }
 
   /** @param {string} id */
-  function isPinned(id) {
-    return pinned.value.has(id);
+  function forget(id) {
+    if (!(id in lastUsed.value)) return;
+    const next = { ...lastUsed.value };
+    delete next[id];
+    lastUsed.value = next;
   }
 
-  return { mode, pinned, pinnedList, pin, unpin, setMode, isPinned };
+  /** @param {string} id */
+  function lastUsedAt(id) {
+    return lastUsed.value[id] || 0;
+  }
+
+  /** @param {string} id */
+  function expiresAt(id) {
+    const at = lastUsedAt(id);
+    return at ? at + RETENTION_DAYS * DAY_MS : 0;
+  }
+
+  /**
+   * @param {string} id
+   * @param {number} [now]
+   */
+  function isRecentlyUsed(id, now = Date.now()) {
+    const exp = expiresAt(id);
+    return exp > 0 && now < exp;
+  }
+
+  const usedIds = computed(() => Object.keys(lastUsed.value));
+
+  return { lastUsed, usedIds, touch, touchIfMissing, forget, lastUsedAt, expiresAt, isRecentlyUsed };
 });

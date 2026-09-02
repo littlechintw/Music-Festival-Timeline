@@ -15,8 +15,8 @@
 // - periodicsync('festival-data-sync')：背景重抓 festival index。
 // - notificationclick：把使用者帶回 PWA（或 focus 現有 tab）。
 
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
+import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
@@ -38,6 +38,15 @@ precacheAndRoute(PRECACHE_MANIFEST);
 
 // 舊版本的 precache 換版本後就清掉，避免 quota 卡住。
 cleanupOutdatedCaches();
+
+// SPA 導覽後備：離線時打開 /plan、/festival/xxx 這類深層網址（重新整理、通知點擊、主畫面捷徑），
+// 一律回 precache 的 index.html，交給 vue-router 處理。沒有這條，離線只有 / 能開。
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('/index.html'), {
+    // 資料與靜態檔不是 SPA 頁面，不要被吃掉
+    denylist: [/^\/festivals\//, /^\/assets\//, /\.[a-z0-9]+$/i],
+  })
+);
 
 // 2) 非 precache 的節慶 JSON（archived / 手動存離線）：StaleWhileRevalidate。
 //    precache 命中的 upcoming JSON 不會走到這裡（precacheAndRoute 先接）。

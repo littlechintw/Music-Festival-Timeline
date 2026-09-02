@@ -1,6 +1,12 @@
 // @ts-check
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { loadLocalHashes, syncFestivals } from './useFestivals';
+import {
+  loadLocalHashes,
+  syncFestivals,
+  isInAutoWindow,
+  AUTO_FUTURE_DAYS,
+  AUTO_PAST_DAYS,
+} from './useFestivals';
 
 const VALID_FESTIVAL = {
   festivalId: 'mega-2026',
@@ -19,6 +25,19 @@ const VALID_FESTIVAL = {
   ],
 };
 
+const ENTRY = {
+  festivalId: 'mega-2026',
+  name: '大港',
+  startTime: VALID_FESTIVAL.startTime,
+  endTime: VALID_FESTIVAL.endTime,
+  file: 'mega-2026.json',
+  hash: 'h1',
+  bytes: 1000,
+  status: /** @type {const} */ ('upcoming'),
+};
+
+const INDEX = { version: 2, generatedAt: 'x', indexHash: 'i', festivals: [ENTRY] };
+
 function mockFetch(routes) {
   // @ts-ignore
   globalThis.fetch = vi.fn(async (url) => {
@@ -35,188 +54,109 @@ function mockFetch(routes) {
   });
 }
 
+function fetchedUrls() {
+  // @ts-ignore
+  return globalThis.fetch.mock.calls.map((c) => c[0]);
+}
+
+describe('isInAutoWindow', () => {
+  const now = new Date('2026-06-01T00:00:00+08:00').getTime();
+  const day = 86400000;
+  const entry = (startOffsetDays, durationDays = 1) => ({
+    startTime: new Date(now + startOffsetDays * day).toISOString(),
+    endTime: new Date(now + (startOffsetDays + durationDays) * day).toISOString(),
+  });
+
+  it('includes festivals starting within the next month', () => {
+    expect(isInAutoWindow(entry(AUTO_FUTURE_DAYS - 1), now)).toBe(true);
+    expect(isInAutoWindow(entry(AUTO_FUTURE_DAYS + 1), now)).toBe(false);
+  });
+
+  it('includes festivals that ended within the past two weeks', () => {
+    expect(isInAutoWindow(entry(-(AUTO_PAST_DAYS - 1) - 1), now)).toBe(true);
+    expect(isInAutoWindow(entry(-(AUTO_PAST_DAYS + 2) - 1), now)).toBe(false);
+  });
+
+  it('includes festivals happening right now', () => {
+    expect(isInAutoWindow(entry(-1, 3), now)).toBe(true);
+  });
+
+  it('rejects invalid dates', () => {
+    expect(isInAutoWindow({ startTime: 'nope', endTime: 'nope' }, now)).toBe(false);
+  });
+});
+
 describe('syncFestivals', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('fetches all upcoming festivals in auto mode and stores their hashes', async () => {
-    mockFetch({
-      '/festivals/index.json': {
-        version: 2,
-        generatedAt: 'x',
-        indexHash: 'i',
-        festivals: [
-          {
-            festivalId: 'mega-2026',
-            name: '大港',
-            startTime: VALID_FESTIVAL.startTime,
-            endTime: VALID_FESTIVAL.endTime,
-            file: 'mega-2026.json',
-            hash: 'h1',
-            bytes: 1000,
-            status: 'upcoming',
-          },
-        ],
-      },
-      '/festivals/mega-2026.json': VALID_FESTIVAL,
-    });
+  it('downloads festivals that should be kept and stores their hashes', async () => {
+    mockFetch({ '/festivals/index.json': INDEX, '/festivals/mega-2026.json': VALID_FESTIVAL });
 
-    const result = await syncFestivals({
-      mode: 'auto',
-      pinnedIds: new Set(),
-      getCached: () => undefined,
-    });
+    const result = await syncFestivals({ shouldKeep: () => true, getCached: () => undefined });
 
     expect(result.festivals).toHaveLength(1);
     expect(result.festivals[0].festivalId).toBe('mega-2026');
     expect(loadLocalHashes()['mega-2026']).toBe('h1');
+    expect(result.evicted).toEqual([]);
   });
 
-  it('skips fetch when local hash matches', async () => {
+  it('skips the network when the local hash matches and data is in memory', async () => {
     localStorage.setItem('festival_hashes_v1', JSON.stringify({ 'mega-2026': 'h1' }));
-    mockFetch({
-      '/festivals/index.json': {
-        version: 2,
-        generatedAt: 'x',
-        indexHash: 'i',
-        festivals: [
-          {
-            festivalId: 'mega-2026',
-            name: '大港',
-            startTime: VALID_FESTIVAL.startTime,
-            endTime: VALID_FESTIVAL.endTime,
-            file: 'mega-2026.json',
-            hash: 'h1',
-            bytes: 1000,
-            status: 'upcoming',
-          },
-        ],
-      },
-    });
+    mockFetch({ '/festivals/index.json': INDEX });
 
     const cachedCopy = VALID_FESTIVAL;
-    const result = await syncFestivals({
-      mode: 'auto',
-      pinnedIds: new Set(),
-      getCached: () => cachedCopy,
-    });
+    const result = await syncFestivals({ shouldKeep: () => true, getCached: () => cachedCopy });
 
     expect(result.festivals[0]).toBe(cachedCopy);
-    // 不應該 fetch festival JSON
-    // @ts-ignore
-    const calls = globalThis.fetch.mock.calls.map((c) => c[0]);
-    expect(calls).not.toContain('/festivals/mega-2026.json');
+    expect(fetchedUrls()).not.toContain('/festivals/mega-2026.json');
   });
 
-  it('auto mode still fetches archived festivals (so list can show past ones)', async () => {
-    const archived = {
-      ...VALID_FESTIVAL,
-      festivalId: 'old-2024',
-      name: '過去活動',
-      startTime: '2024-01-01T00:00:00+08:00',
-      endTime: '2024-01-02T00:00:00+08:00',
-    };
-    mockFetch({
-      '/festivals/index.json': {
-        version: 2,
-        generatedAt: 'x',
-        indexHash: 'i',
-        festivals: [
-          {
-            festivalId: 'old-2024',
-            name: '過去活動',
-            startTime: '2024-01-01T00:00:00+08:00',
-            endTime: '2024-01-02T00:00:00+08:00',
-            file: 'old-2024.json',
-            hash: 'h0',
-            bytes: 100,
-            status: 'archived',
-          },
-        ],
-      },
-      '/festivals/old-2024.json': archived,
-    });
+  it('re-downloads when the index hash changed', async () => {
+    localStorage.setItem('festival_hashes_v1', JSON.stringify({ 'mega-2026': 'old' }));
+    mockFetch({ '/festivals/index.json': INDEX, '/festivals/mega-2026.json': VALID_FESTIVAL });
 
-    const result = await syncFestivals({
-      mode: 'auto',
-      pinnedIds: new Set(),
-      getCached: () => undefined,
-    });
+    await syncFestivals({ shouldKeep: () => true, getCached: () => VALID_FESTIVAL });
 
-    expect(result.festivals).toHaveLength(1);
-    expect(result.festivals[0].festivalId).toBe('old-2024');
+    expect(fetchedUrls()).toContain('/festivals/mega-2026.json');
+    expect(loadLocalHashes()['mega-2026']).toBe('h1');
   });
 
-  it('manual mode skips archived festivals not in pinned set', async () => {
-    mockFetch({
-      '/festivals/index.json': {
-        version: 2,
-        generatedAt: 'x',
-        indexHash: 'i',
-        festivals: [
-          {
-            festivalId: 'old-2024',
-            name: '過去活動',
-            startTime: '2024-01-01T00:00:00+08:00',
-            endTime: '2024-01-02T00:00:00+08:00',
-            file: 'old-2024.json',
-            hash: 'h0',
-            bytes: 100,
-            status: 'archived',
-          },
-        ],
-      },
-    });
+  it('does not download festivals that should not be kept', async () => {
+    mockFetch({ '/festivals/index.json': INDEX, '/festivals/mega-2026.json': VALID_FESTIVAL });
 
-    const result = await syncFestivals({
-      mode: 'manual',
-      pinnedIds: new Set(),
-      getCached: () => undefined,
-    });
+    const result = await syncFestivals({ shouldKeep: () => false, getCached: () => undefined });
 
     expect(result.festivals).toHaveLength(0);
+    expect(fetchedUrls()).not.toContain('/festivals/mega-2026.json');
+    expect(loadLocalHashes()).toEqual({});
   });
 
-  it('downloads archived festivals when pinned in manual mode', async () => {
-    mockFetch({
-      '/festivals/index.json': {
-        version: 2,
-        generatedAt: 'x',
-        indexHash: 'i',
-        festivals: [
-          {
-            festivalId: 'mega-2026',
-            name: '大港',
-            startTime: VALID_FESTIVAL.startTime,
-            endTime: VALID_FESTIVAL.endTime,
-            file: 'mega-2026.json',
-            hash: 'h1',
-            bytes: 1000,
-            status: 'archived',
-          },
-        ],
-      },
-      '/festivals/mega-2026.json': VALID_FESTIVAL,
-    });
+  it('evicts previously downloaded festivals that should no longer be kept', async () => {
+    localStorage.setItem('festival_hashes_v1', JSON.stringify({ 'mega-2026': 'h1' }));
+    mockFetch({ '/festivals/index.json': INDEX });
 
-    const result = await syncFestivals({
-      mode: 'manual',
-      pinnedIds: new Set(['mega-2026']),
-      getCached: () => undefined,
-    });
+    const result = await syncFestivals({ shouldKeep: () => false, getCached: () => VALID_FESTIVAL });
+
+    expect(result.festivals).toHaveLength(0);
+    expect(result.evicted).toEqual(['mega-2026']);
+    expect(loadLocalHashes()).toEqual({});
+  });
+
+  it('keeps the in-memory copy when a refresh fails', async () => {
+    localStorage.setItem('festival_hashes_v1', JSON.stringify({ 'mega-2026': 'old' }));
+    mockFetch({ '/festivals/index.json': INDEX, '/festivals/mega-2026.json': 'fail' });
+
+    const result = await syncFestivals({ shouldKeep: () => true, getCached: () => VALID_FESTIVAL });
 
     expect(result.festivals).toHaveLength(1);
-    expect(loadLocalHashes()['mega-2026']).toBe('h1');
+    expect(result.errors).toContain('fetch:mega-2026.json');
   });
 
   it('returns errors when index fetch fails', async () => {
     mockFetch({ '/festivals/index.json': 'fail' });
-    const result = await syncFestivals({
-      mode: 'auto',
-      pinnedIds: new Set(),
-      getCached: () => undefined,
-    });
+    const result = await syncFestivals({ shouldKeep: () => true, getCached: () => undefined });
     expect(result.index).toBeNull();
     expect(result.errors).toContain('index-unavailable');
   });

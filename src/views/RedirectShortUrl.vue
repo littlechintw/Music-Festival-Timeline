@@ -42,7 +42,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFestivalStore } from '../stores/festival';
-import { decodePlanFromText } from '../utils/url';
+import { decodePlanFromText, peekFestivalId } from '../utils/url';
 import { getShortenerUrl } from '../utils/shortener';
 import MdIcon from '../components/MdIcon.vue';
 import SharedPlanReceiver from '../components/SharedPlanReceiver.vue';
@@ -82,6 +82,8 @@ onMounted(async () => {
     }
 
     const text = decodeURIComponent(data.t);
+    // 分享的活動可能不在這台裝置上，先按需下載
+    await festivalStore.ensureFestival(peekFestivalId(text));
     const result = decodePlanFromText(text, festivalStore.getFestivals);
     if (!result.festival) {
       error.value = '找不到對應的音樂祭資料，可能尚未上架';

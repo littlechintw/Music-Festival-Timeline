@@ -49,7 +49,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useFestivalStore } from '../stores/festival';
-import { decodePlanFromText } from '../utils/url';
+import { decodePlanFromText, peekFestivalId } from '../utils/url';
 import { useQrScanner } from '../composables/useQrScanner';
 import BaseModal from './BaseModal.vue';
 import MdIcon from './MdIcon.vue';
@@ -64,15 +64,35 @@ const { videoEl } = scanner;
 const decoded = ref(null);
 const scanFeedback = ref('');
 
-function handleDetected(text) {
-  const result = decodePlanFromText(text, festivalStore.getFestivals);
-  if (!result.festival || result.plan.length === 0) {
-    scanFeedback.value = '無法辨識這個 QR Code，請確認是本 App 產生的離線分享行程';
-    return; // 繼續掃描，不要卡住
+let resolving = false;
+
+async function handleDetected(text) {
+  if (resolving) return;
+  resolving = true;
+  try {
+    // 朋友分享的活動可能不在我的裝置上：先按需下載（有網路才會成功），再解碼
+    const festId = peekFestivalId(text);
+    if (festId && !festivalStore.getById(festId)) {
+      scanFeedback.value = '正在載入這場音樂祭的資料…';
+      await festivalStore.ensureFestival(festId);
+    }
+    const result = decodePlanFromText(text, festivalStore.getFestivals);
+    if (!result.festival) {
+      scanFeedback.value = festivalStore.getEntry(festId)
+        ? '這場音樂祭還沒下載到手機，需要連上網路一次才能讀取'
+        : '無法辨識這個 QR Code，請確認是本 App 產生的離線分享行程';
+      return; // 繼續掃描，不要卡住
+    }
+    if (result.plan.length === 0) {
+      scanFeedback.value = '這份分享裡沒有可用的演出';
+      return;
+    }
+    scanFeedback.value = '';
+    scanner.stop();
+    decoded.value = result;
+  } finally {
+    resolving = false;
   }
-  scanFeedback.value = '';
-  scanner.stop();
-  decoded.value = result;
 }
 
 function retry() {

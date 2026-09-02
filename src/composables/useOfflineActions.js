@@ -1,11 +1,12 @@
 // @ts-check
 import { ref, onMounted } from 'vue';
-import { downloadFestivalToCache, removeFestivalFromCache, loadLocalHashes } from './useFestivals';
+import { useFestivalStore } from '../stores/festival';
 
 /**
  * 提供 Settings 頁面操作離線快取的動作 + 用量估算。
  */
 export function useOfflineActions() {
+  const festivalStore = useFestivalStore();
   const usage = ref(/** @type {{usage:number, quota:number} | null} */ (null));
 
   async function refreshUsage() {
@@ -26,23 +27,19 @@ export function useOfflineActions() {
 
   onMounted(refreshUsage);
 
-  /** @param {import('./useFestivals').FestivalIndexEntry} entry */
+  /** 重新下載（更新）一場活動 @param {import('./useFestivals').FestivalIndexEntry} entry */
   async function download(entry) {
-    await downloadFestivalToCache(entry);
+    await festivalStore.refreshFestival(entry.festivalId);
     await refreshUsage();
   }
 
   /** @param {import('./useFestivals').FestivalIndexEntry} entry */
   async function remove(entry) {
-    await removeFestivalFromCache(entry);
+    await festivalStore.removeFestival(entry.festivalId);
     await refreshUsage();
   }
 
-  function getCachedHashMap() {
-    return loadLocalHashes();
-  }
-
-  return { usage, refreshUsage, download, remove, getCachedHashMap };
+  return { usage, refreshUsage, download, remove };
 }
 
 /**

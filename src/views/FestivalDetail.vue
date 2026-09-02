@@ -1,15 +1,13 @@
 <template>
   <div class="p-4 max-w-3xl mx-auto">
-    <div v-if="festivalStore.loading && !festival" class="space-y-3" aria-busy="true">
+    <div v-if="pageStatus === 'loading'" class="space-y-3" aria-busy="true">
       <div class="h-8 w-2/3 rounded bg-[var(--md-sys-color-surface-container)] animate-pulse" />
       <div class="h-24 rounded-xl bg-[var(--md-sys-color-surface-container)] animate-pulse" />
     </div>
 
-    <div v-else-if="!festival" class="text-center py-12">
-      <PageHeader title="找不到此音樂祭" back="/" />
-      <p class="text-sm text-[var(--md-sys-color-on-surface-variant)]">
-        可能已下架，或你還沒連線下載過這份資料。
-      </p>
+    <div v-else-if="!festival">
+      <PageHeader :title="entry?.name || '音樂祭'" back="/" />
+      <FestivalUnavailable :status="pageStatus" @retry="retry" />
     </div>
 
     <div v-else>
@@ -164,10 +162,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch, ref } from 'vue';
+import { computed, watch, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useFestivalStore } from '../stores/festival';
 import { usePlanStore } from '../stores/plan';
+import { useFestivalPage } from '../composables/useFestivalPage';
 import { useSettingsStore } from '../stores/settings';
 import { formatTime, formatTimeRange, formatDateRange, festivalStatus, WEEKDAYS_ZH } from '../utils/format';
 import { makePerfId } from '../utils/perfId';
@@ -178,15 +176,16 @@ import MdIcon from '../components/MdIcon.vue';
 import PageHeader from '../components/PageHeader.vue';
 import DayChips from '../components/DayChips.vue';
 import StatusChip from '../components/StatusChip.vue';
+import FestivalUnavailable from '../components/FestivalUnavailable.vue';
 
 const route = useRoute();
 const router = useRouter();
-const festivalStore = useFestivalStore();
 const planStore = usePlanStore();
 const settingsStore = useSettingsStore();
 const { showToast } = useToast();
 
-const festival = computed(() => festivalStore.getById(route.params.id));
+// 活動的載入狀態；`status` 這個名字留給下面的「進行中／已結束」徽章
+const { festival, entry, status: pageStatus, retry } = useFestivalPage();
 const headerStyle = computed(() => themeCssVars(festival.value?.theme));
 const status = computed(() =>
   festival.value
@@ -305,8 +304,4 @@ watch(
   },
   { immediate: true }
 );
-
-onMounted(() => {
-  festivalStore.ensureLoaded();
-});
 </script>

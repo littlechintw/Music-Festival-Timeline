@@ -8,6 +8,8 @@
 //   - status:  'upcoming' 或 'archived'（end > now - STALE_DAYS）。
 //              Workbox 只 precache upcoming 的；archived 走 runtime cache（user 手動存）。
 //   - indexHash: 索引本身的 hash，作為 SW 對 index.json 的 precache revision。
+//   - location / stageCount / performanceCount / themePrimary:
+//              列表頁只靠索引就能畫卡片，不必把每場的完整時間表都下載下來。
 //
 import { readdir, readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -36,19 +38,34 @@ async function main() {
   const now = Date.now();
   const cutoff = now - STALE_DAYS * 86400e3;
 
-  /** @type {Array<{festivalId:string, name:string, startTime:string, endTime:string, file:string, hash:string, bytes:number, status:'upcoming'|'archived'}>} */
+  /**
+   * @typedef {{
+   *   festivalId: string, name: string, startTime: string, endTime: string,
+   *   file: string, hash: string, bytes: number, status: 'upcoming' | 'archived',
+   *   location: { name: string, address: string },
+   *   stageCount: number, performanceCount: number, themePrimary: string,
+   * }} IndexEntry
+   */
+  /** @type {IndexEntry[]} */
   const index = [];
 
   for (const file of files) {
     const src = join(SOURCE_DIR, file);
     const raw = await readFile(src);
-    /** @type {{festivalId:string, name:string, startTime:string, endTime:string}} */
+    /** @type {any} */
     const data = JSON.parse(raw.toString('utf-8'));
 
     await copyFile(src, join(TARGET_DIR, file));
 
     const endMs = new Date(data.endTime).getTime();
     const status = Number.isFinite(endMs) && endMs > cutoff ? 'upcoming' : 'archived';
+
+    /** @type {any[]} */
+    const stages = Array.isArray(data.stages) ? data.stages : [];
+    let performanceCount = 0;
+    for (const stage of stages) {
+      performanceCount += Array.isArray(stage.performances) ? stage.performances.length : 0;
+    }
 
     index.push({
       festivalId: data.festivalId,
@@ -59,6 +76,13 @@ async function main() {
       hash: sha(raw),
       bytes: raw.byteLength,
       status,
+      location: {
+        name: data.location?.name || '',
+        address: data.location?.address || '',
+      },
+      stageCount: stages.length,
+      performanceCount,
+      themePrimary: data.theme?.primary || '',
     });
   }
 

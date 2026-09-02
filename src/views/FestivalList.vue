@@ -176,7 +176,23 @@ function retry() {
   festivalStore.ensureLoaded({ force: true });
 }
 
-const allFestivals = computed(() => festivalStore.getFestivals || []);
+// 列表只需要索引（名稱、日期、地點、場數），不必把每場的完整時間表都下載下來。
+// 索引抓不到（第一次開就離線）時，退回用已下載的完整資料湊出同樣的欄位。
+const allFestivals = computed(() => {
+  const entries = festivalStore.indexEntries;
+  if (entries.length > 0) return entries;
+  return (festivalStore.getFestivals || []).map((f) => ({
+    festivalId: f.festivalId,
+    name: f.name,
+    startTime: f.startTime,
+    endTime: f.endTime,
+    location: { name: f.location.name, address: f.location.address },
+    stageCount: f.stages.length,
+    performanceCount: f.stages.reduce((n, s) => n + s.performances.length, 0),
+    themePrimary: f.theme?.primary || '',
+    hash: '',
+  }));
+});
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase();
@@ -184,8 +200,8 @@ const filtered = computed(() => {
   return allFestivals.value.filter(
     (f) =>
       f.name.toLowerCase().includes(q) ||
-      f.location.name.toLowerCase().includes(q) ||
-      f.location.address.toLowerCase().includes(q)
+      (f.location?.name || '').toLowerCase().includes(q) ||
+      (f.location?.address || '').toLowerCase().includes(q)
   );
 });
 

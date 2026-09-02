@@ -32,6 +32,14 @@ export function encodePlanToText(planArray) {
 }
 
 /**
+ * 只取出分享文字裡的 festivalId，讓呼叫端可以先把那場活動下載下來再解碼。
+ * @param {string} rawText
+ */
+export function peekFestivalId(rawText) {
+  return String(rawText || '').split(';')[0].trim();
+}
+
+/**
  * @param {string} rawText
  * @param {Festival[]} festivals
  * @returns {{festival: Festival | null, plan: PlanEntry[], invalidCount: number}}
