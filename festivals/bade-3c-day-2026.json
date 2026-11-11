@@ -1,0 +1,62 @@
+{
+  "festivalId": "bade-3c-day-2026",
+  "name": "2026 八德3C合樂DAY 主場週演唱會",
+  "startTime": "2026-11-14T18:30:00+08:00",
+  "endTime": "2026-11-15T19:40:00+08:00",
+  "theme": {
+    "primary": "#DC1778",
+    "secondary": "#5B9FAE",
+    "generated": false
+  },
+  "location": {
+    "name": "八德路一段（封街）",
+    "address": "臺北市中正區八德路一段",
+    "latitude": 25.0447,
+    "longitude": 121.5318
+  },
+  "stages": [
+    {
+      "id": "main-stage",
+      "name": "主舞台",
+      "performances": [
+        {
+          "artist": "東部壞男孩BBFTE",
+          "start": "2026-11-14T18:30:00+08:00",
+          "end": "2026-11-14T19:10:00+08:00"
+        },
+        {
+          "artist": "甜約翰 Sweet John",
+          "start": "2026-11-14T19:40:00+08:00",
+          "end": "2026-11-14T20:20:00+08:00"
+        },
+        {
+          "artist": "芒果醬 Mango Jump",
+          "start": "2026-11-14T21:20:00+08:00",
+          "end": "2026-11-14T21:50:00+08:00"
+        },
+        {
+          "artist": "火星混蛋",
+          "start": "2026-11-15T17:00:00+08:00",
+          "end": "2026-11-15T17:40:00+08:00"
+        },
+        {
+          "artist": "Control T",
+          "start": "2026-11-15T18:10:00+08:00",
+          "end": "2026-11-15T18:40:00+08:00"
+        },
+        {
+          "artist": "怕胖團 PAPUN BAND",
+          "start": "2026-11-15T19:10:00+08:00",
+          "end": "2026-11-15T19:40:00+08:00"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "image": "",
+    "notes": []
+  },
+  "contributors": [
+    "littlechintw"
+  ]
+}
