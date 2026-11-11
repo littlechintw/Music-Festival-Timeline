@@ -66,7 +66,6 @@ export async function showAppNotification(payload) {
   // window fallback：foreground only
   if (!delivered) {
     try {
-      // eslint-disable-next-line no-new
       new Notification(payload.title, options);
       delivered = true;
     } catch (err) {

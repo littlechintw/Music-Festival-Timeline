@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -39,6 +40,7 @@ export default defineConfig({
         },
       },
     }),
+    tailwindcss(),
     VitePWA({
       // injectManifest 模式：用 src/pwa/sw.js 客製化 SW，
       // vite-plugin-pwa 會把 precache manifest 注入到 self.__WB_MANIFEST。

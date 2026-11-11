@@ -10,7 +10,9 @@
         class="stage-column-header"
         :style="{ gridColumn: index + 2, gridRow: 1 }"
       >
-        {{ stage.name }}
+        <div class="stage-column-name">{{ stage.name }}</div>
+        <!-- 同一天有多個音樂祭時，用小字標出這個舞台屬於哪一場 -->
+        <div v-if="stage.group" class="stage-column-group" :title="stage.group">{{ stage.group }}</div>
       </div>
 
       <!-- 時間欄 + 背景 -->
@@ -39,13 +41,13 @@
         :style="currentLineStyle(now)"
       >
         <div
-          class="text-[var(--md-sys-color-on-error-container)] bg-[var(--md-sys-color-error-container)] px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm mr-1 rounded w-[var(--time-col-width,55px)] md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1"
+          class="text-(--md-sys-color-on-error-container) bg-(--md-sys-color-error-container) px-1 text-[10px] sm:text-xs font-bold shrink-0 shadow-xs mr-1 rounded-sm w-(--time-col-width,55px) md:w-[var(--time-col-width,80px)] text-center transform -translate-y-1/2 ml-1"
         >
           {{ formatTime(now, is24Hour) }}
         </div>
-        <div class="flex-1 border-t-[3px] border-[var(--md-sys-color-error)] relative transform -translate-y-1/2">
+        <div class="flex-1 border-t-[3px] border-(--md-sys-color-error) relative transform -translate-y-1/2">
           <div
-            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-[var(--md-sys-color-error)] absolute top-1/2 -left-1 transform -translate-y-1/2"
+            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-(--md-sys-color-error) absolute top-1/2 -left-1 transform -translate-y-1/2"
           />
         </div>
       </div>
@@ -53,9 +55,9 @@
       <!-- 演出區塊 -->
       <template v-for="(stage, stageIndex) in stages" :key="`perf-${stage.key || stage.name}`">
         <div
-          v-for="perf in performancesByStage[stage.name] || []"
+          v-for="perf in performancesByStage[stage.columnKey ?? stage.name] || []"
           :key="perf.id || `${perf.artist}_${perf.start}`"
-          class="performance-block relative rounded-md shadow-sm transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--md-sys-color-on-surface)]"
+          class="performance-block relative rounded-md shadow-xs transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--md-sys-color-on-surface)"
           :class="[sizeClasses(perf), getPerfClasses(perf), liveClasses(perf), conflictClasses(perf)]"
           :style="perfStyle(perf, stageIndex)"
           :role="interactive ? 'button' : undefined"
@@ -74,10 +76,10 @@
                 class="text-[10px] font-bold leading-4 shrink-0"
                 aria-hidden="true"
               >✓</span>
-              <span v-if="isLive(perf)" class="text-[10px] font-bold bg-[var(--md-sys-color-error)] text-[var(--md-sys-color-on-error)] px-1 rounded animate-pulse shrink-0">
+              <span v-if="isLive(perf)" class="text-[10px] font-bold bg-(--md-sys-color-error) text-(--md-sys-color-on-error) px-1 rounded-sm animate-pulse shrink-0">
                 LIVE
               </span>
-              <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-600 text-white px-1 rounded shrink-0" :title="conflictsFor(perf)">
+              <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-600 text-white px-1 rounded-sm shrink-0" :title="conflictsFor(perf)">
                 ⚠
               </span>
               <span v-marquee="settingsStore.enableMarqueeAnimation" class="marquee-viewport min-w-0">
@@ -103,14 +105,18 @@ import { useSettingsStore } from '../stores/settings';
 const settingsStore = useSettingsStore();
 
 const props = defineProps({
-  // [{ name, key? }]
+  // [{ name, key?, columnKey?, group? }]
+  // key：只給 Vue 的 v-for 用。
+  // columnKey：決定演出放進哪一欄（預設用 name）。不同音樂祭可能有同名舞台（例如都叫「主舞台」），
+  //            這時要給 columnKey，並在演出上帶同樣的 columnKey，才不會被併到同一欄。
+  // group：顯示在舞台名稱下方的小字（例如音樂祭名稱）。
   stages: { type: Array, required: true },
   // 全部演出（已經帶 stage 欄位）
   performances: { type: Array, required: true },
   is24Hour: { type: Boolean, default: true },
   showCurrentTime: { type: Boolean, default: false },
   now: { type: Date, default: () => new Date() },
-  // (perf) => 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]' 之類；沒給就用主題主色
+  // (perf) => 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)' 之類；沒給就用主題主色
   perfClassResolver: { type: Function, default: null },
   // 是否偵測跨舞台時間衝突（個人行程才需要，跑馬燈時間表不需要）
   detectConflicts: { type: Boolean, default: false },
@@ -130,12 +136,18 @@ const { timeSlots, gridStyle, perfStyle, currentOffset, currentLineStyle } = use
   () => props.is24Hour
 );
 
+/** 演出所屬欄位的 key：有 columnKey 用 columnKey，否則用舞台名稱。 */
+function columnKey(perf) {
+  return perf.columnKey ?? perf.stage;
+}
+
 const performancesByStage = computed(() => {
   /** @type {Record<string, any[]>} */
   const map = {};
   for (const perf of props.performances) {
-    if (!map[perf.stage]) map[perf.stage] = [];
-    map[perf.stage].push(perf);
+    const key = columnKey(perf);
+    if (!map[key]) map[key] = [];
+    map[key].push(perf);
   }
   return map;
 });
@@ -152,7 +164,7 @@ function blockLabel(perf, stage) {
 
 function getPerfClasses(perf) {
   if (props.perfClassResolver) return props.perfClassResolver(perf);
-  return 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]';
+  return 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)';
 }
 
 // 演出時長很短（例如開場儀式、報到）時，方塊本身的格高有限，
@@ -172,7 +184,7 @@ function isLive(perf) {
 }
 
 function liveClasses(perf) {
-  return isLive(perf) ? 'ring-2 ring-[var(--md-sys-color-error)] ring-offset-1' : '';
+  return isLive(perf) ? 'ring-2 ring-(--md-sys-color-error) ring-offset-1' : '';
 }
 
 // 衝突偵測：對每個 perf 找出時間重疊但 stage 不同的演出
@@ -190,7 +202,7 @@ const conflictMap = computed(() => {
     for (let j = i + 1; j < list.length; j++) {
       const a = list[i];
       const b = list[j];
-      if (a.p.stage === b.p.stage) continue;
+      if (columnKey(a.p) === columnKey(b.p)) continue;
       if (a.start < b.end && b.start < a.end) {
         const idA = idKey(a.p);
         const idB = idKey(b.p);
@@ -358,6 +370,15 @@ const vMarquee = {
   top: 0;
   z-index: 20;
   color: var(--tg-text);
+}
+.stage-column-group {
+  margin-top: 0.125rem;
+  font-size: 0.7em;
+  font-weight: 400;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .time-cell {
   background: var(--tg-bg);

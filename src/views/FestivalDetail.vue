@@ -1,8 +1,8 @@
 <template>
   <div class="p-4 max-w-3xl mx-auto">
     <div v-if="pageStatus === 'loading'" class="space-y-3" aria-busy="true">
-      <div class="h-8 w-2/3 rounded bg-[var(--md-sys-color-surface-container)] animate-pulse" />
-      <div class="h-24 rounded-xl bg-[var(--md-sys-color-surface-container)] animate-pulse" />
+      <div class="h-8 w-2/3 rounded-sm bg-(--md-sys-color-surface-container) animate-pulse" />
+      <div class="h-24 rounded-xl bg-(--md-sys-color-surface-container) animate-pulse" />
     </div>
 
     <div v-else-if="!festival">
@@ -26,7 +26,7 @@
 
       <!-- 活動資訊卡 -->
       <section
-        class="relative mb-4 rounded-xl p-4 bg-[var(--md-sys-color-surface-container)] overflow-hidden"
+        class="relative mb-4 rounded-xl p-4 bg-(--md-sys-color-surface-container) overflow-hidden"
         :style="headerStyle"
       >
         <md-elevation style="--md-elevation-level: 1"></md-elevation>
@@ -40,38 +40,38 @@
           <StatusChip :label="status.label" :tone="status.tone" />
           <span
             v-if="plannedCount > 0"
-            class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)]"
+            class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container)"
           >
             <MdIcon name="check_circle" style="--md-icon-size: 14px" />
             已加入 {{ plannedCount }} 場
           </span>
         </div>
-        <dl class="text-sm space-y-1.5 text-[var(--md-sys-color-on-surface)]">
+        <dl class="text-sm space-y-1.5 text-(--md-sys-color-on-surface)">
           <div class="flex items-start gap-2">
-            <MdIcon name="event" style="--md-icon-size: 18px" class="shrink-0 mt-0.5 text-[var(--md-sys-color-on-surface-variant)]" />
+            <MdIcon name="event" style="--md-icon-size: 18px" class="shrink-0 mt-0.5 text-(--md-sys-color-on-surface-variant)" />
             <dd>
               {{ formatDateRange(festival.startTime, festival.endTime) }}
-              <span class="text-[var(--md-sys-color-on-surface-variant)]">
+              <span class="text-(--md-sys-color-on-surface-variant)">
                 ・{{ formatTime(festival.startTime, settingsStore.is24Hour) }} 開始
               </span>
             </dd>
           </div>
           <div class="flex items-start gap-2">
-            <MdIcon name="location_on" style="--md-icon-size: 18px" class="shrink-0 mt-0.5 text-[var(--md-sys-color-on-surface-variant)]" />
+            <MdIcon name="location_on" style="--md-icon-size: 18px" class="shrink-0 mt-0.5 text-(--md-sys-color-on-surface-variant)" />
             <dd class="min-w-0">
               <div>{{ festival.location.name }}</div>
               <a
                 :href="mapsUrl"
                 target="_blank"
                 rel="noopener"
-                class="text-[var(--md-sys-color-primary)] text-xs inline-flex items-center gap-1 mt-0.5 hover:underline"
+                class="text-(--md-sys-color-primary) text-xs inline-flex items-center gap-1 mt-0.5 hover:underline"
               >
                 {{ festival.location.address }}
                 <MdIcon name="open_in_new" style="--md-icon-size: 12px" />
               </a>
             </dd>
           </div>
-          <div class="flex items-start gap-2 text-[var(--md-sys-color-on-surface-variant)]">
+          <div class="flex items-start gap-2 text-(--md-sys-color-on-surface-variant)">
             <MdIcon name="stadium" style="--md-icon-size: 18px" class="shrink-0 mt-0.5" />
             <dd>{{ festival.stages.length }} 個舞台・{{ totalPerformances }} 場演出</dd>
           </div>
@@ -97,10 +97,10 @@
       <!-- 演出清單：先選日期，再依舞台列出，點整列即可加入／移除 -->
       <section aria-labelledby="lineup-heading">
         <div class="flex items-center justify-between mb-2">
-          <h2 id="lineup-heading" class="font-bold text-[var(--md-sys-color-on-surface)]">
+          <h2 id="lineup-heading" class="font-bold text-(--md-sys-color-on-surface)">
             演出陣容
           </h2>
-          <span class="text-xs text-[var(--md-sys-color-on-surface-variant)]">
+          <span class="text-xs text-(--md-sys-color-on-surface-variant)">
             點一下即可加入行程
           </span>
         </div>
@@ -108,35 +108,35 @@
 
         <div v-for="stage in stagesForDay" :key="stage.id" class="mb-5">
           <h3
-            class="font-semibold text-sm text-[var(--md-sys-color-on-surface-variant)] mb-1.5 px-1 flex items-center justify-between"
+            class="font-semibold text-sm text-(--md-sys-color-on-surface-variant) mb-1.5 px-1 flex items-center justify-between"
           >
             <span>{{ stage.name }}</span>
             <span class="font-normal text-xs">{{ stage.performances.length }} 場</span>
           </h3>
-          <ul class="rounded-xl overflow-hidden bg-[var(--md-sys-color-surface-container-low)] divide-y divide-[var(--md-sys-color-outline-variant)]">
+          <ul class="rounded-xl overflow-hidden bg-(--md-sys-color-surface-container-low) divide-y divide-(--md-sys-color-outline-variant)">
             <li v-for="perf in stage.performances" :key="perf.artist + perf.start">
               <button
                 type="button"
                 class="relative w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors overflow-hidden"
                 :class="
                   inPlan(stage, perf)
-                    ? 'bg-[var(--md-sys-color-primary-container)]'
-                    : 'hover:bg-[var(--md-sys-color-surface-container)]'
+                    ? 'bg-(--md-sys-color-primary-container)'
+                    : 'hover:bg-(--md-sys-color-surface-container)'
                 "
                 :aria-pressed="inPlan(stage, perf)"
                 @click="togglePlan(stage, perf)"
               >
                 <md-ripple></md-ripple>
-                <span class="font-mono text-xs tabular-nums shrink-0 w-[6.5rem] whitespace-nowrap text-[var(--md-sys-color-on-surface-variant)]">
+                <span class="font-mono text-xs tabular-nums shrink-0 w-[6.5rem] whitespace-nowrap text-(--md-sys-color-on-surface-variant)">
                   {{ formatTimeRange(perf.start, perf.end, settingsStore.is24Hour) }}
                 </span>
                 <span class="min-w-0 flex-1">
-                  <span class="block font-bold text-[var(--md-sys-color-on-surface)] leading-snug">
+                  <span class="block font-bold text-(--md-sys-color-on-surface) leading-snug">
                     {{ perf.artist }}
                   </span>
                   <span
                     v-if="perf.description"
-                    class="block text-xs text-[var(--md-sys-color-on-surface-variant)] mt-0.5"
+                    class="block text-xs text-(--md-sys-color-on-surface-variant) mt-0.5"
                   >
                     {{ perf.description }}
                   </span>
@@ -145,8 +145,8 @@
                   class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                   :class="
                     inPlan(stage, perf)
-                      ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
-                      : 'border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-primary)]'
+                      ? 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)'
+                      : 'border border-(--md-sys-color-outline) text-(--md-sys-color-primary)'
                   "
                   aria-hidden="true"
                 >

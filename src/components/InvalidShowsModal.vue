@@ -2,7 +2,7 @@
   <BaseModal :model-value="isOpen" @update:model-value="dismiss">
     <template #headline>
       <div class="flex items-center gap-2">
-        <MdIcon name="warning" class="text-[var(--md-sys-color-error)]" />
+        <MdIcon name="warning" class="text-(--md-sys-color-error)" />
         行程更新通知
       </div>
     </template>
@@ -11,7 +11,7 @@
       音樂祭的時間表可能有更新，您原本排入的以下行程由於時間異動或已取消，將會自動從您的行程中移除：
     </p>
     <div
-      class="bg-[var(--md-sys-color-surface-container-low)] rounded-lg p-3 max-h-48 overflow-y-auto mb-6 text-left"
+      class="bg-(--md-sys-color-surface-container-low) rounded-lg p-3 max-h-48 overflow-y-auto mb-6 text-left"
     >
       <ul class="space-y-2">
         <li
@@ -24,12 +24,12 @@
           </div>
           <div class="flex items-center text-gray-500 dark:text-gray-400 gap-2 mb-1">
             <span
-              class="bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] px-2 py-0.5 rounded text-xs font-medium"
+              class="bg-(--md-sys-color-secondary-container) text-(--md-sys-color-on-secondary-container) px-2 py-0.5 rounded-sm text-xs font-medium"
             >
               {{ perf.festivalName || '未知音樂祭' }}
             </span>
             <span
-              class="bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)] px-2 py-0.5 rounded text-xs"
+              class="bg-(--md-sys-color-tertiary-container) text-(--md-sys-color-on-tertiary-container) px-2 py-0.5 rounded-sm text-xs"
             >
               {{ perf.stage }} 舞台
             </span>
@@ -40,7 +40,7 @@
         </li>
       </ul>
     </div>
-    <p class="text-sm text-[var(--md-sys-color-error)] text-left">
+    <p class="text-sm text-(--md-sys-color-error) text-left">
       請記得重新前往列表，將您想看的演出重新加入行程。
     </p>
 

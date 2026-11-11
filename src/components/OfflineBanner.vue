@@ -2,7 +2,7 @@
   <transition name="slide">
     <div
       v-if="!isOnline"
-      class="w-full bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)] px-4 py-2 pt-safe text-sm flex items-center gap-2"
+      class="w-full bg-(--md-sys-color-tertiary-container) text-(--md-sys-color-on-tertiary-container) px-4 py-2 pt-safe text-sm flex items-center gap-2"
       role="status"
       aria-live="polite"
     >

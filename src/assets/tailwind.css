@@ -1,6 +1,73 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* 深色模式跟著 <html class="dark"> 走（v3 的 darkMode: 'class'） */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-theme-primary: var(--theme-primary, #2563eb);
+  --color-theme-secondary: var(--theme-secondary, #7c3aed);
+}
+
+/* Tailwind v4 改了兩個預設值，這裡維持 v3 的行為：邊框預設灰色（v4 是 currentColor）、按鈕游標為 pointer。 */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * Tailwind v4 的 preflight 會把所有元素的 margin / padding 歸零（v3 沒有）。
+ * 頁面上的規則優先權高於 shadow DOM 裡的 :host 與 ::slotted()，所以 @material/web 元件自己的內距、
+ * 以及它給 slot 內容（例如對話框的標題／內文／按鈕列）的內距都會被蓋掉。
+ * 這裡把 md-* 元件與它們的直接子元素的 margin / padding 還給元件決定；
+ * 子元素上若有 Tailwind 的 p-* / m-* class，因為 utilities 層在 base 之後，仍然以 class 為準。
+ * 新用到的 md-* 元件要加進這份清單。
+ */
+@layer base {
+  :is(
+    md-filled-button,
+    md-filled-tonal-button,
+    md-outlined-button,
+    md-text-button,
+    md-icon-button,
+    md-outlined-text-field,
+    md-outlined-select,
+    md-select-option,
+    md-switch,
+    md-input-chip,
+    md-filter-chip,
+    md-dialog,
+    md-icon,
+    md-ripple,
+    md-elevation
+  ),
+  :is(
+      md-filled-button,
+      md-filled-tonal-button,
+      md-outlined-button,
+      md-text-button,
+      md-icon-button,
+      md-outlined-text-field,
+      md-outlined-select,
+      md-select-option,
+      md-switch,
+      md-input-chip,
+      md-filter-chip,
+      md-dialog
+    )
+    > * {
+    margin: revert-layer;
+    padding: revert-layer;
+  }
+}
 
 @layer base {
   :root {
@@ -32,26 +99,24 @@
   }
 }
 
-@layer utilities {
-  .pt-safe {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  .pl-safe {
-    padding-left: env(safe-area-inset-left, 0px);
-  }
-  .pr-safe {
-    padding-right: env(safe-area-inset-right, 0px);
-  }
-  /* 手機版底部導覽的高度（h-16）＋安全區，給 <main> 與浮動元素用 */
-  .pb-nav {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-  }
-  .bottom-nav-offset {
-    bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-  }
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+@utility pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+/* 手機版底部導覽的高度（h-16）＋安全區，給 <main> 與浮動元素用 */
+@utility pb-nav {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+@utility bottom-nav-offset {
+  bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* 手機 Safari 在 standalone 模式下，避免捲到底時整頁被橘皮拉動、以及點擊時的灰色閃爍 */

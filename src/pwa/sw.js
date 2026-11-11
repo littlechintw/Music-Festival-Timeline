@@ -1,5 +1,4 @@
 // @ts-check
-/* eslint-env serviceworker */
 //
 // Service Worker source（injectManifest 模式）。
 // vite-plugin-pwa 在 build 時會把 precache manifest 注入到 self.__WB_MANIFEST，

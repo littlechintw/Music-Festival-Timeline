@@ -31,8 +31,8 @@ export const themeSchema = z.object({
 export const locationSchema = z.object({
   name: z.string().min(1),
   address: z.string().min(1),
-  latitude: z.number().finite().optional().default(0),
-  longitude: z.number().finite().optional().default(0),
+  latitude: z.number().optional().default(0),
+  longitude: z.number().optional().default(0),
 });
 
 export const mapSchema = z.object({

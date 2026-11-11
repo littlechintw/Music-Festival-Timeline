@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="shouldShowBanner"
-    class="relative rounded-xl p-4 mb-4 bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] flex items-start gap-3"
+    class="relative rounded-xl p-4 mb-4 bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container) flex items-start gap-3"
     role="region"
     aria-label="安裝 App"
   >
@@ -25,7 +25,7 @@
 
   <BaseModal v-model="showIosGuide">
     <template #headline>加入 iPhone 主畫面</template>
-    <ol class="list-decimal pl-5 space-y-2 text-sm text-[var(--md-sys-color-on-surface)]">
+    <ol class="list-decimal pl-5 space-y-2 text-sm text-(--md-sys-color-on-surface)">
       <li>
         用 <b>Safari</b> 開啟這個網頁（其他瀏覽器沒有這個選項）。
       </li>
@@ -38,7 +38,7 @@
       </li>
       <li>往下捲，選「<b>加入主畫面</b>」，再按右上角「新增」。</li>
     </ol>
-    <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mt-4">
+    <p class="text-xs text-(--md-sys-color-on-surface-variant) mt-4">
       加入後從主畫面開啟會是全螢幕，第一次開啟時請先連網路一次，之後離線也能使用。
     </p>
     <template #actions>

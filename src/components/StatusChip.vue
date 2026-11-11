@@ -20,13 +20,13 @@ const props = defineProps({
 const toneClass = computed(() => {
   switch (props.tone) {
     case 'live':
-      return 'bg-[var(--md-sys-color-error-container)] text-[var(--md-sys-color-on-error-container)]';
+      return 'bg-(--md-sys-color-error-container) text-(--md-sys-color-on-error-container)';
     case 'soon':
-      return 'bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)]';
+      return 'bg-(--md-sys-color-tertiary-container) text-(--md-sys-color-on-tertiary-container)';
     case 'past':
-      return 'bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface-variant)]';
+      return 'bg-(--md-sys-color-surface-container-highest) text-(--md-sys-color-on-surface-variant)';
     default:
-      return 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)]';
+      return 'bg-(--md-sys-color-secondary-container) text-(--md-sys-color-on-secondary-container)';
   }
 });
 </script>

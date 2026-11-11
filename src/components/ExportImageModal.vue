@@ -5,7 +5,7 @@
     <div class="flex flex-col gap-4">
       <!-- 模式切換：列表 / 時間表 -->
       <div
-        class="inline-flex p-1 rounded-lg bg-[var(--md-sys-color-surface-container-high)] self-start"
+        class="inline-flex p-1 rounded-lg bg-(--md-sys-color-surface-container-high) self-start"
         role="tablist"
         aria-label="匯出版型"
       >
@@ -16,8 +16,8 @@
           class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5"
           :class="
             mode === 'list'
-              ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-on-surface)] shadow-sm'
-              : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]'
+              ? 'bg-(--md-sys-color-surface-container-lowest) text-(--md-sys-color-on-surface) shadow-xs'
+              : 'text-(--md-sys-color-on-surface-variant) hover:text-(--md-sys-color-on-surface)'
           "
           @click="mode = 'list'"
         >
@@ -30,8 +30,8 @@
           class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5"
           :class="
             mode === 'timetable'
-              ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-on-surface)] shadow-sm'
-              : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]'
+              ? 'bg-(--md-sys-color-surface-container-lowest) text-(--md-sys-color-on-surface) shadow-xs'
+              : 'text-(--md-sys-color-on-surface-variant) hover:text-(--md-sys-color-on-surface)'
           "
           @click="mode = 'timetable'"
         >
@@ -74,8 +74,8 @@
             class="px-3 py-1.5 rounded-md text-sm border transition"
             :class="
               selectedDayKey === d.key
-                ? 'bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)] border-[var(--md-sys-color-tertiary)]'
-                : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface-variant)] border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]'
+                ? 'bg-(--md-sys-color-tertiary-container) text-(--md-sys-color-on-tertiary-container) border-(--md-sys-color-tertiary)'
+                : 'bg-(--md-sys-color-surface) text-(--md-sys-color-on-surface-variant) border-(--md-sys-color-outline-variant) hover:bg-(--md-sys-color-surface-container-high)'
             "
             @click="selectedDayKey = d.key"
           >

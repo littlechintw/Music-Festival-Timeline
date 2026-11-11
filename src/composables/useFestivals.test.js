@@ -8,6 +8,8 @@ import {
   AUTO_PAST_DAYS,
 } from './useFestivals';
 
+// 刻意省略 theme / map / contributors：這些欄位由 schema 的 default 補上。
+/** @type {any} */
 const VALID_FESTIVAL = {
   festivalId: 'mega-2026',
   name: '大港',

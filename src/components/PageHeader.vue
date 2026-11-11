@@ -14,12 +14,12 @@
       <MdIcon name="arrow_back" />
     </md-icon-button>
     <div class="min-w-0 flex-1 pt-1.5">
-      <h1 class="text-xl sm:text-2xl font-bold text-[var(--md-sys-color-on-surface)] leading-tight break-words">
+      <h1 class="text-xl sm:text-2xl font-bold text-(--md-sys-color-on-surface) leading-tight wrap-break-word">
         <slot name="title">{{ title }}</slot>
       </h1>
       <p
         v-if="subtitle || $slots.subtitle"
-        class="text-sm text-[var(--md-sys-color-on-surface-variant)] mt-0.5"
+        class="text-sm text-(--md-sys-color-on-surface-variant) mt-0.5"
       >
         <slot name="subtitle">{{ subtitle }}</slot>
       </p>

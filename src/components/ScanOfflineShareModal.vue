@@ -14,14 +14,14 @@
       ></video>
       <p
         v-if="scanner.error"
-        class="text-sm text-[var(--md-sys-color-error)] mt-3 flex items-center gap-1"
+        class="text-sm text-(--md-sys-color-error) mt-3 flex items-center gap-1"
       >
         <MdIcon name="error" style="--md-icon-size: 16px" />
         {{ scanner.error }}
       </p>
       <p
         v-else-if="scanFeedback"
-        class="text-sm text-[var(--md-sys-color-error)] mt-3 flex items-center gap-1"
+        class="text-sm text-(--md-sys-color-error) mt-3 flex items-center gap-1"
       >
         <MdIcon name="warning" style="--md-icon-size: 16px" />
         {{ scanFeedback }}

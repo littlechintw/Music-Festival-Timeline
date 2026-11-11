@@ -17,13 +17,13 @@
       </template>
     </PageHeader>
 
-    <div v-if="status === 'loading'" class="text-[var(--md-sys-color-on-surface-variant)]" aria-busy="true">
+    <div v-if="status === 'loading'" class="text-(--md-sys-color-on-surface-variant)" aria-busy="true">
       載入中...
     </div>
     <FestivalUnavailable v-else-if="!festival" :status="status" @retry="retry" />
     <div v-else-if="!hasImage" class="text-center py-12">
       <MdIcon name="map" class="mb-3" style="--md-icon-size: 3rem" />
-      <p class="text-[var(--md-sys-color-on-surface-variant)]">此音樂祭尚未提供場地地圖</p>
+      <p class="text-(--md-sys-color-on-surface-variant)">此音樂祭尚未提供場地地圖</p>
     </div>
     <div v-else>
       <!--
@@ -32,7 +32,7 @@
       -->
       <div
         ref="viewportRef"
-        class="map-viewport rounded-xl border border-[var(--md-sys-color-outline-variant)] bg-white overflow-auto"
+        class="map-viewport rounded-xl border border-(--md-sys-color-outline-variant) bg-white overflow-auto"
         :class="zoom > 1 ? 'cursor-grab' : ''"
       >
         <img
@@ -44,7 +44,7 @@
           @dblclick="toggleZoom"
         />
       </div>
-      <p class="mt-2 text-xs text-[var(--md-sys-color-on-surface-variant)] flex items-center gap-1">
+      <p class="mt-2 text-xs text-(--md-sys-color-on-surface-variant) flex items-center gap-1">
         <MdIcon name="offline_pin" style="--md-icon-size: 14px" />
         地圖已存在裝置上，離線也能查看。雙點圖片可放大。
       </p>
@@ -53,7 +53,7 @@
         :href="mapsUrl"
         target="_blank"
         rel="noopener"
-        class="mt-4 inline-flex items-center gap-2 text-sm text-[var(--md-sys-color-primary)] hover:underline"
+        class="mt-4 inline-flex items-center gap-2 text-sm text-(--md-sys-color-primary) hover:underline"
       >
         <MdIcon name="near_me" style="--md-icon-size: 18px" />
         用 Google 地圖導航到 {{ festival.location.name }}

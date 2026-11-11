@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed left-0 right-0 z-[200] flex flex-col items-center gap-2 pointer-events-none bottom-nav-offset md:bottom-0 pb-4 md:pb-safe"
+    class="fixed left-0 right-0 z-200 flex flex-col items-center gap-2 pointer-events-none bottom-nav-offset md:bottom-0 pb-4 md:pb-safe"
     aria-live="polite"
   >
     <transition-group name="toast" tag="div" class="flex flex-col gap-2 items-center w-full px-4">
@@ -26,11 +26,11 @@ const { toasts } = useToast();
 function classFor(kind) {
   switch (kind) {
     case 'success':
-      return 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]';
+      return 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)';
     case 'error':
-      return 'bg-[var(--md-sys-color-error)] text-[var(--md-sys-color-on-error)]';
+      return 'bg-(--md-sys-color-error) text-(--md-sys-color-on-error)';
     default:
-      return 'bg-[var(--md-sys-color-inverse-surface)] text-[var(--md-sys-color-inverse-on-surface)]';
+      return 'bg-(--md-sys-color-inverse-surface) text-(--md-sys-color-inverse-on-surface)';
   }
 }
 </script>

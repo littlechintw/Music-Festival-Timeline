@@ -3,7 +3,7 @@
     <div v-if="loading" class="flex items-center justify-center min-h-[50vh]">
       <div class="text-center">
         <div
-          class="w-12 h-12 border-4 border-[var(--md-sys-color-primary-container)] border-t-[var(--md-sys-color-primary)] rounded-full animate-spin mx-auto mb-4"
+          class="w-12 h-12 border-4 border-(--md-sys-color-primary-container) border-t-(--md-sys-color-primary) rounded-full animate-spin mx-auto mb-4"
         />
         <h2 class="text-xl font-bold text-gray-700 dark:text-gray-200">正在取得行程資訊...</h2>
         <p class="text-gray-500 dark:text-gray-400 mt-2">請稍候，我們正在載入您的行程</p>
@@ -12,14 +12,14 @@
 
     <div v-else-if="error" class="flex items-center justify-center min-h-[50vh]">
       <div
-        class="bg-[var(--md-sys-color-surface-container)] rounded-xl shadow-lg p-8 max-w-sm w-full text-center"
+        class="bg-(--md-sys-color-surface-container) rounded-xl shadow-lg p-8 max-w-sm w-full text-center"
       >
         <MdIcon
           name="error"
-          class="text-[var(--md-sys-color-error)] mb-4"
+          class="text-(--md-sys-color-error) mb-4"
           style="--md-icon-size: 3rem"
         />
-        <h2 class="text-xl font-bold text-[var(--md-sys-color-error)] mb-2">解析失敗</h2>
+        <h2 class="text-xl font-bold text-(--md-sys-color-error) mb-2">解析失敗</h2>
         <p class="text-gray-600 dark:text-gray-300 mb-6">{{ error }}</p>
         <router-link to="/">
           <md-filled-button type="button">回到首頁</md-filled-button>

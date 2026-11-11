@@ -1,12 +1,12 @@
 <template>
   <div
-    class="min-h-screen flex flex-col bg-[var(--md-sys-color-background)] text-[var(--md-sys-color-on-background)]"
+    class="min-h-screen flex flex-col bg-(--md-sys-color-background) text-(--md-sys-color-on-background)"
   >
     <OfflineBanner />
 
     <!-- 頂欄：手機只放 App 名稱＋連線狀態；桌面版把主導覽放在右邊 -->
     <header
-      class="w-full sticky top-0 z-40 bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface)] shadow-md pt-safe"
+      class="w-full sticky top-0 z-40 bg-(--md-sys-color-surface-container-highest) text-(--md-sys-color-on-surface) shadow-md pt-safe"
     >
       <nav class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-1" aria-label="主要導覽">
         <router-link
@@ -21,7 +21,7 @@
 
         <span
           v-if="!isOnline"
-          class="md:hidden ml-auto inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)]"
+          class="md:hidden ml-auto inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-(--md-sys-color-tertiary-container) text-(--md-sys-color-on-tertiary-container)"
           aria-label="目前離線"
         >
           <MdIcon name="wifi_off" style="--md-icon-size: 14px" />
@@ -36,8 +36,8 @@
             class="relative px-3 py-1.5 rounded-md text-sm font-medium transition-colors shrink-0 flex items-center gap-1 overflow-hidden"
             :class="
               isActive(item)
-                ? 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)]'
-                : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-surface-container-high)]'
+                ? 'bg-(--md-sys-color-secondary-container) text-(--md-sys-color-on-secondary-container)'
+                : 'text-(--md-sys-color-on-surface-variant) hover:text-(--md-sys-color-on-surface) hover:bg-(--md-sys-color-surface-container-high)'
             "
           >
             <md-ripple></md-ripple>
@@ -45,7 +45,7 @@
             <span>{{ item.label }}</span>
             <span
               v-if="item.to === '/plan' && planStore.planCount > 0"
-              class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)]"
+              class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] leading-5 font-bold bg-(--md-sys-color-tertiary) text-(--md-sys-color-on-tertiary)"
               :aria-label="`已加入 ${planStore.planCount} 場`"
             >
               {{ planStore.planCount }}
@@ -56,13 +56,13 @@
     </header>
 
     <!-- 手機版：內容底部留出底部導覽的高度，避免最後一張卡被蓋住 -->
-    <main class="flex-1 pb-safe pb-nav md:pb-0">
+    <main class="flex-1 pb-nav md:pb-0">
       <router-view />
     </main>
 
     <!-- 底部導覽（手機）：拇指可及、四個主要頁面、行程數量徽章 -->
     <nav
-      class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--md-sys-color-surface-container)] border-t border-[var(--md-sys-color-outline-variant)] pb-safe bottom-nav"
+      class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-(--md-sys-color-surface-container) border-t border-(--md-sys-color-outline-variant) pb-safe bottom-nav"
       aria-label="底部導覽"
     >
       <ul class="grid grid-cols-4 h-16">
@@ -72,20 +72,20 @@
             class="relative h-full w-full flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors overflow-hidden"
             :class="
               isActive(item)
-                ? 'text-[var(--md-sys-color-on-surface)]'
-                : 'text-[var(--md-sys-color-on-surface-variant)]'
+                ? 'text-(--md-sys-color-on-surface)'
+                : 'text-(--md-sys-color-on-surface-variant)'
             "
             :aria-current="isActive(item) ? 'page' : undefined"
           >
             <md-ripple></md-ripple>
             <span
               class="relative flex items-center justify-center w-14 h-7 rounded-full transition-colors"
-              :class="isActive(item) ? 'bg-[var(--md-sys-color-secondary-container)]' : ''"
+              :class="isActive(item) ? 'bg-(--md-sys-color-secondary-container)' : ''"
             >
               <MdIcon :name="item.icon" style="--md-icon-size: 22px" />
               <span
                 v-if="item.to === '/plan' && planStore.planCount > 0"
-                class="absolute -top-1 right-1 min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4 font-bold text-center bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)]"
+                class="absolute -top-1 right-1 min-w-[16px] h-4 px-1 rounded-full text-[10px] leading-4 font-bold text-center bg-(--md-sys-color-tertiary) text-(--md-sys-color-on-tertiary)"
                 :aria-label="`已加入 ${planStore.planCount} 場`"
               >
                 {{ planStore.planCount > 99 ? '99+' : planStore.planCount }}

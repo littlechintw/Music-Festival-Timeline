@@ -14,8 +14,8 @@
       class="relative px-4 py-2 rounded-full text-sm whitespace-nowrap shrink-0 transition-colors font-medium flex items-center gap-2 overflow-hidden"
       :class="
         modelValue === day.key
-          ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
-          : 'bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]'
+          ? 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)'
+          : 'bg-(--md-sys-color-surface-container-high) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-highest)'
       "
       @click="$emit('update:modelValue', day.key)"
     >
@@ -26,15 +26,15 @@
         class="inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full"
         :class="
           modelValue === day.key
-            ? 'bg-[var(--md-sys-color-on-primary)] text-[var(--md-sys-color-primary)]'
-            : 'bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface-variant)]'
+            ? 'bg-(--md-sys-color-on-primary) text-(--md-sys-color-primary)'
+            : 'bg-(--md-sys-color-surface-container-highest) text-(--md-sys-color-on-surface-variant)'
         "
       >
         {{ day.count }}
       </span>
       <span
         v-if="day.isToday"
-        class="w-1.5 h-1.5 rounded-full bg-[var(--md-sys-color-error)]"
+        class="w-1.5 h-1.5 rounded-full bg-(--md-sys-color-error)"
         aria-label="今天"
       />
     </button>

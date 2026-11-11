@@ -3,8 +3,8 @@
     class="relative rounded-xl p-4 mb-3 cursor-pointer transition-colors overflow-hidden"
     :class="
       status.tone === 'past'
-        ? 'bg-[var(--md-sys-color-surface-container-low)] hover:bg-[var(--md-sys-color-surface-container)]'
-        : 'bg-[var(--md-sys-color-surface-container)] hover:bg-[var(--md-sys-color-surface-container-high)]'
+        ? 'bg-(--md-sys-color-surface-container-low) hover:bg-(--md-sys-color-surface-container)'
+        : 'bg-(--md-sys-color-surface-container) hover:bg-(--md-sys-color-surface-container-high)'
     "
     role="button"
     tabindex="0"
@@ -30,27 +30,27 @@
           <StatusChip :label="status.label" :tone="status.tone" />
           <span
             v-if="plannedCount > 0"
-            class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)]"
+            class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container)"
           >
             <MdIcon name="check_circle" style="--md-icon-size: 14px" />
             已加入 {{ plannedCount }} 場
           </span>
         </div>
         <h3
-          class="font-bold text-lg leading-snug text-[var(--md-sys-color-on-surface)]"
+          class="font-bold text-lg leading-snug text-(--md-sys-color-on-surface)"
           :class="status.tone === 'past' ? 'opacity-80' : ''"
         >
           {{ festival.name }}
         </h3>
-        <div class="text-sm text-[var(--md-sys-color-on-surface-variant)] mt-1 flex items-center gap-1">
+        <div class="text-sm text-(--md-sys-color-on-surface-variant) mt-1 flex items-center gap-1">
           <MdIcon name="event" style="--md-icon-size: 16px" class="shrink-0" />
           <span>{{ formatDateRange(festival.startTime, festival.endTime) }}</span>
         </div>
-        <div class="text-sm text-[var(--md-sys-color-on-surface-variant)] mt-0.5 flex items-center gap-1 min-w-0">
+        <div class="text-sm text-(--md-sys-color-on-surface-variant) mt-0.5 flex items-center gap-1 min-w-0">
           <MdIcon name="location_on" style="--md-icon-size: 16px" class="shrink-0" />
           <span class="truncate">{{ festival.location?.name || '地點未提供' }}</span>
         </div>
-        <div class="text-xs text-[var(--md-sys-color-on-surface-variant)] mt-2 flex items-center gap-x-3 gap-y-1 flex-wrap">
+        <div class="text-xs text-(--md-sys-color-on-surface-variant) mt-2 flex items-center gap-x-3 gap-y-1 flex-wrap">
           <span v-if="stageCount">{{ stageCount }} 個舞台</span>
           <span v-if="performanceCount">{{ performanceCount }} 場演出</span>
           <span v-if="isCached" class="inline-flex items-center gap-1">
@@ -61,7 +61,7 @@
       </div>
       <MdIcon
         name="chevron_right"
-        class="shrink-0 text-[var(--md-sys-color-on-surface-variant)] self-center"
+        class="shrink-0 text-(--md-sys-color-on-surface-variant) self-center"
       />
     </div>
   </div>

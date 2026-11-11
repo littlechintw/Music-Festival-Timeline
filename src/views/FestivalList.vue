@@ -1,8 +1,8 @@
 <template>
   <div class="p-4 max-w-2xl mx-auto">
     <header class="mb-4">
-      <h1 class="text-2xl font-bold text-[var(--md-sys-color-on-surface)]">音樂祭</h1>
-      <p class="text-sm text-[var(--md-sys-color-on-surface-variant)] mt-0.5">
+      <h1 class="text-2xl font-bold text-(--md-sys-color-on-surface)">音樂祭</h1>
+      <p class="text-sm text-(--md-sys-color-on-surface-variant) mt-0.5">
         挑一場，把想看的演出加進你的行程。資料會存在手機裡，現場沒網路也能查。
       </p>
     </header>
@@ -22,7 +22,7 @@
 
     <div class="mb-4 flex items-center justify-between gap-2">
       <div
-        class="inline-flex items-center gap-1 bg-[var(--md-sys-color-surface-container-high)] p-1 rounded-lg"
+        class="inline-flex items-center gap-1 bg-(--md-sys-color-surface-container-high) p-1 rounded-lg"
         role="group"
         aria-label="排序"
       >
@@ -33,7 +33,7 @@
           依名稱
         </button>
       </div>
-      <span class="text-xs text-[var(--md-sys-color-on-surface-variant)]">
+      <span class="text-xs text-(--md-sys-color-on-surface-variant)">
         共 {{ allFestivals.length }} 場
       </span>
     </div>
@@ -43,11 +43,11 @@
       <div
         v-for="i in 3"
         :key="i"
-        class="rounded-xl p-4 bg-[var(--md-sys-color-surface-container)] animate-pulse"
+        class="rounded-xl p-4 bg-(--md-sys-color-surface-container) animate-pulse"
       >
-        <div class="h-5 w-2/3 rounded bg-[var(--md-sys-color-surface-container-highest)] mb-3" />
-        <div class="h-3 w-1/2 rounded bg-[var(--md-sys-color-surface-container-highest)] mb-2" />
-        <div class="h-3 w-3/4 rounded bg-[var(--md-sys-color-surface-container-highest)]" />
+        <div class="h-5 w-2/3 rounded-sm bg-(--md-sys-color-surface-container-highest) mb-3" />
+        <div class="h-3 w-1/2 rounded-sm bg-(--md-sys-color-surface-container-highest) mb-2" />
+        <div class="h-3 w-3/4 rounded-sm bg-(--md-sys-color-surface-container-highest)" />
       </div>
     </div>
 
@@ -57,10 +57,10 @@
       class="flex flex-col items-center text-center py-12 px-4"
     >
       <MdIcon :name="isOnline ? 'festival' : 'wifi_off'" class="mb-4" style="--md-icon-size: 3rem" />
-      <h2 class="text-lg font-medium text-[var(--md-sys-color-on-surface)] mb-2">
+      <h2 class="text-lg font-medium text-(--md-sys-color-on-surface) mb-2">
         {{ isOnline ? '目前沒有音樂祭資料' : '還沒下載過資料' }}
       </h2>
-      <p class="text-sm text-[var(--md-sys-color-on-surface-variant)] max-w-xs mb-6">
+      <p class="text-sm text-(--md-sys-color-on-surface-variant) max-w-xs mb-6">
         {{
           isOnline
             ? '資料庫裡還沒有活動。歡迎協助新增你關注的音樂祭。'
@@ -82,7 +82,7 @@
       <section v-if="upcoming.length > 0" class="mb-6" aria-labelledby="upcoming-heading">
         <h2
           id="upcoming-heading"
-          class="text-xs font-semibold uppercase tracking-wide text-[var(--md-sys-color-on-surface-variant)] mb-2"
+          class="text-xs font-semibold uppercase tracking-wide text-(--md-sys-color-on-surface-variant) mb-2"
         >
           進行中・即將到來
         </h2>
@@ -100,7 +100,7 @@
           v-if="upcoming.length > 0"
           id="past-heading"
           type="button"
-          class="w-full flex items-center justify-between py-2 text-xs font-semibold uppercase tracking-wide text-[var(--md-sys-color-on-surface-variant)]"
+          class="w-full flex items-center justify-between py-2 text-xs font-semibold uppercase tracking-wide text-(--md-sys-color-on-surface-variant)"
           :aria-expanded="showPast"
           @click="showPast = !showPast"
         >
@@ -110,7 +110,7 @@
         <h2
           v-else
           id="past-heading"
-          class="text-xs font-semibold uppercase tracking-wide text-[var(--md-sys-color-on-surface-variant)] mb-2"
+          class="text-xs font-semibold uppercase tracking-wide text-(--md-sys-color-on-surface-variant) mb-2"
         >
           過往活動
         </h2>
@@ -126,14 +126,14 @@
 
       <p
         v-if="upcoming.length === 0 && past.length === 0"
-        class="text-[var(--md-sys-color-on-surface-variant)] text-center py-8"
+        class="text-(--md-sys-color-on-surface-variant) text-center py-8"
       >
         找不到符合「{{ search }}」的音樂祭
       </p>
 
-      <footer class="mt-8 text-center text-sm text-[var(--md-sys-color-on-surface-variant)]">
+      <footer class="mt-8 text-center text-sm text-(--md-sys-color-on-surface-variant)">
         找不到你要去的音樂祭？
-        <router-link to="/editor" class="text-[var(--md-sys-color-primary)] font-medium underline-offset-2 hover:underline">
+        <router-link to="/editor" class="text-(--md-sys-color-primary) font-medium underline-offset-2 hover:underline">
           協助新增時間表
         </router-link>
       </footer>
@@ -163,8 +163,8 @@ function segmentClass(active) {
   return [
     'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
     active
-      ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-primary)] shadow'
-      : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]',
+      ? 'bg-(--md-sys-color-surface-container-lowest) text-(--md-sys-color-primary) shadow-sm'
+      : 'text-(--md-sys-color-on-surface-variant) hover:text-(--md-sys-color-on-surface)',
   ];
 }
 

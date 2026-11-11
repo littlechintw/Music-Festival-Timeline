@@ -4,21 +4,21 @@
       <MdIcon name="festival" class="mb-2" style="--md-icon-size: 3rem" />
       <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">收到分享的行程！</h2>
       <p class="text-gray-600 dark:text-gray-300">
-        來自「<span class="font-bold text-[var(--md-sys-color-primary)]">{{ festival.name }}</span
+        來自「<span class="font-bold text-(--md-sys-color-primary)">{{ festival.name }}</span
         >」的行程，共 {{ plan.length }} 場演出
       </p>
     </div>
 
     <div
-      class="flex items-center justify-center gap-4 text-xs text-[var(--md-sys-color-on-surface-variant)] mb-3"
+      class="flex items-center justify-center gap-4 text-xs text-(--md-sys-color-on-surface-variant) mb-3"
     >
       <span class="flex items-center gap-1">
-        <span class="w-3 h-3 rounded-sm bg-[var(--md-sys-color-primary)] inline-block"></span>
+        <span class="w-3 h-3 rounded-xs bg-(--md-sys-color-primary) inline-block"></span>
         朋友已選擇
       </span>
       <span class="flex items-center gap-1">
         <span
-          class="w-3 h-3 rounded-sm bg-[var(--md-sys-color-surface-container-high)] inline-block"
+          class="w-3 h-3 rounded-xs bg-(--md-sys-color-surface-container-high) inline-block"
         ></span>
         未選擇
       </span>
@@ -29,11 +29,11 @@
         v-for="day in festivalDays"
         :key="day.dateKey"
         type="button"
-        class="px-3 py-1 rounded border text-sm whitespace-nowrap flex-shrink-0 transition-colors"
+        class="px-3 py-1 rounded-sm border text-sm whitespace-nowrap shrink-0 transition-colors"
         :class="
           selectedDay === day.dateKey
-            ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] border-[var(--md-sys-color-primary)]'
-            : 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-primary)] border-[var(--md-sys-color-outline)] hover:bg-[var(--md-sys-color-surface-container-high)]'
+            ? 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary) border-(--md-sys-color-primary)'
+            : 'bg-(--md-sys-color-surface) text-(--md-sys-color-primary) border-(--md-sys-color-outline) hover:bg-(--md-sys-color-surface-container-high)'
         "
         @click="selectedDay = day.dateKey"
       >
@@ -42,7 +42,7 @@
     </div>
 
     <div
-      class="mobile-scroll-hint md:hidden bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2"
+      class="mobile-scroll-hint md:hidden bg-(--md-sys-color-secondary-container) text-(--md-sys-color-on-secondary-container) text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2"
     >
       <MdIcon name="arrow_forward" style="--md-icon-size: 16px" />
       左右滑動查看所有舞台
@@ -58,7 +58,7 @@
 
     <div class="max-w-sm mx-auto mt-6">
       <div v-if="!showSaveForm" class="flex flex-col gap-3">
-        <p class="text-[var(--md-sys-color-error)] text-sm font-medium text-center">
+        <p class="text-(--md-sys-color-error) text-sm font-medium text-center">
           注意：「取代目前行程」將會覆蓋您原本的行程！
         </p>
         <md-filled-button type="button" class="w-full" @click="handleReplace">
@@ -71,7 +71,7 @@
         </md-outlined-button>
         <button
           type="button"
-          class="text-sm text-[var(--md-sys-color-on-surface-variant)] hover:underline text-center mt-1"
+          class="text-sm text-(--md-sys-color-on-surface-variant) hover:underline text-center mt-1"
           @click="$emit('cancel')"
         >
           不要，回到首頁
@@ -85,7 +85,7 @@
           :value="saveName"
           @input="(e) => (saveName = e.target.value)"
         ></md-outlined-text-field>
-        <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] flex items-center gap-1">
+        <p class="text-xs text-(--md-sys-color-on-surface-variant) flex items-center gap-1">
           <MdIcon name="info" style="--md-icon-size: 14px" />
           只會存在這台裝置的瀏覽器裡，不會同步到雲端或其他裝置。
         </p>
@@ -101,7 +101,7 @@
     <BaseModal :model-value="!!invalidMessage" @update:model-value="invalidMessage = ''">
       <template #headline>
         <div class="flex items-center gap-2">
-          <MdIcon name="warning" class="text-[var(--md-sys-color-error)]" />
+          <MdIcon name="warning" class="text-(--md-sys-color-error)" />
           部分行程失效
         </div>
       </template>
@@ -118,7 +118,7 @@
       <div class="text-center">
         <MdIcon
           name="check_circle"
-          class="text-[var(--md-sys-color-primary)] mb-2"
+          class="text-(--md-sys-color-primary) mb-2"
           style="--md-icon-size: 3rem"
         />
         <p class="text-gray-600 dark:text-gray-300">
@@ -210,8 +210,8 @@ function isShared(perf) {
 
 function resolvePerfClass(perf) {
   return isShared(perf)
-    ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] font-medium'
-    : 'bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] opacity-60 pointer-events-none';
+    ? 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary) font-medium'
+    : 'bg-(--md-sys-color-surface-container-high) text-(--md-sys-color-on-surface-variant) opacity-60 pointer-events-none';
 }
 
 function formatDefaultSaveName(date, name) {

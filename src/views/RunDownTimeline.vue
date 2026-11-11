@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 max-w-full mx-auto">
-    <div v-if="status === 'loading'" class="text-[var(--md-sys-color-on-surface-variant)]" aria-busy="true">
+    <div v-if="status === 'loading'" class="text-(--md-sys-color-on-surface-variant)" aria-busy="true">
       載入中...
     </div>
     <div v-else-if="!festival">
@@ -38,14 +38,14 @@
 
       <!-- 圖例＋操作提示，一行搞定 -->
       <div
-        class="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-[var(--md-sys-color-on-surface-variant)] mb-3"
+        class="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-(--md-sys-color-on-surface-variant) mb-3"
       >
         <span class="inline-flex items-center gap-1">
-          <span class="w-3 h-3 rounded-sm bg-[var(--md-sys-color-primary)] inline-block" />
+          <span class="w-3 h-3 rounded-xs bg-(--md-sys-color-primary) inline-block" />
           已加入
         </span>
         <span class="inline-flex items-center gap-1">
-          <span class="w-3 h-3 rounded-sm bg-[var(--md-sys-color-primary-container)] border-l-2 border-[var(--md-sys-color-primary)] inline-block" />
+          <span class="w-3 h-3 rounded-xs bg-(--md-sys-color-primary-container) border-l-2 border-(--md-sys-color-primary) inline-block" />
           未加入
         </span>
         <span class="ml-auto">點方塊加入／移除・左右滑動看其他舞台</span>
@@ -153,8 +153,8 @@ function inPlan(perf) {
 
 function resolvePerfClass(perf) {
   return inPlan(perf)
-    ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] cursor-pointer'
-    : 'bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] border-l-4 border-[var(--md-sys-color-primary)] hover:bg-[var(--md-sys-color-secondary-container)] cursor-pointer';
+    ? 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary) cursor-pointer'
+    : 'bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container) border-l-4 border-(--md-sys-color-primary) hover:bg-(--md-sys-color-secondary-container) cursor-pointer';
 }
 
 function onPerfClick({ perf }) {

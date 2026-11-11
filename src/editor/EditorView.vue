@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl mx-auto p-4 text-gray-900 dark:text-gray-100 dark:[color-scheme:dark]">
+  <div class="max-w-2xl mx-auto p-4 text-gray-900 dark:text-gray-100 dark:scheme-dark">
     <PageHeader title="新增音樂祭" subtitle="產生時間表 JSON，送 PR 給專案" back="/settings" />
 
     <!-- 推薦做法說明 -->
@@ -219,7 +219,7 @@
         <div
           v-for="(stage, sidx) in festival.stages"
           :key="stage.id || sidx"
-          class="border border-gray-300 dark:border-gray-600 rounded p-2 mb-4"
+          class="border border-gray-300 dark:border-gray-600 rounded-sm p-2 mb-4"
         >
           <div class="flex items-center gap-2 mb-2">
             <md-outlined-text-field
@@ -243,7 +243,7 @@
           <div
             v-for="(perf, pidx) in stage.performances"
             :key="pidx"
-            class="border-2 border-gray-300 dark:border-gray-600 rounded p-2 mb-2 bg-gray-50 dark:bg-gray-900/40"
+            class="border-2 border-gray-300 dark:border-gray-600 rounded-sm p-2 mb-2 bg-gray-50 dark:bg-gray-900/40"
           >
             <div class="flex flex-col sm:flex-row gap-2 mb-2 items-stretch sm:items-start">
               <md-outlined-text-field
@@ -313,7 +313,7 @@
     <div v-if="jsonPreview" class="mt-6">
       <h2 class="font-bold mb-2">JSON 預覽</h2>
       <pre
-        class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded text-xs overflow-x-auto"
+        class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded-sm text-xs overflow-x-auto"
         >{{ jsonPreview }}</pre
       >
     </div>
@@ -342,7 +342,7 @@
         </md-text-button>
       </div>
       <pre
-        class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap max-h-[40vh]"
+        class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 p-3 rounded-sm text-xs overflow-x-auto whitespace-pre-wrap max-h-[40vh]"
         >{{ aiPrompt }}</pre
       >
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -456,7 +456,7 @@ const currentYear = new Date().getFullYear();
 // 這幾種原生 input type（datetime-local / number / file）md-outlined-text-field 不支援，
 // 只能維持原生 <input>，改用 MD3 token 重新上色。
 const inputClass =
-  'border border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] rounded px-2 py-1';
+  'border border-(--md-sys-color-outline) bg-(--md-sys-color-surface) text-(--md-sys-color-on-surface) rounded-sm px-2 py-1';
 
 const emptyFestival = () => ({
   festivalId: '',
@@ -661,7 +661,7 @@ function applyImport(text) {
       kind: 'warn',
       text:
         '已載入，但有些欄位還需要修正：\n' +
-        result.error.errors.map((err) => `• ${err.path.join('.')}: ${err.message}`).join('\n'),
+        result.error.issues.map((err) => `• ${err.path.join('.')}: ${err.message}`).join('\n'),
     };
   }
 }
@@ -763,7 +763,7 @@ function validateForExport() {
   }
   const result = festivalSchema.safeParse(festival);
   if (!result.success) {
-    validationError.value = result.error.errors
+    validationError.value = result.error.issues
       .map((err) => `${err.path.join('.')}: ${err.message}`)
       .join('\n');
     return null;

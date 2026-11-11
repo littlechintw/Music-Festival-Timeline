@@ -10,7 +10,7 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">切換 12 小時制與 24 小時制</p>
         </div>
         <div
-          class="flex items-center gap-2 bg-[var(--md-sys-color-surface-container-high)] p-1 rounded-lg"
+          class="flex items-center gap-2 bg-(--md-sys-color-surface-container-high) p-1 rounded-lg"
         >
           <button :class="timeBtn(settingsStore.is24Hour)" @click="settingsStore.set24Hour(true)">
             24 小時
@@ -27,7 +27,7 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">跟隨系統、或手動切換</p>
         </div>
         <div
-          class="flex items-center gap-1 bg-[var(--md-sys-color-surface-container-high)] p-1 rounded-lg"
+          class="flex items-center gap-1 bg-(--md-sys-color-surface-container-high) p-1 rounded-lg"
         >
           <button
             v-for="opt in themeOptions"
@@ -181,7 +181,7 @@
           <div class="flex gap-2 items-center shrink-0">
             <button
               v-if="hasUpdate(entry)"
-              class="px-3 py-1 text-xs rounded bg-[var(--md-sys-color-tertiary)] text-[var(--md-sys-color-on-tertiary)] disabled:opacity-50"
+              class="px-3 py-1 text-xs rounded-sm bg-(--md-sys-color-tertiary) text-(--md-sys-color-on-tertiary) disabled:opacity-50"
               :disabled="busyIds.has(entry.festivalId) || !navigatorOnline"
               @click="onDownload(entry)"
             >
@@ -189,7 +189,7 @@
             </button>
             <button
               v-if="!isAuto(entry)"
-              class="px-3 py-1 text-xs rounded border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] disabled:opacity-50"
+              class="px-3 py-1 text-xs rounded-sm border border-(--md-sys-color-outline) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-high) disabled:opacity-50"
               :disabled="busyIds.has(entry.festivalId)"
               @click="onRemove(entry)"
             >
@@ -291,7 +291,7 @@
             :href="REPO_URL"
             target="_blank"
             rel="noopener"
-            class="inline-flex items-center gap-1 text-[var(--md-sys-color-primary)] hover:underline"
+            class="inline-flex items-center gap-1 text-(--md-sys-color-primary) hover:underline"
           >
             <MdIcon name="code" style="--md-icon-size: 16px" />
             原始碼
@@ -301,7 +301,7 @@
             :href="`${REPO_URL}/issues`"
             target="_blank"
             rel="noopener"
-            class="inline-flex items-center gap-1 text-[var(--md-sys-color-primary)] hover:underline"
+            class="inline-flex items-center gap-1 text-(--md-sys-color-primary) hover:underline"
           >
             回報問題
             <MdIcon name="open_in_new" style="--md-icon-size: 12px" />
@@ -312,7 +312,7 @@
 
     <BaseModal v-model="showInstallGuide">
       <template #headline>加入手機主畫面</template>
-      <div class="text-sm text-[var(--md-sys-color-on-surface)] space-y-3">
+      <div class="text-sm text-(--md-sys-color-on-surface) space-y-3">
         <div>
           <p class="font-medium mb-1">iPhone / iPad（Safari）</p>
           <ol class="list-decimal pl-5 space-y-1">
@@ -350,7 +350,7 @@
         <div
           v-for="item in notificationStore.history"
           :key="item.timestamp"
-          class="border border-gray-100 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors shadow-sm"
+          class="border border-gray-100 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors shadow-xs"
         >
           <div class="flex justify-between items-start mb-2">
             <span class="font-bold text-gray-800 dark:text-gray-100 text-sm">{{ item.title }}</span>
@@ -618,8 +618,8 @@ function timeBtn(active) {
   return [
     'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
     active
-      ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-primary)] shadow'
-      : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]',
+      ? 'bg-(--md-sys-color-surface-container-lowest) text-(--md-sys-color-primary) shadow-sm'
+      : 'text-(--md-sys-color-on-surface-variant) hover:text-(--md-sys-color-on-surface)',
   ];
 }
 
@@ -627,8 +627,8 @@ function themeBtn(active) {
   return [
     'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
     active
-      ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-primary)] shadow'
-      : 'text-[var(--md-sys-color-on-surface-variant)]',
+      ? 'bg-(--md-sys-color-surface-container-lowest) text-(--md-sys-color-primary) shadow-sm'
+      : 'text-(--md-sys-color-on-surface-variant)',
   ];
 }
 

@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">我的行程</h1>
 
     <!-- 朋友的分享：掃描離線分享 + 已儲存的分享行程，合併成一個預設收合的區塊 -->
-    <div class="bg-[var(--md-sys-color-surface-container)] rounded-xl px-6 mb-6">
+    <div class="bg-(--md-sys-color-surface-container) rounded-xl px-6 mb-6">
       <AccordionSection :title="savedPlansTitle">
         <template #icon><MdIcon name="bookmark" /></template>
 
@@ -12,13 +12,13 @@
             <MdIcon name="qr_code_scanner" slot="icon" />
             掃描離線分享
           </md-outlined-button>
-          <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mt-1.5">
+          <p class="text-xs text-(--md-sys-color-on-surface-variant) mt-1.5">
             朋友沒有網路嗎？請他分享時選「離線分享」產生 QR Code，這裡掃描即可讀取，雙方都不需要連網路。
           </p>
         </div>
 
         <p
-          class="text-xs text-[var(--md-sys-color-on-surface-variant)] mb-3 flex items-center gap-1"
+          class="text-xs text-(--md-sys-color-on-surface-variant) mb-3 flex items-center gap-1"
         >
           <MdIcon name="info" style="--md-icon-size: 14px" />
           已儲存的行程只存在這台裝置的瀏覽器裡，不會同步到雲端或其他裝置。
@@ -53,21 +53,21 @@
             <div class="flex gap-2 items-center shrink-0">
               <button
                 type="button"
-                class="px-3 py-1 text-xs rounded border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+                class="px-3 py-1 text-xs rounded-sm border border-(--md-sys-color-outline) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-high)"
                 @click="onViewSavedPlan(savedPlan)"
               >
                 檢視
               </button>
               <button
                 type="button"
-                class="px-3 py-1 text-xs rounded bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]"
+                class="px-3 py-1 text-xs rounded-sm bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)"
                 @click="onApplySavedPlan(savedPlan)"
               >
                 套用
               </button>
               <button
                 type="button"
-                class="px-3 py-1 text-xs rounded border border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+                class="px-3 py-1 text-xs rounded-sm border border-(--md-sys-color-outline) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-high)"
                 @click="onRemoveSavedPlan(savedPlan)"
               >
                 刪除
@@ -90,11 +90,11 @@
             v-for="day in viewingDays"
             :key="day.dateKey"
             type="button"
-            class="px-3 py-1 rounded text-sm whitespace-nowrap flex-shrink-0 transition-colors"
+            class="px-3 py-1 rounded-sm text-sm whitespace-nowrap shrink-0 transition-colors"
             :class="
               viewingSelectedDay === day.dateKey
-                ? 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
-                : 'bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]'
+                ? 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)'
+                : 'bg-(--md-sys-color-surface-container-high) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-highest)'
             "
             @click="viewingSelectedDay = day.dateKey"
           >
@@ -136,25 +136,25 @@
       <NextUpCard :plan="plan" :now="now" :is24-hour="settingsStore.is24Hour" />
       <!-- 統計卡 -->
       <div
-        class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl p-6 mb-6 text-gray-800 dark:text-gray-100"
+        class="relative bg-(--md-sys-color-surface-container) rounded-xl p-6 mb-6 text-gray-800 dark:text-gray-100"
       >
         <md-elevation style="--md-elevation-level: 1"></md-elevation>
 
         <div
-          class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--md-sys-color-on-surface-variant)] mb-4"
+          class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-(--md-sys-color-on-surface-variant) mb-4"
         >
           <span
-            ><strong class="text-[var(--md-sys-color-on-surface)]">{{ plan.length }}</strong>
+            ><strong class="text-(--md-sys-color-on-surface)">{{ plan.length }}</strong>
             場演出</span
           >
           <span aria-hidden="true" class="opacity-40">•</span>
           <span
-            ><strong class="text-[var(--md-sys-color-on-surface)]">{{ planDays.length }}</strong>
+            ><strong class="text-(--md-sys-color-on-surface)">{{ planDays.length }}</strong>
             天行程</span
           >
           <span aria-hidden="true" class="opacity-40">•</span>
           <span
-            ><strong class="text-[var(--md-sys-color-on-surface)]">{{
+            ><strong class="text-(--md-sys-color-on-surface)">{{
               uniqueFestivals.length
             }}</strong>
             個音樂祭</span
@@ -202,7 +202,7 @@
           <span :class="dayCountClass(selectedPlanDay === day.dateKey)">{{ day.count }}</span>
           <span
             v-if="day.isToday"
-            class="w-1.5 h-1.5 rounded-full bg-[var(--md-sys-color-error)]"
+            class="w-1.5 h-1.5 rounded-full bg-(--md-sys-color-error)"
             aria-label="今天"
           />
         </button>
@@ -211,7 +211,7 @@
         <button
           v-if="pastDays.length && upcomingDays.length"
           type="button"
-          class="relative px-4 py-2 rounded-full text-sm whitespace-nowrap shrink-0 font-medium flex items-center gap-2 overflow-hidden border border-dashed border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+          class="relative px-4 py-2 rounded-full text-sm whitespace-nowrap shrink-0 font-medium flex items-center gap-2 overflow-hidden border border-dashed border-(--md-sys-color-outline) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-high)"
           :aria-expanded="showPast"
           @click="showPast = !showPast"
         >
@@ -245,11 +245,11 @@
         v-for="day in planDays"
         v-show="selectedPlanDay === day.dateKey"
         :key="day.dateKey"
-        class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl overflow-hidden"
+        class="relative bg-(--md-sys-color-surface-container) rounded-xl overflow-hidden"
       >
         <md-elevation style="--md-elevation-level: 1"></md-elevation>
         <div
-          class="bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)] px-6 py-6"
+          class="bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary) px-6 py-6"
         >
           <div class="flex items-center justify-between">
             <div>
@@ -260,7 +260,7 @@
             </div>
             <div class="flex flex-col items-end gap-2">
               <div v-if="day.isToday" class="text-right">
-                <div class="text-[var(--md-sys-color-tertiary-container)] text-sm font-medium">
+                <div class="text-(--md-sys-color-tertiary-container) text-sm font-medium">
                   今天
                 </div>
                 <div class="opacity-90 text-xs">{{ formatTime(now, settingsStore.is24Hour) }}</div>
@@ -272,7 +272,7 @@
                 <button
                   v-for="fest in dayFestivalsWithMap(day)"
                   :key="fest.id"
-                  class="text-xs bg-white bg-opacity-20 hover:bg-opacity-30 rounded px-2 py-1 transition-colors flex items-center gap-1"
+                  class="text-xs bg-white/20 hover:bg-white/30 rounded-sm px-2 py-1 transition-colors flex items-center gap-1"
                   @click="goToMap(fest.id)"
                 >
                   <MdIcon name="location_on" style="--md-icon-size: 14px" />
@@ -284,7 +284,7 @@
         </div>
 
         <TimelineGrid
-          :stages="day.stages.map((s) => ({ name: s }))"
+          :stages="day.stages"
           :performances="day.performances"
           :is24-hour="settingsStore.is24Hour"
           :show-current-time="day.isToday"
@@ -316,7 +316,7 @@
 
         <template v-if="!hasShareResult">
           <div
-            class="flex items-center gap-2 bg-[var(--md-sys-color-surface-container-high)] p-1 rounded-lg mb-2"
+            class="flex items-center gap-2 bg-(--md-sys-color-surface-container-high) p-1 rounded-lg mb-2"
           >
             <button
               type="button"
@@ -337,7 +337,7 @@
               離線分享
             </button>
           </div>
-          <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mb-4">
+          <p class="text-xs text-(--md-sys-color-on-surface-variant) mb-4">
             {{
               shareMode === 'cloud'
                 ? '雙方都需要連網路。產生一個短網址，複製後傳給朋友，對方點開即可匯入。'
@@ -350,7 +350,7 @@
             class="mb-4 rounded-lg border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm text-red-700 dark:text-red-200 flex items-start gap-2"
             role="alert"
           >
-            <MdIcon name="warning" class="text-[var(--md-sys-color-error)] shrink-0" />
+            <MdIcon name="warning" class="text-(--md-sys-color-error) shrink-0" />
             <div class="flex-1">
               <p class="font-medium">產生失敗</p>
               <p class="mt-0.5 text-xs opacity-90">{{ shareError }}</p>
@@ -382,7 +382,7 @@
 
           <div v-else class="flex flex-col gap-3">
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              分享「<span class="font-bold text-[var(--md-sys-color-primary)]">{{
+              分享「<span class="font-bold text-(--md-sys-color-primary)">{{
                 selectedShareFestival.name
               }}</span
               >」的 {{ selectedShareFestival.count }} 場行程
@@ -409,7 +409,7 @@
               type="text"
               readonly
               :value="generatedLink"
-              class="w-full pr-10 pl-3 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+              class="w-full pr-10 pl-3 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 outline-hidden focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
               @click="$event.target.select()"
             />
           </div>
@@ -550,6 +550,42 @@ const uniqueFestivals = computed(() => [
   ...new Set(plan.value.map((p) => p.festivalName).filter(Boolean)),
 ]);
 
+/** 時間軸欄位的 key：音樂祭 + 舞台。不同音樂祭的同名舞台（例如都叫「主舞台」）要分成不同欄。 */
+function stageColumnKey(festivalId, stageName) {
+  return `${festivalId || ''}::${stageName || ''}`;
+}
+
+/**
+ * 把一天的演出整理成時間軸的欄位：每個「音樂祭 + 舞台」一欄。
+ * 同一天有多個音樂祭時，欄位標題下方會多一行音樂祭名稱。
+ *
+ * @param {any[]} performances
+ * @param {Map<string, number>} [orderMap] 欄位 key → 排序位置（照各音樂祭的舞台順序）
+ */
+function buildStageColumns(performances, orderMap) {
+  const withKeys = performances.map((p) => ({
+    ...p,
+    columnKey: stageColumnKey(p.festivalId, p.stage),
+  }));
+  const multiFestival = new Set(performances.map((p) => p.festivalId)).size > 1;
+  /** @type {Map<string, { key: string, columnKey: string, name: string, group?: string }>} */
+  const columns = new Map();
+  for (const p of withKeys) {
+    if (!p.stage || columns.has(p.columnKey)) continue;
+    columns.set(p.columnKey, {
+      key: p.columnKey,
+      columnKey: p.columnKey,
+      name: p.stage,
+      group: multiFestival ? p.festivalName || p.festivalId : undefined,
+    });
+  }
+  const stages = [...columns.values()];
+  if (orderMap) {
+    stages.sort((a, b) => (orderMap.get(a.columnKey) ?? Infinity) - (orderMap.get(b.columnKey) ?? Infinity));
+  }
+  return { stages, performances: withKeys };
+}
+
 const festivalMap = computed(
   () => new Map((festivalStore.getFestivals || []).map((f) => [f.festivalId, f]))
 );
@@ -590,12 +626,12 @@ const planDays = computed(() => {
     const stageOrder = new Set();
     for (const id of festivalIds) {
       const fest = festivalMap.value.get(id);
-      if (fest?.stages) for (const s of fest.stages) stageOrder.add(s.name);
+      if (fest?.stages) for (const s of fest.stages) stageOrder.add(stageColumnKey(id, s.name));
     }
     const indexMap = new Map([...stageOrder].map((name, i) => [name, i]));
-    const stages = [...new Set(day.performances.map((p) => p.stage).filter(Boolean))].sort(
-      (a, b) => (indexMap.get(a) ?? Infinity) - (indexMap.get(b) ?? Infinity)
-    );
+    const columns = buildStageColumns(day.performances, indexMap);
+    day.performances = columns.performances;
+    const stages = columns.stages;
 
     const entries = festivalIds.map((id) => ({
       id,
@@ -636,17 +672,17 @@ function dayChipClass(active, past = false) {
     'relative px-4 py-2 rounded-full text-sm whitespace-nowrap shrink-0 transition-colors font-medium flex items-center gap-2 overflow-hidden',
     active
       ? past
-        ? 'bg-[var(--md-sys-color-secondary)] text-[var(--md-sys-color-on-secondary)]'
-        : 'bg-[var(--md-sys-color-primary)] text-[var(--md-sys-color-on-primary)]'
-      : 'bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]',
+        ? 'bg-(--md-sys-color-secondary) text-(--md-sys-color-on-secondary)'
+        : 'bg-(--md-sys-color-primary) text-(--md-sys-color-on-primary)'
+      : 'bg-(--md-sys-color-surface-container-high) text-(--md-sys-color-on-surface-variant) hover:bg-(--md-sys-color-surface-container-highest)',
   ];
 }
 function dayCountClass(active) {
   return [
     'inline-flex items-center justify-center text-xs font-bold min-w-[1.25rem] h-5 px-1 rounded-full',
     active
-      ? 'bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)]'
-      : 'bg-[var(--md-sys-color-surface-container-highest)] text-[var(--md-sys-color-on-surface-variant)]',
+      ? 'bg-(--md-sys-color-surface) text-(--md-sys-color-on-surface)'
+      : 'bg-(--md-sys-color-surface-container-highest) text-(--md-sys-color-on-surface-variant)',
   ];
 }
 
@@ -806,8 +842,8 @@ const shareButtonLabel = computed(() => (isSharing.value ? '產生中...' : '分
 
 function shareModeBtn(active) {
   return active
-    ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-primary)] shadow'
-    : 'text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]';
+    ? 'bg-(--md-sys-color-surface-container-lowest) text-(--md-sys-color-primary) shadow-sm'
+    : 'text-(--md-sys-color-on-surface-variant) hover:text-(--md-sys-color-on-surface)';
 }
 
 const shareableFestivals = computed(() => {

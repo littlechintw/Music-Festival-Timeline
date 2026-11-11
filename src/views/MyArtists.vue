@@ -23,14 +23,14 @@
     <div v-else>
       <!-- 統計總覽 -->
       <div
-        class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl p-6 mb-6 text-gray-800 dark:text-gray-100"
+        class="relative bg-(--md-sys-color-surface-container) rounded-xl p-6 mb-6 text-gray-800 dark:text-gray-100"
       >
         <md-elevation style="--md-elevation-level: 1"></md-elevation>
         <div class="flex flex-wrap gap-6 text-sm">
           <div class="flex items-center gap-2">
             <MdIcon name="mic" />
             <span
-              class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+              class="bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container) px-2 py-0.5 rounded-sm font-bold"
               >{{ seenArtists.length }}</span
             >
             <span>位藝人</span>
@@ -38,7 +38,7 @@
           <div class="flex items-center gap-2">
             <MdIcon name="queue_music" />
             <span
-              class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+              class="bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container) px-2 py-0.5 rounded-sm font-bold"
               >{{ totalSeenShows }}</span
             >
             <span>場演出</span>
@@ -46,7 +46,7 @@
           <div class="flex items-center gap-2">
             <MdIcon name="location_on" />
             <span
-              class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+              class="bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container) px-2 py-0.5 rounded-sm font-bold"
               >{{ seenFestivalCount }}</span
             >
             <span>個音樂祭</span>
@@ -54,7 +54,7 @@
           <div v-if="repeatCount > 0" class="flex items-center gap-2">
             <MdIcon name="repeat" />
             <span
-              class="bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] px-2 py-0.5 rounded font-bold"
+              class="bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container) px-2 py-0.5 rounded-sm font-bold"
               >{{ repeatCount }}</span
             >
             <span>位聽過不只一次</span>
@@ -65,7 +65,7 @@
       <!-- 還沒有任何已結束的場次 -->
       <p
         v-if="seenArtists.length === 0"
-        class="text-sm text-gray-500 dark:text-gray-400 mb-6 bg-[var(--md-sys-color-surface-container-low)] rounded-lg px-4 py-3"
+        class="text-sm text-gray-500 dark:text-gray-400 mb-6 bg-(--md-sys-color-surface-container-low) rounded-lg px-4 py-3"
       >
         行程裡的演出都還沒開始。等聽完之後，這裡就會記錄你聽過的藝人 🎵
       </p>
@@ -75,7 +75,7 @@
         <li
           v-for="(artist, idx) in seenArtists"
           :key="artist.name"
-          class="relative bg-[var(--md-sys-color-surface-container)] rounded-xl px-4 py-3 flex items-center gap-3"
+          class="relative bg-(--md-sys-color-surface-container) rounded-xl px-4 py-3 flex items-center gap-3"
         >
           <md-elevation></md-elevation>
           <div
@@ -90,7 +90,7 @@
               <span
                 v-for="fest in artist.seenFestivals"
                 :key="fest.id"
-                class="text-xs bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] px-2 py-0.5 rounded-full"
+                class="text-xs bg-(--md-sys-color-secondary-container) text-(--md-sys-color-on-secondary-container) px-2 py-0.5 rounded-full"
               >
                 {{ fest.name }}<span v-if="fest.count > 1"> ×{{ fest.count }}</span>
               </span>
@@ -103,7 +103,7 @@
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <div class="text-xl font-bold text-[var(--md-sys-color-primary)] leading-none">
+            <div class="text-xl font-bold text-(--md-sys-color-primary) leading-none">
               {{ artist.seenCount }}
             </div>
             <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">次</div>
@@ -122,7 +122,7 @@
           <li
             v-for="artist in upcomingArtists"
             :key="artist.name"
-            class="bg-[var(--md-sys-color-surface-container-low)] rounded-lg px-4 py-2.5 flex items-center justify-between gap-3"
+            class="bg-(--md-sys-color-surface-container-low) rounded-lg px-4 py-2.5 flex items-center justify-between gap-3"
           >
             <span class="font-medium text-gray-700 dark:text-gray-200 truncate">{{
               artist.name
