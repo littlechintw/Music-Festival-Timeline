@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "festivals": [
+    {
+      "festivalId": "friendly-ecommerce-carnival-2026",
+      "name": "2026 友善電商嘉年華",
+      "startTime": "2026-11-14T10:00:00+08:00",
+      "endTime": "2026-11-14T20:30:00+08:00",
+      "file": "friendly-ecommerce-carnival-2026.json"
+    },
+    {
+      "festivalId": "fireball-festival-2026",
+      "name": "火球祭 Fireball Festival 2026",
+      "startTime": "2026-11-14T11:00:00+08:00",
+      "endTime": "2026-11-15T22:00:00+08:00",
+      "file": "fireball-festival-2026.json"
+    },
+    {
+      "festivalId": "oshen-festival-2026",
+      "name": "洋流祭 O'SHEN FESTIVAL 2026",
+      "startTime": "2026-11-14T14:30:00+08:00",
+      "endTime": "2026-11-14T19:00:00+08:00",
+      "file": "oshen-festival-2026.json"
+    },
+    {
+      "festivalId": "bade-3c-day-2026",
+      "name": "2026 八德3C合樂DAY 主場週演唱會",
+      "startTime": "2026-11-14T18:30:00+08:00",
+      "endTime": "2026-11-15T19:40:00+08:00",
+      "file": "bade-3c-day-2026.json"
+    }
+  ]
+}
