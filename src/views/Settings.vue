@@ -116,6 +116,21 @@
         <md-text-button type="button" class="w-max" @click="showHistoryModal = true">
           查看歷史推播紀錄
         </md-text-button>
+
+        <div
+          class="flex gap-3 rounded-lg border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 p-3"
+        >
+          <MdIcon name="info" class="shrink-0 mt-0.5 text-amber-700 dark:text-amber-300" />
+          <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed space-y-1">
+            <p class="font-medium text-gray-800 dark:text-gray-200">提醒只在 App 開著時才會跳</p>
+            <p>
+              提醒是由 App 自己在畫面上倒數觸發的，沒有雲端伺服器幫忙推送。切到別的 App、鎖上螢幕或關掉分頁後，倒數會暫停，直到你再回到這裡才會補送還沒過期的提醒。這是瀏覽器對網頁 App 的限制，安裝到主畫面也一樣。
+            </p>
+            <p>
+              想在離開 App 後也收到提醒，請到「行程」頁按「加入行事曆」。匯出的行事曆事件已附上你在上面設定的提前提醒時間，由手機系統行事曆負責通知，沒網路也能跳。
+            </p>
+          </div>
+        </div>
       </div>
     </AccordionSection>
 

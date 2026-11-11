@@ -199,5 +199,5 @@ PWA 部署新版時，`registerType: 'prompt'` 模式下流程：
 
 - **完全 NetworkFirst**：很多 PWA 教學會推 NetworkFirst，但在現場 5G 訊號爛時 fetch 會 hang 5 秒才 fallback，體感很差。我們對 festival 資料用 StaleWhileRevalidate，立刻給結果。
 - **localStorage 存 festival 資料**：JSON 一個 4MB，幾個就破 localStorage 5MB 上限。完全交給 SW cache。
-- **背景送通知**：通知排程跑在前景 setTimeout（visibility-aware）。要真正的 OS 級背景通知需要 push server，超出單機 PWA 範圍。
+- **背景送通知**：通知排程跑在前景 setTimeout（visibility-aware），分頁 hidden 時整個停掉。要真正的 OS 級背景通知只有 Web Push 一條路，而 Push 一定要有伺服端在正確時間點送出，超出單機 PWA 範圍。曾經為此設計的 Notification Triggers API 已被 Chrome 移除；Periodic Background Sync 間隔以小時計且不精確，做不到「演出前 5 分鐘」。目前的替代方案是 `.ics` 匯出（`utils/calendar.js`），事件內附 VALARM，由系統行事曆負責提醒。設定頁通知區塊有對使用者說明這個限制。
 - **localStorage 加密**：個人行程不算機敏資料，不值得引入加密庫的 bundle 成本。
