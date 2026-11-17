@@ -1,6 +1,15 @@
 <template>
+  <!-- isolate：把內部的 z-index 關在這個元件裡，「回到現在」按鈕才不會浮到 App 頂欄（同為 z-40）上面 -->
+  <div class="relative isolate">
   <!-- 可捲動區域要能用鍵盤聚焦，方向鍵才捲得動 -->
-  <div class="timeline-scroll-container" ref="scrollRef" tabindex="0" role="region" aria-label="時間軸，左右捲動查看舞台、上下捲動查看時間">
+  <div
+    class="timeline-scroll-container"
+    ref="scrollRef"
+    tabindex="0"
+    role="region"
+    aria-label="時間軸，左右捲動查看舞台、上下捲動查看時間"
+    @scroll.passive="updateNowDirection"
+  >
     <div class="timeline-container" :style="gridStyle(stages.length)">
       <!-- 表頭 -->
       <div class="time-column-header" :style="{ gridColumn: 1, gridRow: 1 }">時間</div>
@@ -68,6 +77,14 @@
           @keydown.enter.prevent="$emit('perfClick', { perf, stage })"
           @keydown.space.prevent="$emit('perfClick', { perf, stage })"
         >
+          <!-- LIVE 標籤掛在方塊右上角邊框上，不佔團名那一行的寬度 -->
+          <span
+            v-if="isLive(perf)"
+            class="absolute -top-2 right-1 z-10 text-[10px] leading-none font-bold bg-(--md-sys-color-error) text-(--md-sys-color-on-error) px-1 py-0.5 rounded-sm animate-pulse pointer-events-none"
+            aria-hidden="true"
+          >
+            LIVE
+          </span>
           <div class="flex items-baseline flex-wrap gap-x-2">
             <span class="flex items-start gap-1 shrink-0 max-w-full">
               <!-- 已加入的方塊多一個勾號：不能只靠顏色深淺分辨（色弱、低對比環境） -->
@@ -76,9 +93,6 @@
                 class="text-[10px] font-bold leading-4 shrink-0"
                 aria-hidden="true"
               >✓</span>
-              <span v-if="isLive(perf)" class="text-[10px] font-bold bg-(--md-sys-color-error) text-(--md-sys-color-on-error) px-1 rounded-sm animate-pulse shrink-0">
-                LIVE
-              </span>
               <span v-if="conflictsFor(perf)" class="text-[10px] font-bold bg-amber-600 text-white px-1 rounded-sm shrink-0" :title="conflictsFor(perf)">
                 ⚠
               </span>
@@ -94,10 +108,26 @@
       </template>
     </div>
   </div>
+
+    <!-- 使用者自己捲離「現在」的位置後才出現；不自動拉回去，讓人可以安心看其他時段 -->
+    <button
+      v-if="nowDirection"
+      type="button"
+      class="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 inline-flex items-center gap-1 pl-2 pr-3 min-h-9 rounded-full text-xs font-bold shadow-md bg-(--md-sys-color-error) text-(--md-sys-color-on-error)"
+      @click="scrollToCurrent(true)"
+    >
+      <MdIcon
+        :name="nowDirection === 'up' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+        style="--md-icon-size: 18px"
+      />
+      回到現在
+    </button>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, nextTick, watch } from 'vue';
+import { computed, ref, nextTick, watch, onMounted, onBeforeUnmount } from 'vue';
+import MdIcon from './MdIcon.vue';
 import { useTimelineGrid } from '../composables/useTimelineGrid';
 import { formatTime, formatTimeRange } from '../utils/format';
 import { useSettingsStore } from '../stores/settings';
@@ -227,18 +257,66 @@ function conflictClasses(perf) {
   return conflictsFor(perf) ? 'outline outline-2 outline-amber-600 outline-offset-1' : '';
 }
 
-function scrollToCurrent() {
+// 目前時間線相對於可視範圍的方向：'up'／'down' 表示已捲出畫面，null 表示看得到（或今天沒有時間線）
+const nowDirection = ref(/** @type {'up' | 'down' | null} */ (null));
+// 掛載當下方格還沒顯示（例如被 v-show 藏住）時量不到位置，等看得到再補捲一次
+let pendingInitialScroll = false;
+/** @type {ResizeObserver | null} */
+let resizeObserver = null;
+
+onMounted(() => {
+  if (!scrollRef.value || typeof ResizeObserver === 'undefined') return;
+  // 方格從隱藏變成顯示（切到今天那一頁）的當下就補定位，不要等使用者開始捲了才把人拉走；
+  // 視窗高度改變（手機工具列收合、旋轉）時也順便重算按鈕該不該出現。
+  resizeObserver = new ResizeObserver(() => {
+    if (pendingInitialScroll && scrollRef.value?.clientHeight) {
+      pendingInitialScroll = false;
+      scrollToCurrent();
+    } else {
+      updateNowDirection();
+    }
+  });
+  resizeObserver.observe(scrollRef.value);
+});
+onBeforeUnmount(() => resizeObserver?.disconnect());
+
+function updateNowDirection() {
+  const container = scrollRef.value;
+  const indicator = indicatorRef.value;
+  if (!props.showCurrentTime || !container || !indicator || container.clientHeight === 0) {
+    nowDirection.value = null;
+    return;
+  }
+  const cRect = container.getBoundingClientRect();
+  const top = indicator.getBoundingClientRect().top;
+  // 表頭是 sticky 的，時間線被它蓋住也算看不到
+  const headerHeight = container.querySelector('.time-column-header')?.offsetHeight || 0;
+  if (top < cRect.top + headerHeight) nowDirection.value = 'up';
+  else if (top > cRect.bottom) nowDirection.value = 'down';
+  else nowDirection.value = null;
+}
+
+/** @param {boolean} [smooth] 使用者按按鈕時用平滑捲動；自動定位時直接跳 */
+function scrollToCurrent(smooth = false) {
   if (!props.showCurrentTime) return;
   nextTick(() => {
     const container = scrollRef.value;
     const indicator = indicatorRef.value;
     if (!container || !indicator) return;
+    if (container.clientHeight === 0) {
+      pendingInitialScroll = true;
+      return;
+    }
+    pendingInitialScroll = false;
     const cRect = container.getBoundingClientRect();
     const iRect = indicator.getBoundingClientRect();
-    container.scrollTop = Math.max(
-      0,
-      container.scrollTop + iRect.top - cRect.top - container.clientHeight / 3
-    );
+    const top = Math.max(0, container.scrollTop + iRect.top - cRect.top - container.clientHeight / 3);
+    if (smooth === true && !prefersReducedMotion() && typeof container.scrollTo === 'function') {
+      container.scrollTo({ top, behavior: 'smooth' });
+    } else {
+      container.scrollTop = top;
+    }
+    updateNowDirection();
   });
 }
 
@@ -246,13 +324,23 @@ watch(
   () => props.showCurrentTime,
   (val) => {
     if (val) scrollToCurrent();
+    else nowDirection.value = null;
   },
   { immediate: true }
 );
 
-watch(timeSlots, () => {
-  if (props.showCurrentTime) scrollToCurrent();
-});
+// 只有時間軸的範圍真的變了（換日、行程增減到頭尾）才重新定位。
+// 不能直接 watch timeSlots：父層每秒更新 isPast 會讓它每秒產生新陣列，
+// 結果就是每秒把使用者拉回現在。
+watch(
+  () => `${timeSlots.value[0]?.timestamp ?? ''}:${timeSlots.value.length}`,
+  () => {
+    if (props.showCurrentTime) scrollToCurrent();
+  }
+);
+
+// 時間線每秒往下走，可能自己走出／走進可視範圍
+watch(() => props.now, updateNowDirection, { flush: 'post' });
 
 defineExpose({ scrollToCurrent });
 

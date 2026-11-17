@@ -19,7 +19,7 @@
             type="button"
             aria-label="跳到現在"
             title="跳到現在"
-            @click="gridRef?.scrollToCurrent()"
+            @click="gridRef?.scrollToCurrent(true)"
           >
             <MdIcon name="my_location" />
           </md-icon-button>
@@ -91,7 +91,8 @@ const { showToast } = useToast();
 
 const gridRef = ref(null);
 const selectedDay = ref('');
-const todayKey = festivalDayKey();
+// 一定要傳入時間：不帶參數會拿到空字串，「今天」就永遠比對不到（時間線、LIVE 都不會出現）
+const todayKey = computed(() => festivalDayKey(now.value));
 
 const { festival, entry, status, retry } = useFestivalPage();
 
@@ -109,7 +110,7 @@ const festivalDays = computed(() => {
       return {
         key,
         date,
-        isToday: key === todayKey,
+        isToday: key === todayKey.value,
         label: `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAYS_ZH[date.getDay()].replace('星期', '')})`,
       };
     })
@@ -143,7 +144,7 @@ const performancesForDay = computed(() => {
   return result;
 });
 
-const isToday = computed(() => !!selectedDay.value && selectedDay.value === todayKey);
+const isToday = computed(() => !!selectedDay.value && selectedDay.value === todayKey.value);
 
 function inPlan(perf) {
   if (!festival.value) return false;

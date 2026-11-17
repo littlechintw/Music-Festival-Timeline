@@ -210,7 +210,7 @@ const mapsUrl = computed(() => {
 
 // 日期切換：以「演出日」為單位（跨午夜的場次歸在開始那天）
 const selectedDay = ref('');
-const todayKey = festivalDayKey();
+const todayKey = festivalDayKey(new Date());
 
 const days = computed(() => {
   if (!festival.value) return [];
